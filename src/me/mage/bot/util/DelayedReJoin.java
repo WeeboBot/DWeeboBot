@@ -16,7 +16,7 @@ public class DelayedReJoin extends TimerTask {
 	 */
 	public DelayedReJoin(String channel) {
 		this.channel = channel;
-		timer.schedule(this, 480000);
+		timer.schedule(this, 180000);
 	}
 	
 	/**
