@@ -33,7 +33,7 @@ public class Database {
 
 	private static Connection conn;
 
-	private static final String URL = "jdbc:mysql://localhost:3306/pcmrbot?";
+	private static final String URL = "jdbc:mysql://72.222.115.158:3306/pcmrbot?";
 
 	public static final String DATABASE = "pcmrbot";
 
