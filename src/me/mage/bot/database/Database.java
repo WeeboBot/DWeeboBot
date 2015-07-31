@@ -57,6 +57,7 @@ public class Database {
 		try {
 			conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
 		} catch (SQLException e) {
+			e.printStackTrace();
 			return false;
 		}
 		return true;

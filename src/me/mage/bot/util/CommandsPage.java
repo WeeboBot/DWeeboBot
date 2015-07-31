@@ -39,9 +39,9 @@ public class CommandsPage {
 		String tableBody = generateTableBodyHTML(channelNoHash);
 		if(tableBody != null) {
 			if(System.getProperty("os.name").toLowerCase().contains("win")) {
-				TFileWriter.overWriteFile(new File("C:/Apache2/htdocs/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
+				TFileWriter.overWriteFile(new File("%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
 			} else {
-				TFileWriter.overWriteFile(new File("/var/www/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
+				TFileWriter.overWriteFile(new File("%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
 			}
 			return true;
 		}
@@ -53,9 +53,9 @@ public class CommandsPage {
 	 */
 	private static String getTemplate() {
 		if(System.getProperty("os.name").toLowerCase().contains("win")) {
-			return TFileReader.readFileAsString(new File("C:/Apache2/htdocs/commands/commandsTemplate.html"));
+			return TFileReader.readFileAsString(new File("commandsTemplate.html"));
 		}
-		return TFileReader.readFileAsString(new File("/var/www/commands/commandsTemplate.html"));
+		return TFileReader.readFileAsString(new File("commandsTemplate.html"));
 	}
 
 	/**
