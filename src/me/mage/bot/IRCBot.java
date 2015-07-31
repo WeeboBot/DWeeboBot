@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.User;
+
 import me.mage.bot.commands.AddModerator;
 import me.mage.bot.commands.CommandParser;
 import me.mage.bot.commands.DelModerator;
@@ -37,8 +40,6 @@ import me.mage.bot.util.PointsRunnable;
 import me.mage.bot.util.TOptions;
 import me.mage.bot.util.TType;
 import me.mage.bot.util.Timeouts;
-
-import org.jibble.pircbot.PircBot;
 
 /**
  *
@@ -144,6 +145,10 @@ public class IRCBot extends PircBot {
 					}
 				}
 				new PointsRunnable(sender, channel.substring(1));
+			} else {
+				for (User u : getUsers(channel)) {
+					new PointsRunnable(u.getNick(), channel.substring(1));
+				}
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
