@@ -40,7 +40,7 @@ public class ForceLeave extends Command {
 			} else {
 				Main.partChannel("#"+parameters[0]);
 			}
-			return "Forcefully joining %channel%".replace("%channel%", parameters[0]);
+			return "Forcefully leaving %channel%".replace("%channel%", parameters[0]);
 		}
 		return "You can only preform this command from the main bot channel!";
 	}
