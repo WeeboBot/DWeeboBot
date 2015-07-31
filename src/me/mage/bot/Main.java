@@ -23,13 +23,13 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jibble.pircbot.IrcException;
+
 import me.mage.bot.commands.CommandParser;
 import me.mage.bot.database.Database;
 import me.mage.bot.util.CommandsPage;
 import me.mage.bot.util.TFileReader;
 import me.mage.bot.util.TOptions;
-
-import org.jibble.pircbot.IrcException;
 
 public class Main implements Runnable{
 	
