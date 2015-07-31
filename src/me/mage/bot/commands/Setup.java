@@ -55,7 +55,7 @@ public class Setup extends Command {
 				"If you want the users name to appear in the join message use %user%. This will cause the bot to replace that with the name of the person who is joining.");
 			Main.getBot().sendMessage(
 				channel,
-				"If you would like to permanantely disable this feature type \"!changeWelcome none\" without the quotes! To temporarily disable it type !disableWelcome and to enable it type !enableWelcome (This only works if the message is something is something other than \"none\")!");
+				"If you would like to permanantely disable this feature type \"!changeWelcome none\" without the quotes! To temporarily disable it type !disableWelcome and to enable it type !enableWelcome (This only works if the message is something other than \"none\")!");
 			Main.getBot().sendMessage(
 				channel,
 				"Also, if you would like to use subscriber raffles or change the stream title and game, please go to http://pcmrbot.no-ip.info/authorize to authorize the bot!");
