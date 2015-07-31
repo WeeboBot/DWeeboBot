@@ -1,5 +1,5 @@
 /*	  It's a Twitch bot, because we can.
- *    Copyright (C) 2015  Logan Saso, James Wolff, Kyle Nabinger
+ *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -57,7 +57,6 @@ public class Database {
 		try {
 			conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
 		} catch (SQLException e) {
-			e.printStackTrace();
 			return false;
 		}
 		return true;
