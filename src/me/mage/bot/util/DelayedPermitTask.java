@@ -36,6 +36,7 @@ public class DelayedPermitTask extends TimerTask{
 	public DelayedPermitTask(String u, String c) {
 		this.user = u;
 		this.channel = c;
+		System.out.println("TimerStarted");
 		timer.schedule(this, 180000L);
 	}
 	
@@ -45,6 +46,7 @@ public class DelayedPermitTask extends TimerTask{
 	@Override
 	public void run() {
 		Main.getBot().removePermit(this, user);
+		System.out.println("Permit Removed");
 	}
 	
 	/**

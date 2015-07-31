@@ -18,7 +18,7 @@ public class Google extends Command {
 	public String execute(String channel, String sender, String... parameters) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("http://google.com/?q=");
-		for(int i=1;i<parameters.length;i++) {
+		for(int i=0;i<parameters.length-1;i++) {
 			sb.append(parameters[i]+"+");
 		}
 		sb.append(parameters[parameters.length-1]);

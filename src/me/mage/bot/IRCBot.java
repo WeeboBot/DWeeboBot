@@ -305,6 +305,7 @@ public class IRCBot extends PircBot {
 							.matches("(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?")
 					&& link != -1) {
 				if (!isPermitted(channel, sender)) {
+					System.out.println("is permit");
 					new Timeouts(channel, sender, 1, TType.LINK);
 				} else {
 					removePermit(channel, sender);
