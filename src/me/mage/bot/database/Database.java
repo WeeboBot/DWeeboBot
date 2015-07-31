@@ -57,8 +57,13 @@ public class Database {
 		try {
 			conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
 		} catch (SQLException e) {
+			logger.log(
+					Level.SEVERE,
+					"Unable to connect to the database!!"
+							,e);
 			return false;
 		}
+		System.out.println("Connected to the database properly!!!!!!!!!");
 		return true;
 	}
 
