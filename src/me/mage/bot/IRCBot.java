@@ -130,8 +130,9 @@ public class IRCBot extends PircBot {
 	@Override
 	public void onJoin(String channel, String sender, String login,
 			String hostname) {
+		System.out.println("Channel: "+channel+" Sender: "+sender + " Host: "+hostname);
 		try {
-			if (!channel.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
+			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				sendMessage(
 						channel,
 						"I have joined the channel and will stay with you unless you tell me to !leave or my creators do not shut me down properly because they are cruel people with devious minds.");
@@ -164,13 +165,6 @@ public class IRCBot extends PircBot {
 	@Override
 	public void onPart(String channel, String sender, String login,
 			String hostname) {
-		try {
-			sendMessage(Main.getBotChannel(),
-					String.format("%s has left %s's channel.", sender, channel));
-		} catch (Exception e) {
-			logger.log(Level.SEVERE,
-					"An error occurred while executing onLeave()", e);
-		}
 		PointsRunnable.removeChannelFromUser(sender, channel.substring(1));
 	}
 
@@ -226,6 +220,13 @@ public class IRCBot extends PircBot {
 		sendMessage(
 				channel,
 				"Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary manners to attend to. First off make sure to mod me so I don't get timed out, then type !setup");
+	}
+	
+	/**
+	 * If IRC sends something PIRCBot doesn't recognize this is called.
+	 */
+	public void onUnkown(String line){
+		System.out.println(line);
 	}
 
 	/**

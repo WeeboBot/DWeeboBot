@@ -88,6 +88,8 @@ public class Main implements Runnable{
 		} catch (IOException | IrcException e) {
 			logger.log(Level.SEVERE, "An error occurred while connecting to Twitch IRC", e);
 		}
+		bot.sendRawLine("CAP REQ :twitch.tv/membership");
+		bot.setMessageDelay(1700);
 		joinChannel(getBotChannel(), false);
 		CommandParser.init();
 		
