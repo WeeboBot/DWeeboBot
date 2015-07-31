@@ -35,7 +35,7 @@ public class Main implements Runnable{
 	
 	private static IRCBot bot;
 	private static String[] args;
-	private static final String botChannel = "#donald10101";
+	private static final String botChannel = "#Weebobot";
 	private static final Logger logger = Logger.getLogger(Main.class + "");
 	
 	/**
