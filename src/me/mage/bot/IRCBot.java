@@ -131,7 +131,7 @@ public class IRCBot extends PircBot {
 	public void onJoin(String channel, String sender, String login,
 			String hostname) {
 		try {
-			if (!sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
+			if (!channel.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				sendMessage(
 						channel,
 						"I have joined the channel and will stay with you unless you tell me to !leave or my creators do not shut me down properly because they are cruel people with devious minds.");
