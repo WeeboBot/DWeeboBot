@@ -24,7 +24,7 @@ public class Setup extends Command {
 
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		if(!parameters[0].equalsIgnoreCase("continue")) {
+		if(parameters.length != 0 && !parameters[0].equalsIgnoreCase("continue")) {
 			Main.getBot().sendMessage(
 				channel,
 				"To begin with, we use a two step system to define a few options. Let's begin with timing out a user.");
