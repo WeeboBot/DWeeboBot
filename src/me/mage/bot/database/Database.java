@@ -33,9 +33,9 @@ public class Database {
 
 	private static Connection conn;
 
-	private static final String URL = "jdbc:mysql://72.222.115.158:3306/pcmrbot?";
+	private static final String URL = "jdbc:mysql://23.254.209.110:3306/weebo?";
 
-	public static final String DATABASE = "pcmrbot";
+	public static final String DATABASE = "weebo";
 
 	static final Logger logger = Logger.getLogger(Database.class + "");
 
@@ -583,7 +583,7 @@ public class Database {
 		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sPoints ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
 			while(rs.next()&&ammount>1){
-				if(!rs.getString(1).equalsIgnoreCase("pcmrbot") && !rs.getString(1).equalsIgnoreCase("pcmrbottester") && !rs.getString(1).equalsIgnoreCase("botduck") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
+				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase("weebotester") && !rs.getString(1).equalsIgnoreCase("botduck") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
 					output.append(rs.getString(1)+": "+rs.getInt(2) + ", ");
 					ammount--;
 				}
