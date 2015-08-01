@@ -24,7 +24,7 @@ public class GenerateCommandsPage extends Command {
 
 	@Override
 	public CLevel getCommandLevel() {
-		return CLevel.Owner;
+		return CLevel.Mod;
 	}
 
 	@Override

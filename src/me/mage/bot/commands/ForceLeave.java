@@ -29,7 +29,7 @@ public class ForceLeave extends Command {
 
 	@Override
 	public String getCommandText() {
-		return "forcejoin";
+		return "forceleave";
 	}
 
 	@Override
