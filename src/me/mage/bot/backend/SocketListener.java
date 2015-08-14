@@ -19,4 +19,12 @@ public abstract class SocketListener implements Runnable{
 		}
 	}
 
+	public void stop() {
+		try {
+			connection.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class Backend implements Runnable{
 	
-	public static int pingPort = 6668;
+	public static int pingPort =6668;
 	public static int commandPort = 6669;
 	
 	private boolean running;
@@ -57,6 +57,7 @@ public class Backend implements Runnable{
 		}
 		while(running){
 			try {
+				System.out.println("Waiting for Connection");
 				conn = server.accept();
 			} catch (IOException e){
 				e.printStackTrace();
@@ -82,6 +83,9 @@ public class Backend implements Runnable{
 			s.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		for(SocketListener s: connections){
+			s.stop();
 		}
 	}
 }
