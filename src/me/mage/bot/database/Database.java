@@ -33,7 +33,7 @@ public class Database {
 
 	private static Connection conn;
 
-	private static final String URL = "jdbc:mysql://23.254.209.110:3306/weebo?";
+	private static final String URL = "jdbc:mysql://localhost:3306/weebo?";
 
 	public static final String DATABASE = "weebo";
 

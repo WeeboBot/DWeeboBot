@@ -27,7 +27,7 @@ import me.mage.bot.database.Database;
 
 public class CommandsPage {
 
-	private static String template = getTemplate();
+	private static String template = "/var/www/commands/commandsTemplate.html";
 	
 	private static final Logger logger = Logger.getLogger(CommandsPage.class+"");
 	
@@ -38,24 +38,10 @@ public class CommandsPage {
 	public static boolean createCommandsHTML(String channelNoHash) {
 		String tableBody = generateTableBodyHTML(channelNoHash);
 		if(tableBody != null) {
-			if(System.getProperty("os.name").toLowerCase().contains("win")) {
-				TFileWriter.overWriteFile(new File("%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
-			} else {
-				TFileWriter.overWriteFile(new File("%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
-			}
+			TFileWriter.overWriteFile(new File("/var/www/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * @return template based on OS
-	 */
-	private static String getTemplate() {
-		if(System.getProperty("os.name").toLowerCase().contains("win")) {
-			return TFileReader.readFileAsString(new File("commandsTemplate.html"));
-		}
-		return TFileReader.readFileAsString(new File("commandsTemplate.html"));
 	}
 
 	/**
