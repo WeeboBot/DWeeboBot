@@ -46,13 +46,13 @@ public class Backend implements Runnable{
 		running = true;
 		connections = new ArrayList<>();
 		ServerSocket server = null;
+		Socket conn = null;
 		try {
 			server = new ServerSocket(listeningPort);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		while(running){
-			Socket conn = null;
 			try {
 				conn = server.accept();
 			} catch (IOException e){
@@ -64,6 +64,7 @@ public class Backend implements Runnable{
 					break;
 			}
 			connections.get(connections.size()-1).run();
+			
 		}
 	}
 	
