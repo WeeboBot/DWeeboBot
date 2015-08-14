@@ -19,6 +19,7 @@ package me.mage.bot;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +35,7 @@ import me.mage.bot.util.TOptions;
 
 public class Main implements Runnable{
 	
+	private static ArrayList<Backend> listeners;
 	private static IRCBot bot;
 	private static String[] args;
 	private static final String botChannel = "#weebobot";
@@ -55,7 +57,8 @@ public class Main implements Runnable{
 	 */
 	public static void main(String[] args) {
 		Main.args=args;
-		new Thread(new Backend(6668)).start();
+		listeners.add(new Backend(6668));
+		new Thread(listeners.get(0)).start();
 		new Main();
 		try(Scanner scan=new Scanner(System.in)) {
 			while(true) {
@@ -179,6 +182,12 @@ public class Main implements Runnable{
 	 */
 	public static boolean isDefaultMod(String moderator, String channelNoHash) {
 		return moderator.equalsIgnoreCase(channelNoHash) && moderator.equalsIgnoreCase("donald10101") && moderator.equalsIgnoreCase("mysteriousmage") && moderator.equalsIgnoreCase(botChannel.substring(1));
+	}
+
+	public static void shutdownListeners() {
+		for(Backend b: listeners){
+			b.stop();
+		}
 	}
 
 
