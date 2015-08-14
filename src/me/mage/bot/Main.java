@@ -56,6 +56,7 @@ public class Main implements Runnable{
 	 *            [1] - Database Password
 	 */
 	public static void main(String[] args) {
+		listeners = new ArrayList<>();
 		Main.args=args;
 		listeners.add(new Backend(6668));
 		new Thread(listeners.get(0)).start();
