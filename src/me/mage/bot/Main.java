@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import org.jibble.pircbot.IrcException;
 
+import me.mage.bot.backend.Backend;
 import me.mage.bot.commands.CommandParser;
 import me.mage.bot.database.Database;
 import me.mage.bot.util.CommandsPage;
@@ -54,6 +55,7 @@ public class Main implements Runnable{
 	 */
 	public static void main(String[] args) {
 		Main.args=args;
+		new Thread(new Backend(6668)).start();
 		new Main();
 		try(Scanner scan=new Scanner(System.in)) {
 			while(true) {
