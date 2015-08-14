@@ -548,7 +548,7 @@ public class Database {
 		try {
 			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\',points=%d WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, nick));
 			if (rs.getInt(2) + ammount == getOption(channelNoHash, TOptions.regular)) {
-				Database.executeUpdate(String.format("INSERT INTO %s, %sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
+				Database.executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
