@@ -59,6 +59,7 @@ public class Main implements Runnable{
 		listeners = new ArrayList<>();
 		Main.args=args;
 		listeners.add(new Backend(6668));
+		listeners.add(new Backend(6669));
 		new Thread(listeners.get(0)).start();
 		new Main();
 		try(Scanner scan=new Scanner(System.in)) {

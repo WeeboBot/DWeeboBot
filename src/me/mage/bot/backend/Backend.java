@@ -25,20 +25,23 @@ import java.util.ArrayList;
 
 public class Backend implements Runnable{
 	
-	public static int commandPort = 6668;
+	public static int pingPort = 6668;
+	public static int commandPort = 6669;
 	
 	private boolean running;
 	private int listeningPort;
 	private int type;
-	private ArrayList<SocketCommandListener> connections;
+	private ArrayList<SocketListener> connections;
 	
 	public Backend(int port){
-		if(port == commandPort){
+		if(port == pingPort){
 			listeningPort = port;
 			running = false;
 			type=0;
-		}else{
-			
+		}else if(port == commandPort){
+			listeningPort = port;
+			running = false;
+			type=1;
 		}
 	}
 	
@@ -60,6 +63,10 @@ public class Backend implements Runnable{
 			}
 			switch(type){
 				case 0:
+					System.out.println("Ping Test");
+					connections.add(new SocketPingListener(conn));
+					break;
+ 				case 1:
 					connections.add(new SocketCommandListener(conn));
 					break;
 			}
