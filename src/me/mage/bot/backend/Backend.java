@@ -32,6 +32,7 @@ public class Backend implements Runnable{
 	private int listeningPort;
 	private int type;
 	private ArrayList<SocketListener> connections;
+	private ArrayList<Thread> threads;
 	
 	public Backend(int port){
 		if(port == pingPort){
@@ -43,11 +44,12 @@ public class Backend implements Runnable{
 			running = false;
 			type=1;
 		}
+		connections = new ArrayList<>();
+		threads = new ArrayList<>();
 	}
 	
 	public void run(){
 		running = true;
-		connections = new ArrayList<>();
 		ServerSocket server = null;
 		Socket conn = null;
 		try {
@@ -57,21 +59,20 @@ public class Backend implements Runnable{
 		}
 		while(running){
 			try {
-				System.out.println("Waiting for Connection");
 				conn = server.accept();
 			} catch (IOException e){
 				e.printStackTrace();
 			}
 			switch(type){
 				case 0:
-					System.out.println("Ping Test");
 					connections.add(new SocketPingListener(conn));
 					break;
  				case 1:
 					connections.add(new SocketCommandListener(conn));
 					break;
 			}
-			connections.get(connections.size()-1).run();
+			threads.add(new Thread(connections.get(connections.size()-1)));
+			threads.get(threads.size()-1).start();
 			
 		}
 	}
