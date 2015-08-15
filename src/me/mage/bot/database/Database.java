@@ -629,6 +629,11 @@ public class Database {
 		}
 		return output.toString();
 	}
+	
+	public static boolean topExemption(String channelNoHash, String username, boolean visible){
+		String points = getPoints(username, channelNoHash);
+		return executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%s, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, username, points, visible, username));
+	}
 
 	/**
 	 * @param sender - person to check if is regular
