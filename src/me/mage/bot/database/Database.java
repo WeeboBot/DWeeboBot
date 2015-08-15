@@ -617,7 +617,7 @@ public class Database {
 		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sPoints ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
 			while(rs.next()&&ammount>1){
-				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
+				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase(channelNoHash) && !rs.getBoolean(3)) {
 					output.append(rs.getString(1)+": "+rs.getInt(2) + ", ");
 					ammount--;
 				}
