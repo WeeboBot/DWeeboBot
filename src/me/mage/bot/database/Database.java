@@ -570,7 +570,11 @@ public class Database {
 		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
 			if (!rs.next()) {
-				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, rs.getBoolean(3)));
+				boolean visible = true;
+				if(nick.matches(String.format("(%s|%s)", channelNoHash, Main.getBotChannel().substring(1)))){
+					visible = false;
+				}
+				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, visible));
 				return;
 			}
 		} catch (SQLException e) {
