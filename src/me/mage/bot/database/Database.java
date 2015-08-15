@@ -571,7 +571,7 @@ public class Database {
 		try {
 			if (!rs.next()) {
 				boolean visible = true;
-				if(nick.matches(String.format("(%s|%s)", channelNoHash, Main.getBotChannel().substring(1)))){
+				if(nick.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
 					visible = false;
 				}
 				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, visible));
