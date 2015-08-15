@@ -22,11 +22,11 @@ public class TopExemption extends Command {
 				return "Incorrect parameters. Correct usage is !topexemption <add|remove> <username>";
 			}
 			if (parameters[0].toLowerCase().equals("add")) {
-				Database.topExemption(channel.substring(1), parameters[1], true);
+				Database.topExemption(channel.substring(1), parameters[1], false);
 				return String.format("%s was successfully added to the list of people exempt from the !top command!",
 						parameters[1]);
 			}
-			Database.topExemption(channel.substring(1), parameters[1], false);
+			Database.topExemption(channel.substring(1), parameters[1], true);
 			return String.format("%s was successfully removed from the list of people exempt from the !top command!",
 					parameters[1]);
 		} else {
