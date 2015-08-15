@@ -46,6 +46,7 @@ public class Shutdown extends Command {
 			}
 			Main.shutdownListeners();
 			TFileWriter.overWriteFile(new File("connectedChannels.txt"), channels);
+			while(Main.getBot().getOutgoingQueueSize() > 0);
 			System.exit(0);
 		}
 		return null;
