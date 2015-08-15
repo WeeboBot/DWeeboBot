@@ -566,11 +566,11 @@ public class Database {
 	 * @param channelNoHash - channel the user is in, without the leading #
 	 * @param ammount - the number of points to add
 	 */
-	public static void addPoints(String nick, String channelNoHash, int ammount, boolean visible) {
+	public static void addPoints(String nick, String channelNoHash, int ammount) {
 		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
 			if (!rs.next()) {
-				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, visible));
+				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, rs.getBoolean(3)));
 				return;
 			}
 		} catch (SQLException e) {
@@ -578,7 +578,7 @@ public class Database {
 			WLogger.logError(e);
 		}
 		try {
-			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%d, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, visible, nick));
+			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%d, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, rs.getBoolean(3), nick));
 			if (rs.getInt(2) + ammount == getOption(channelNoHash, TOptions.regular)) {
 				Database.executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
 			}
