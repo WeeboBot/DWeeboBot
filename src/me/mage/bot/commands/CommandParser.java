@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.mage.bot.database.Database;
+import me.mage.bot.util.WLogger;
 
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -52,6 +53,7 @@ public class CommandParser {
 				commands.put(c.getCommandText(), c);
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "An error occurred initializing a command", e);
+				WLogger.logError(e);
 			}
 		}
 	}

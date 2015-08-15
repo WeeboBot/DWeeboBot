@@ -49,6 +49,7 @@ public class PointsRunnable implements Runnable {
 				Thread.sleep(300000L);
 			} catch (InterruptedException e) {
 				logger.log(Level.SEVERE, "Error adding points to user", e);
+				WLogger.logError(e);
 			}
 		}
 	}

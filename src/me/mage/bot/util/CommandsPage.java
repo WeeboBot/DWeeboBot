@@ -57,6 +57,7 @@ public class CommandsPage {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An error occurred getting the table body for %channel%".replace("%channel%", channelNoHash), e);
+			WLogger.logError(e);
 			return null;
 		}
 		if(tableBody.toString() != null && tableBody.length() > 0) {

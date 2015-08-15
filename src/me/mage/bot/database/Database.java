@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import me.mage.bot.Main;
 import me.mage.bot.util.TOptions;
+import me.mage.bot.util.WLogger;
 
 public class Database {
 
@@ -53,6 +54,7 @@ public class Database {
 					Level.SEVERE,
 					"Unable to find Driver in classpath!"
 							,e);
+			WLogger.logError(e);
 		}
 		try {
 			conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
@@ -61,9 +63,9 @@ public class Database {
 					Level.SEVERE,
 					"Unable to connect to the database!!"
 							,e);
+			WLogger.logError(e);
 			return false;
 		}
-		System.out.println("Connected to the database properly!!!!!!!!!");
 		return true;
 	}
 
@@ -95,6 +97,7 @@ public class Database {
 				stmt1.executeUpdate(String.format("CREATE TABLE %s.%sMods(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sMods!",DATABASE), ex);
+				WLogger.logError(e);
 			}
 			try {
 				stmt2 = conn.createStatement();
@@ -102,6 +105,7 @@ public class Database {
 				stmt2.executeUpdate(String.format("CREATE TABLE %s.%sOptions(optionID varchar(50), value varchar(4000), PRIMARY KEY (optionID))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sOptions!", channelNoHash), ex );
+				WLogger.logError(e);
 			}
 			try {
 				stmt3 = conn.createStatement();
@@ -109,6 +113,7 @@ public class Database {
 				stmt3.executeUpdate(String.format("CREATE TABLE %s.%sSpam(word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sSpam!", channelNoHash), ex);
+				WLogger.logError(e);
 			}
 			try {
 				stmt4 = conn.createStatement();
@@ -116,6 +121,7 @@ public class Database {
 				stmt4.executeUpdate(String.format("CREATE TABLE %s.%sAutoReplies(keyWord varchar(255), reply varchar(4000), PRIMARY KEY (keyWord))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sAutoReplies!", channelNoHash), ex);
+				WLogger.logError(e);
 			}
 			try {
 				stmt5 = conn.createStatement();
@@ -123,6 +129,7 @@ public class Database {
 				stmt5.executeUpdate(String.format("CREATE TABLE %s.%sWhitelist(userID varchar(30), PRIMARY KEY (userID))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sWhitelist!", channelNoHash), ex);
+				WLogger.logError(e);
 			}
 			try{
                 stmt6=conn.createStatement();
@@ -130,6 +137,7 @@ public class Database {
                 stmt6.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Points!", ex);
+    			WLogger.logError(e);
             }
             try{
                 stmt7=conn.createStatement();
@@ -137,6 +145,7 @@ public class Database {
                 stmt7.executeUpdate(String.format("CREATE TABLE %s.%sRegulars(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Regulars!", ex);
+    			WLogger.logError(e);
             }
             try{
                 stmt8=conn.createStatement();
@@ -144,6 +153,7 @@ public class Database {
                 stmt8.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Commands!", ex);
+    			WLogger.logError(e);
             }
 			return true;
 		}
@@ -162,12 +172,14 @@ public class Database {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLCommand: %s", sqlCommand), e);
+			WLogger.logError(e);
 			return false;
 		}
 		try {
 			stmt.executeUpdate(sqlCommand);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to execute statment: %s", sqlCommand), e);
+			WLogger.logError(e);
 			return false;
 		}
 		return true;
@@ -186,11 +198,13 @@ public class Database {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLQuery: %s", sqlQuery), e);
+			WLogger.logError(e);
 		}
 		try {
 			rs = stmt.executeQuery(sqlQuery);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to execute query: %s", sqlQuery), e);
+			WLogger.logError(e);
 		}
 		return rs;
 	}
@@ -206,12 +220,14 @@ public class Database {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLCommand"), e);
+			WLogger.logError(e);
 			return false;
 		}
 		try {
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to execute statment"), e);
+			WLogger.logError(e);
 			return false;
 		}
 		return true;
@@ -228,11 +244,13 @@ public class Database {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLQuery"), e);
+			WLogger.logError(e);
 		}
 		try {
 			rs = stmt.executeQuery();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to execute query"), e);
+			WLogger.logError(e);
 		}
 		return rs;
 	}
@@ -252,13 +270,14 @@ public class Database {
 	 * @return oauth code for the specified user
 	 */
 	public static String getUserOAuth(String user) {
-		ResultSet rs=executeQuery(String.format("SELECT * FROM "+DATABASE+".userOAuth WHERE userID=\'%s\'", user));
+		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.userOAuth WHERE userID=\'%s\'", DATABASE, user));
 		try {
 			if(rs.next()) {
 				return rs.getString("oAuth");
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred getting %s\'s OAuth from the database", user), e);
+			WLogger.logError(e);
 		}
 		return null;
 	}
@@ -277,6 +296,7 @@ public class Database {
 			return -1;
 		} catch (SQLException | NumberFormatException e) {
 			logger.log(Level.SEVERE, String.format("Unable to get welcome message for %s", channelNoHash), e);
+			WLogger.logError(e);
 		}
 		return -1;
 	}
@@ -294,6 +314,7 @@ public class Database {
 			return null;
 		} catch (SQLException | NumberFormatException e) {
 			logger.log(Level.SEVERE, String.format("Unable to get welcome message for %s", channelNoHash), e);
+			WLogger.logError(e);
 		}
 		return null;
 	}
@@ -313,6 +334,7 @@ public class Database {
 			stmt.setString(3, option.getOptionID());
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An error occurred setting the welcome message", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -332,6 +354,7 @@ public class Database {
 			stmt.setString(3, option.getOptionID());
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -350,6 +373,7 @@ public class Database {
 			stmt.setString(2, value+"");
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to add option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -365,6 +389,7 @@ public class Database {
 			return rs.next();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", moderator, channelNoHash), e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -390,6 +415,7 @@ public class Database {
 			stmt.setString(2, reply);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		executeUpdate(stmt);
 	}
@@ -417,6 +443,7 @@ public class Database {
 			stmt.setString(3, reply);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		executeUpdate(stmt);
 	}
@@ -453,6 +480,7 @@ public class Database {
 			stmt.setString(1, keywords);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -477,6 +505,7 @@ public class Database {
 			stmt.setString(1, word);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -493,6 +522,7 @@ public class Database {
 			stmt.setString(1, word);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}
@@ -526,6 +556,7 @@ public class Database {
 			return rs.next();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if %user% is whitelisted!".replace("%user%", sender), e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -544,6 +575,7 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
+			WLogger.logError(e);
 		}
 		try {
 			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\',points=%d WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, nick));
@@ -552,6 +584,7 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
+			WLogger.logError(e);
 		}
 	}
 
@@ -568,6 +601,7 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An error occurred getting a user's points.", e);
+			WLogger.logError(e);
 		}
 		return null;
 	}
@@ -583,7 +617,7 @@ public class Database {
 		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sPoints ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
 			while(rs.next()&&ammount>1){
-				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase("weebotester") && !rs.getString(1).equalsIgnoreCase("botduck") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
+				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
 					output.append(rs.getString(1)+": "+rs.getInt(2) + ", ");
 					ammount--;
 				}
@@ -591,6 +625,7 @@ public class Database {
 			output.append(rs.getString(1)+": "+rs.getInt(2));
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Error occurred creating Top list!", e);
+			WLogger.logError(e);
 		}
 		return output.toString();
 	}
@@ -606,6 +641,7 @@ public class Database {
 			return rs.next();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "User is not a regular!", e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -635,6 +671,7 @@ public class Database {
 			stmt.setString(1, command);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
 	}

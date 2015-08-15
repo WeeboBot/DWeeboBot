@@ -54,6 +54,7 @@ public class Timeouts implements Runnable {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			logger.log(Level.SEVERE, "Unable to timeout user: " + user, e);
+			WLogger.logError(e);
 		}
 		if (type.previousOffender(user, channel)) {
 			if (type.getOffender(user, channel) == 1) {
@@ -91,12 +92,10 @@ public class Timeouts implements Runnable {
 			} else {
 				Main.getBot().sendMessage(channel,
 						"/timeout " + user + " 7200");
-				Main
-						.getBot()
-						.sendMessage(
-								channel,
-								type.getRandomMessage()
-										+ " Sixth warning, 2 hour timeout! You dun' goofed!");
+				Main.getBot().sendMessage(
+						channel,
+						type.getRandomMessage()
+								+ " Sixth warning, 2 hour timeout! You dun' goofed!");
 				type.removeOffender(user, channel);
 			}
 		} else {

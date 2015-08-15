@@ -2,11 +2,16 @@ package me.mage.bot.backend;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import me.mage.bot.Main;
 import me.mage.bot.commands.CommandParser;
+import me.mage.bot.util.WLogger;
 
 public class SocketCommandListener extends SocketListener implements Runnable{
+	
+	private static Logger logger = Logger.getLogger(SocketCommandListener.class + "");
 	
 	public SocketCommandListener(Socket conn) {
 		super(conn);
@@ -16,8 +21,9 @@ public class SocketCommandListener extends SocketListener implements Runnable{
 		String message = null;
 		try {
 			message = in.readLine();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "There was an issue reading the line from the client", e);
+			WLogger.logError(e);
 		}
 		String[] params = message.substring(message.indexOf(' ') + 1).split(" ");
 		String command;

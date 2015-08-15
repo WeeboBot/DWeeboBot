@@ -22,11 +22,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import me.mage.bot.util.WLogger;
 
 public class Backend implements Runnable{
 	
 	public static int pingPort =6668;
 	public static int commandPort = 6669;
+	
+	private static Logger logger = Logger.getLogger(Backend.class + "");
 	
 	private boolean running;
 	private int listeningPort;
@@ -53,14 +59,16 @@ public class Backend implements Runnable{
 		try {
 			server = new ServerSocket(listeningPort);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Unable to create server socket", e);
+			WLogger.logError(e);
 		}
 		while(running){
 			try {
 				System.out.println("Waiting for Connection");
 				conn = server.accept();
 			} catch (IOException e){
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "An error occurred accepting the connection", e);
+				WLogger.logError(e);
 			}
 			switch(type){
 				case 0:
@@ -82,7 +90,8 @@ public class Backend implements Runnable{
 			Socket s = new Socket("localhost", listeningPort);
 			s.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "There was an issue closing the socket", e);
+			WLogger.logError(e);
 		}
 		for(SocketListener s: connections){
 			s.stop();

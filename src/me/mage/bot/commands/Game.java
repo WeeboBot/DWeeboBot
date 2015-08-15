@@ -45,7 +45,7 @@ public class Game extends Command {
 			return "Successfully changed the stream game to \""
 							+ sb.toString() + "\"!";
 		} else {
-			return "I am not authorized to do that visit http://pcmrbot.no-ip.info/authorize to allow me to do this and so much more!";
+			return "I am not authorized to do that visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
 		}
 	}
 

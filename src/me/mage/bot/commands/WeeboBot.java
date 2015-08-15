@@ -19,20 +19,20 @@ package me.mage.bot.commands;
 
 import me.mage.bot.util.CLevel;
 
-public class PCMRBot extends Command {
+public class WeeboBot extends Command {
 	@Override
 	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+		return CLevel.Normal;
 	}
 	
 	@Override
 	public String getCommandText() {
-		return "pcmrbot";
+		return "weebobot";
 	}
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		return "I was made by J3wsOfHazard, Donald10101, and Angablade. Source at: http://github.com/jwolff52/PCMRBot";
+		return "I was made by donald10101, and MysteriousMage. Source at: http://github.com/WeeboBot/WeeboBot";
 	}
 
 }

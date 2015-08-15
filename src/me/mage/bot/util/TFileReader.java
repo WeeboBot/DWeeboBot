@@ -40,6 +40,7 @@ public class TFileReader {
 			logger.log(Level.SEVERE,
 					"Error reading the file at location: " + f.getName() + "\n"
 							+ e.toString(), e);
+			WLogger.logError(e);
 		}
 		ArrayList<String> buffer = new ArrayList<>();
 		try (Scanner scanner = new Scanner(fis)) {
@@ -62,6 +63,7 @@ public class TFileReader {
 			logger.log(Level.SEVERE,
 					"Error reading the file at location: " + f.getName() + "\n"
 							+ e.toString(), e);
+			WLogger.logError(e);
 		}
 		StringBuilder buffer = new StringBuilder();
 		try (Scanner scanner = new Scanner(fis)) {

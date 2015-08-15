@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.mage.bot.database.Database;
+import me.mage.bot.util.WLogger;
 
 public class CustomCommandParser {
 	private static final Logger logger = Logger.getLogger(CustomCommandParser.class+"");
@@ -63,6 +64,7 @@ public class CustomCommandParser {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue executing a custom command", e);
+			WLogger.logError(e);
 		}
 		return null;
 	}

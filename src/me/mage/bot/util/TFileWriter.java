@@ -43,6 +43,7 @@ public class TFileWriter {
       catch (IOException e)
       {
         logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString());
+		WLogger.logError(e);
       }
     } else {
       strings.addAll(0, TFileReader.readFile(f));
@@ -59,7 +60,8 @@ public class TFileWriter {
     }
     catch (IOException e)
     {
-      logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString());
+        logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString());
+		WLogger.logError(e);
     }
   }
   
@@ -76,7 +78,8 @@ public class TFileWriter {
       }
       catch (IOException e)
       {
-        logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString());
+          logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString());
+          WLogger.logError(e);
       }
     } else {
       strings = TFileReader.readFile(f);
@@ -97,6 +100,7 @@ public class TFileWriter {
     catch (IOException e)
     {
       logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString(), e);
+      WLogger.logError(e);
     }
   }
   
@@ -115,6 +119,7 @@ public class TFileWriter {
     catch (IOException e)
     {
       logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString(), e);
+      WLogger.logError(e);
     }
     try
     {
@@ -129,6 +134,7 @@ public class TFileWriter {
     catch (IOException e)
     {
       logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString(), e);
+      WLogger.logError(e);
     }
   }
   
@@ -147,6 +153,7 @@ public class TFileWriter {
     catch (IOException e)
     {
       logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString(), e);
+      WLogger.logError(e);
     }
     try
     {
@@ -158,6 +165,7 @@ public class TFileWriter {
     catch (IOException e)
     {
       logger.log(Level.SEVERE, "Error writing the file at location: " + f.getName() + "\n" + e.toString(), e);
+      WLogger.logError(e);
     }
   }
 }

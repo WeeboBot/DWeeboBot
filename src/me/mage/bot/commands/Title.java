@@ -41,7 +41,7 @@ public class Title extends Command {
 				sb.toString())) {
 			return "Successfully changed the stream title to \"%title%\"!".replace("%title%", sb.toString());
 		} else {
-			return "I am not authorized to do that, visit http://pcmrbot.no-ip.info/authorize to allow me to do this and so much more!";
+			return "I am not authorized to do that, visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
 		}
 	}
 

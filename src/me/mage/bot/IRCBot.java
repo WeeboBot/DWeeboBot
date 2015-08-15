@@ -40,6 +40,7 @@ import me.mage.bot.util.PointsRunnable;
 import me.mage.bot.util.TOptions;
 import me.mage.bot.util.TType;
 import me.mage.bot.util.Timeouts;
+import me.mage.bot.util.WLogger;
 
 /**
  *
@@ -98,6 +99,7 @@ public class IRCBot extends PircBot {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onOp() in " + channel,
 					e);
+			WLogger.logError(e);
 		}
 	}
 
@@ -118,6 +120,7 @@ public class IRCBot extends PircBot {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onDeop() in "
 							+ channel, e);
+			WLogger.logError(e);
 		}
 	}
 
@@ -153,6 +156,7 @@ public class IRCBot extends PircBot {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onJoin()", e);
+			WLogger.logError(e);
 		}
 	}
 
@@ -210,6 +214,7 @@ public class IRCBot extends PircBot {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onMessage() in "
 							+ channel, e);
+			WLogger.logError(e);
 		}
 	}
 
@@ -226,7 +231,8 @@ public class IRCBot extends PircBot {
 	 * If IRC sends something PIRCBot doesn't recognize this is called.
 	 */
 	public void onUnkown(String line){
-		System.out.println(line);
+		logger.info(line);
+		WLogger.log("Unknown IRC Line: " + line);
 	}
 
 	/**
@@ -268,12 +274,13 @@ public class IRCBot extends PircBot {
 				}
 			}
 		} catch (SQLException e) {
-
 			logger.log(Level.SEVERE,
 					"An error occured while trying to access the database.", e);
+			WLogger.logError(e);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onMessage()", e);
+			WLogger.logError(e);
 		}
 
 	}
@@ -333,6 +340,7 @@ public class IRCBot extends PircBot {
 			} catch (SQLException e) {
 				logger.log(Level.SEVERE, "An error occurred checking if "
 						+ sender + "'s message has bad words", e);
+				WLogger.logError(e);
 			}
 		}
 

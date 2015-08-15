@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
 
 import me.mage.bot.database.Database;
+import me.mage.bot.util.WLogger;
 
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
@@ -77,6 +78,7 @@ public class TwitchUtilities {
 					Level.SEVERE,
 					"An error occurred updating the title for " + channelNoHash,
 					e);
+			WLogger.logError(e);
 			return false;
 		}
 	}
@@ -107,6 +109,7 @@ public class TwitchUtilities {
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "An error occurred updating the game for "
 					+ channelNoHash, e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -133,6 +136,7 @@ public class TwitchUtilities {
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
 					+ " is following " + channel.substring(1), e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -183,6 +187,7 @@ public class TwitchUtilities {
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
 					+ " is following " + channel.substring(1), e);
+			WLogger.logError(e);
 		}
 		return false;
 	}
@@ -204,6 +209,7 @@ public class TwitchUtilities {
 			logger.log(Level.SEVERE,
 					"An error occurred trying to start a commercial for "
 							+ channelNoHash, e);
+			WLogger.logError(e);
 		}
 
 		HttpsURLConnection con = null;
@@ -214,6 +220,7 @@ public class TwitchUtilities {
 			logger.log(Level.SEVERE,
 					"An error occurred trying to start a commercial for "
 							+ channelNoHash, e);
+			WLogger.logError(e);
 		}
 		con.setRequestProperty("User-agent", USER_AGENT);
 		return false;
@@ -239,6 +246,7 @@ public class TwitchUtilities {
 			logger.log(Level.SEVERE,
 					"An error occurred trying to start a commercial for "
 							+ channelNoHash, e);
+			WLogger.logError(e);
 		}
 
 		HttpsURLConnection con = null;
@@ -249,6 +257,7 @@ public class TwitchUtilities {
 			logger.log(Level.SEVERE,
 					"An error occurred trying to start a commercial for "
 							+ channelNoHash, e);
+			WLogger.logError(e);
 		}
 		con.setRequestProperty("User-agent", USER_AGENT);
 		return false;
@@ -271,6 +280,7 @@ public class TwitchUtilities {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the follower count for "
 							+ channel.substring(1), e);
+			WLogger.logError(e);
 		}
 		return 0;
 	}
@@ -292,8 +302,9 @@ public class TwitchUtilities {
 					.getAsJsonPrimitive("_total").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE,
-					"An error occurred getting the follower count for "
+					"An error occurred getting the subscriber count for "
 							+ channel.substring(1), e);
+			WLogger.logError(e);
 		}
 		return 0;
 	}
@@ -316,6 +327,7 @@ public class TwitchUtilities {
 		} catch (JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred checking if the streamer is live!", e);
+			WLogger.logError(e);
 		}
 		return false;
 	}

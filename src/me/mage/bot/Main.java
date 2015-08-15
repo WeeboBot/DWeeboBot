@@ -32,6 +32,7 @@ import me.mage.bot.database.Database;
 import me.mage.bot.util.CommandsPage;
 import me.mage.bot.util.TFileReader;
 import me.mage.bot.util.TOptions;
+import me.mage.bot.util.WLogger;
 
 public class Main implements Runnable{
 	
@@ -94,6 +95,7 @@ public class Main implements Runnable{
 					"irc.twitch.tv", 6667, args[0]);
 		} catch (IOException | IrcException e) {
 			logger.log(Level.SEVERE, "An error occurred while connecting to Twitch IRC", e);
+			WLogger.logError(e);
 		}
 		bot.sendRawLine("CAP REQ :twitch.tv/membership");
 		bot.setMessageDelay(1700);
