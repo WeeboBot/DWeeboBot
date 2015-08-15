@@ -27,12 +27,8 @@ public class SocketPingListener extends SocketListener implements Runnable {
 	public void run() {
 		String message = null;
 		try {
-			System.out.println("Listening");
 			do {
-				System.out.println("Wating for message");
 				message = in.readLine();
-				System.out.println("Heard");
-				System.out.println(message);
 				Thread.sleep(500);
 			} while (!message.equalsIgnoreCase("SET ping"));
 			out.println("pong");

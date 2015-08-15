@@ -224,7 +224,7 @@ public class IRCBot extends PircBot {
 	public void onFirstJoin(String channel) {
 		sendMessage(
 				channel,
-				"Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary manners to attend to. First off make sure to mod me so I don't get timed out, then type !setup");
+				"Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. First off make sure to mod me so I don't get timed out, then type !setup");
 	}
 	
 	/**
