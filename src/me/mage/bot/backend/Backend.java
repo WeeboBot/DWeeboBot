@@ -87,6 +87,13 @@ public class Backend implements Runnable{
 	
 	public void stop(){
 		running = false;
+		try {
+			Socket s = new Socket("localhost", listeningPort);
+			s.close();
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "There was an issue closing the socket", e);
+			WLogger.logError(e);
+		}
 		for(SocketListener s: connections){
 			s.stop();
 		}

@@ -43,10 +43,9 @@ public class Shutdown extends Command {
 			for (String s : Main.getBot().getChannels()) {
 				channels.add(s);
 				Main.getBot().sendMessage(s, "I am shutting down, I will automatically rejoin your channel when I restart!");
+				Main.shutdownListeners();
 			}
-			Main.shutdownListeners();
 			TFileWriter.overWriteFile(new File("connectedChannels.txt"), channels);
-			while(Main.getBot().getOutgoingQueueSize() > 0);
 			System.exit(0);
 		}
 		return null;
