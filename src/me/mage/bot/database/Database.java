@@ -134,7 +134,7 @@ public class Database {
 			try{
                 stmt6=conn.createStatement();
                 stmt6.closeOnCompletion();
-                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Points!", ex);
     			WLogger.logError(e);
@@ -570,7 +570,11 @@ public class Database {
 		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
 			if (!rs.next()) {
-				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1)", DATABASE, channelNoHash, nick));
+				boolean visible = true;
+				if(nick.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
+					visible = false;
+				}
+				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, visible));
 				return;
 			}
 		} catch (SQLException e) {
@@ -578,7 +582,7 @@ public class Database {
 			WLogger.logError(e);
 		}
 		try {
-			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\',points=%d WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, nick));
+			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%d, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, rs.getBoolean(3), nick));
 			if (rs.getInt(2) + ammount == getOption(channelNoHash, TOptions.regular)) {
 				Database.executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
 			}
@@ -617,7 +621,7 @@ public class Database {
 		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sPoints ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
 			while(rs.next()&&ammount>1){
-				if(!rs.getString(1).equalsIgnoreCase("weebo") && !rs.getString(1).equalsIgnoreCase(channelNoHash)) {
+				if(rs.getBoolean(3)) {
 					output.append(rs.getString(1)+": "+rs.getInt(2) + ", ");
 					ammount--;
 				}
@@ -628,6 +632,11 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return output.toString();
+	}
+	
+	public static boolean topExemption(String channelNoHash, String username, boolean visible){
+		String points = getPoints(username, channelNoHash);
+		return executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%s, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, username, points, visible, username));
 	}
 
 	/**

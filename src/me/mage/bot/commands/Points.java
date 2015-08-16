@@ -29,10 +29,10 @@ public class Points extends Command {
 			return null;
 		}
 		if (parameters.length < 3) {
-			return "Hey, thats not right, use !points <add|remove>|<user>|<ammount>";
+			return "Hey, thats not right, use !points <add|remove> <user> <ammount>";
 		}
 		if (!parameters[0].matches("(add|remove)")) {
-			return "Hey, thats not right, use !points <add|remove>|<user>|<ammount>";
+			return "Hey, thats not right, use !points <add|remove> <user> <ammount>";
 		}
 		if (Database.getPoints(parameters[1], channel.substring(1)) == null) {
 			return "%user% has never been in the channel before!".replace("%user%", parameters[1]);
@@ -49,7 +49,7 @@ public class Points extends Command {
 				return "That number is OVER 9000!!! Kappa";
 			}
 		} catch (NumberFormatException e1) {
-			return "Hey, thats not right, use !points <add|remove>|<user>|<ammount>";
+			return "Hey, thats not right, use !points <add|remove> <user> <ammount>";
 		}
 		if (parameters[0].equalsIgnoreCase("add")) {
 			Database.addPoints(parameters[1], channel.substring(1), amt);
