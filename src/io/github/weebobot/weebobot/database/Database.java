@@ -83,7 +83,6 @@ public class Database {
 		Statement stmt4;
 		Statement stmt5;
 		Statement stmt6;
-		Statement stmt7;
 		try {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
@@ -93,55 +92,47 @@ public class Database {
 			try {
 				stmt1 = conn.createStatement();
 				stmt1.closeOnCompletion();
-				stmt1.executeUpdate(String.format("CREATE TABLE %s.%sMods(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
-			} catch (SQLException ex) {
-				logger.log(Level.SEVERE, String.format("Unable to create table %sMods!",DATABASE), ex);
-				WLogger.logError(e);
-			}
-			try {
-				stmt2 = conn.createStatement();
-				stmt2.closeOnCompletion();
-				stmt2.executeUpdate(String.format("CREATE TABLE %s.%sOptions(optionID varchar(50), value varchar(4000), PRIMARY KEY (optionID))", DATABASE, channelNoHash));
+				stmt1.executeUpdate(String.format("CREATE TABLE %s.%sOptions(optionID varchar(50), value varchar(4000), PRIMARY KEY (optionID))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sOptions!", channelNoHash), ex );
 				WLogger.logError(e);
 			}
 			try {
-				stmt3 = conn.createStatement();
-				stmt3.closeOnCompletion();
-				stmt3.executeUpdate(String.format("CREATE TABLE %s.%sSpam(emote BOOLEAN, word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
+				stmt2 = conn.createStatement();
+				stmt2.closeOnCompletion();
+				stmt2.executeUpdate(String.format("CREATE TABLE %s.%sSpam(emote BOOLEAN, word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sSpam!", channelNoHash), ex);
 				WLogger.logError(e);
 			}
 			try {
-				stmt4 = conn.createStatement();
-				stmt4.closeOnCompletion();
-				stmt4.executeUpdate(String.format("CREATE TABLE %s.%sAutoReplies(keyWord varchar(255), reply varchar(4000), PRIMARY KEY (keyWord))", DATABASE, channelNoHash));
+				stmt3 = conn.createStatement();
+				stmt3.closeOnCompletion();
+				stmt3.executeUpdate(String.format("CREATE TABLE %s.%sAutoReplies(keyWord varchar(255), reply varchar(4000), PRIMARY KEY (keyWord))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sAutoReplies!", channelNoHash), ex);
 				WLogger.logError(e);
 			}
 			try{
-                stmt5=conn.createStatement();
-                stmt5.closeOnCompletion();
-                stmt5.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt4=conn.createStatement();
+                stmt4.closeOnCompletion();
+                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Points!", ex);
     			WLogger.logError(e);
             }
             try{
-                stmt6=conn.createStatement();
-                stmt6.closeOnCompletion();
-                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sRegulars(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt5=conn.createStatement();
+                stmt5.closeOnCompletion();
+                stmt5.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25) PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Unable to create table Regulars!", ex);
+                logger.log(Level.SEVERE, "Unable to create table Users!", ex);
     			WLogger.logError(e);
             }
             try{
-                stmt7=conn.createStatement();
-                stmt7.closeOnCompletion();
-                stmt7.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
+                stmt6=conn.createStatement();
+                stmt6.closeOnCompletion();
+                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Commands!", ex);
     			WLogger.logError(e);
@@ -481,7 +472,7 @@ public class Database {
 	 * @return result set of custom commands
 	 */
 	public static ResultSet getCustomCommands(String channelNoHash) {
-		return executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE command LIKE '!%%'", DATABASE, channelNoHash));
+		return executeQuery(String.format("SELECT * FROM %s.%sCommands", DATABASE, channelNoHash));
 	}
 
 	/**
