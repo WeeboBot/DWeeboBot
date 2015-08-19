@@ -35,7 +35,7 @@ public class GenerateCommandsPage extends Command {
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
 		if(CommandsPage.createCommandsHTML(channel.substring(1))) {
-			return "Created commands page for your custom commands! http://pcmrbot.no-ip.info/commands/%channel%.html".replace("%channel%", channel.substring(1));
+			return "Created commands page for your custom commands! http://weebobot.no-ip.info/dashboard/commands/%channel%.html".replace("%channel%", channel.substring(1));
 		}
 		return "It appears you don't have any custom commands! Use !addcom <commandName> \"<reply>\" [parameter1] [parameter2]... to create one";
 	}
