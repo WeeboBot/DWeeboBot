@@ -20,7 +20,7 @@ public class DelayedWelcomeTask extends TimerTask {
 		this.channel = channel;
 		this.user = user;
 		
-		timer.schedule(this, 1800000);
+		timer.schedule(this, 7200000);
 	}
 	
 	/**
