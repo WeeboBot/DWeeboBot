@@ -1,18 +1,12 @@
-
 package io.github.weebobot.weebobot.util;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.github.weebobot.weebobot.Main;
->>>>>>> 2d579d9c67b608f36b2f6af24abfec575e655df3:src/io/github/weebobot/weebobot/util/DelayedWelcomeTask.java
-
-package me.mage.bot.util;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import me.mage.bot.Main;
 
 public class DelayedWelcomeTask extends TimerTask {
 
