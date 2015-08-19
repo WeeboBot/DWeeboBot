@@ -250,8 +250,8 @@ public class Database {
 	 * @param option - Timeout Option
 	 * @return value if the option
 	 */
-	public static int getOption(String channelNoHash, TOptions option) {
-		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sOptions WHERE optionID=\'%s\'", DATABASE, channelNoHash, option.getOptionID()));
+	public static int getOption(String channelNoHash, String option) {
+		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sOptions WHERE optionID=\'%s\'", DATABASE, channelNoHash, option));
 		try {
 			if(rs.next()) {
 				return Integer.valueOf(rs.getString(2));
@@ -470,7 +470,7 @@ public class Database {
 		}
 		try {
 			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%d, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, rs.getBoolean(3), nick));
-			if (rs.getInt(2) + ammount == getOption(channelNoHash, TOptions.regular)) {
+			if (rs.getInt(2) + ammount == getOption(channelNoHash, TOptions.regular.getOptionID())) {
 				Database.executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
 			}
 		} catch (SQLException e) {
