@@ -5,9 +5,6 @@ import java.util.TimerTask;
 
 import io.github.weebobot.weebobot.Main;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class DelayedWelcomeTask extends TimerTask {
 
 	private static final Timer timer = new Timer();
