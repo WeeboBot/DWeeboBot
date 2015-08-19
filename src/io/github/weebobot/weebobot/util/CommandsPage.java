@@ -27,7 +27,7 @@ import io.github.weebobot.weebobot.database.Database;
 
 public class CommandsPage {
 
-	private static String template = "/var/www/dashboard/commands/commandsTemplate.html";
+	private static String template = "/var/www/commands/commandsTemplate.html";
 	
 	private static final Logger logger = Logger.getLogger(CommandsPage.class+"");
 	
@@ -38,7 +38,7 @@ public class CommandsPage {
 	public static boolean createCommandsHTML(String channelNoHash) {
 		String tableBody = generateTableBodyHTML(channelNoHash);
 		if(tableBody != null) {
-			TFileWriter.overWriteFile(new File("/var/www/dashboard/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
+			TFileWriter.overWriteFile(new File("/var/www/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
 			return true;
 		}
 		return false;
