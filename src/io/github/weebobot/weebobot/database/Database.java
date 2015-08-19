@@ -575,4 +575,16 @@ public class Database {
 	public static ResultSet getMods(String channelNoHash) {
 		return executeQuery(String.format("SELECT * FROM %s.%sMods", DATABASE, channelNoHash));
 	}
+	
+	public static boolean[] getImmunities(String channelNoHash, String level){
+		String immunity = getOption(channelNoHash, level+"Immunities");
+		boolean[] immunities = new boolean[6];
+		immunities[0] = immunity.charAt(0) == '1';
+		immunities[1] = immunity.charAt(1) == '1';
+		immunities[2] = immunity.charAt(2) == '1';
+		immunities[3] = immunity.charAt(3) == '1';
+		immunities[4] = immunity.charAt(4) == '1';
+		immunities[5] = immunity.charAt(5) == '1';
+		return immunities;
+	}
 }
