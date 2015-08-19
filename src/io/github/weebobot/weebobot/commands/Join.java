@@ -37,7 +37,7 @@ public class Join extends Command {
 			Main.joinChannel("#" + sender, false);
 			return "I have joined %user%'s channel.".replace("%user%", sender);
 		}
-		return "Sorry %user%, but I can't join your channel from here! Visit http://twitch.tv/pcmrbot and try again!".replace("%user%", sender);
+		return "Sorry %user%, but I can't join your channel from here! Visit http://twitch.tv/weebobot and try again!".replace("%user%", sender);
 		
 	}
 }
