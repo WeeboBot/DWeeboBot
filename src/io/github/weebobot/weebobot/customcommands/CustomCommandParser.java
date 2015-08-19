@@ -44,7 +44,7 @@ public class CustomCommandParser {
 					String reply = rs.getString(3);
 					ArrayList<String> passed = new ArrayList<>();
 					String[] params = rs.getString(2).split(" ");
-					if(params == null || params.length == 0){
+					if(params[0].equalsIgnoreCase("")){
 						return reply;
 					}
 					int i=0;

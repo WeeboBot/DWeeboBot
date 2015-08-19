@@ -174,7 +174,7 @@ public class IRCBot extends PircBot {
 	}
 
 	/**
-	 * Handles spam checking, last seen, commands, auto replies, and custom
+	 * Handles spam checking, last seen, commands, and custom
 	 * commands
 	 */
 	@Override
@@ -208,7 +208,6 @@ public class IRCBot extends PircBot {
 					sendMessage(channel, reply);
 				}
 			}
-			autoReplyCheck(channel, message, sender);
 			chatPostSeen.put(sender,
 					channel.substring(1) + "|" + new Date().toString());
 		} catch (Exception e) {
@@ -248,42 +247,6 @@ public class IRCBot extends PircBot {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * @param channel
-	 *            - the channel the message came from
-	 * @param message
-	 *            - the message that might contain keywords
-	 */
-	public void autoReplyCheck(String channel, String message, String sender) {
-
-		message = message.toLowerCase();
-		ResultSet rs = Database.getAutoReplies(channel.substring(1));
-		try {
-			while (rs.next()) {
-				String[] keyword = rs.getString(1).split(",");
-				boolean matches = true;
-				for (int i = 0; i < keyword.length; i++) {
-					if (!message.contains(keyword[i].toLowerCase())) {
-						matches = false;
-						break;
-					}
-				}
-				if (matches) {
-					sendMessage(channel, rs.getString("reply"));
-				}
-			}
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE,
-					"An error occured while trying to access the database.", e);
-			WLogger.logError(e);
-		} catch (Exception e) {
-			logger.log(Level.SEVERE,
-					"An error occurred while executing onMessage()", e);
-			WLogger.logError(e);
-		}
-
 	}
 
 	/**
