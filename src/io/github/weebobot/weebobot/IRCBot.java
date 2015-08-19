@@ -264,11 +264,11 @@ public class IRCBot extends PircBot {
 	 *            000000  -  Normal
 	 */
 	public void checkSpam(String channel, String message, String sender) {
-		int caps = Database.getOption(channel.substring(1), TOptions.numCaps.getOptionID());
-		int symbols = Database.getOption(channel.substring(1), TOptions.numSymbols.getOptionID());
-		int link = Database.getOption(channel.substring(1), TOptions.link.getOptionID());
-		int paragraph = Database.getOption(channel.substring(1), TOptions.paragraphLength.getOptionID());
-		int emotes = Database.getOption(channel.substring(1), TOptions.numEmotes.getOptionID());
+		int caps = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numCaps.getOptionID()));
+		int symbols = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numSymbols.getOptionID()));
+		int link = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.link.getOptionID()));
+		int paragraph = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.paragraphLength.getOptionID()));
+		int emotes = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numEmotes.getOptionID()));
 		if (!Database.isMod(sender, channel.substring(1))
 				&& !Database.isRegular(sender, channel.substring(1))
 				&& !TwitchUtilities.isSubscriber(sender, channel)) {
