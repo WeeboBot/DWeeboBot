@@ -84,7 +84,6 @@ public class Database {
 		Statement stmt5;
 		Statement stmt6;
 		Statement stmt7;
-		Statement stmt8;
 		try {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
@@ -110,7 +109,7 @@ public class Database {
 			try {
 				stmt3 = conn.createStatement();
 				stmt3.closeOnCompletion();
-				stmt3.executeUpdate(String.format("CREATE TABLE %s.%sSpam(word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
+				stmt3.executeUpdate(String.format("CREATE TABLE %s.%sSpam(emote BOOLEAN, word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sSpam!", channelNoHash), ex);
 				WLogger.logError(e);
@@ -123,34 +122,26 @@ public class Database {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sAutoReplies!", channelNoHash), ex);
 				WLogger.logError(e);
 			}
-			try {
-				stmt5 = conn.createStatement();
-				stmt5.closeOnCompletion();
-				stmt5.executeUpdate(String.format("CREATE TABLE %s.%sWhitelist(userID varchar(30), PRIMARY KEY (userID))", DATABASE, channelNoHash));
-			} catch (SQLException ex) {
-				logger.log(Level.SEVERE, String.format("Unable to create table %sWhitelist!", channelNoHash), ex);
-				WLogger.logError(e);
-			}
 			try{
-                stmt6=conn.createStatement();
-                stmt6.closeOnCompletion();
-                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt5=conn.createStatement();
+                stmt5.closeOnCompletion();
+                stmt5.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Points!", ex);
     			WLogger.logError(e);
             }
             try{
-                stmt7=conn.createStatement();
-                stmt7.closeOnCompletion();
-                stmt7.executeUpdate(String.format("CREATE TABLE %s.%sRegulars(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt6=conn.createStatement();
+                stmt6.closeOnCompletion();
+                stmt6.executeUpdate(String.format("CREATE TABLE %s.%sRegulars(userID varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Regulars!", ex);
     			WLogger.logError(e);
             }
             try{
-                stmt8=conn.createStatement();
-                stmt8.closeOnCompletion();
-                stmt8.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
+                stmt7=conn.createStatement();
+                stmt7.closeOnCompletion();
+                stmt7.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Commands!", ex);
     			WLogger.logError(e);
@@ -498,11 +489,12 @@ public class Database {
 	 * @param word - word to add to the table
 	 * @return true if the word is added
 	 */
-	public static boolean addSpam(String channelNoHash, String word) {
+	public static boolean addSpam(String channelNoHash, boolean emote, String word) {
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sSpam VALUES(?)", DATABASE, channelNoHash));
-			stmt.setString(1, word);
+			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sSpam VALUES(?,?)", DATABASE, channelNoHash));
+			stmt.setBoolean(1, emote);
+			stmt.setString(2, word);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
 			WLogger.logError(e);
@@ -525,40 +517,6 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
-	}
-
-	/**
-	 * @param channelNoHash - channel to add the whitelist to, whithout the leading #
-	 * @param target - person to add to the whitelist
-	 * @return true if they are added successfully
-	 */
-	public static boolean addToWhiteList(String channelNoHash, String target) {
-		return executeUpdate(String.format("INSERT INTO %s.%sWhitelist VALUES(\'%s\')", DATABASE, channelNoHash, target));
-	}
-
-	/**
-	 * @param channelNoHash - channel to delete the whitelist for, without the leading #
-	 * @param target - person to remove
-	 * @return true if successfully removed
-	 */
-	public static boolean delWhitelist(String channelNoHash, String target) {
-		return executeUpdate(String.format("DELETE FROM %s.%sWhitelist WHERE userID=\'%s\'", DATABASE, channelNoHash, target));
-	}
-
-	/**
-	 * @param sender - person to check
-	 * @param channelNoHash - channel to check for, without the leading #
-	 * @return true if the user is in the whitelist
-	 */
-	public static boolean isWhitelisted(String sender, String channelNoHash) {
-		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sWhitelist WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
-		try {
-			return rs.next();
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE, "An error occurred checking if %user% is whitelisted!".replace("%user%", sender), e);
-			WLogger.logError(e);
-		}
-		return false;
 	}
 
 	/**

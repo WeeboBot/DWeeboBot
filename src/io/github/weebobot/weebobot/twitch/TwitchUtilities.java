@@ -17,6 +17,7 @@
 
 package io.github.weebobot.weebobot.twitch;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -184,7 +185,9 @@ public class TwitchUtilities {
 				}
 				return false;
 			}
-		} catch (JsonIOException | JsonSyntaxException | IOException e) {
+		} catch (FileNotFoundException e) {
+			WLogger.log(channel + "Does not have any subscribers or is not partnered.");
+		}catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
 					+ " is following " + channel.substring(1), e);
 			WLogger.logError(e);
