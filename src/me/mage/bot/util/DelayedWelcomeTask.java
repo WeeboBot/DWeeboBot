@@ -1,3 +1,4 @@
+
 package me.mage.bot.util;
 
 import java.util.Timer;

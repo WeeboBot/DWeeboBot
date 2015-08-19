@@ -31,7 +31,7 @@ public class Regular extends Command{
 			}
 			return "There was an issue removing %user% from the regulars list!".replace("%user%", parameters[1]);
 		} else {
-			return "Hey, thats not right, use !reg <add|remove>|<user>";
+			return "Hey, thats not right, use !reg <add|remove> <user>";
 		}
 	}
 
