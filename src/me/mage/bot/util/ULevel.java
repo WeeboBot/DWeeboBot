@@ -18,8 +18,13 @@
 package me.mage.bot.util;
 
 public enum ULevel {
-	Normal,Follower,Subscriber;
-
+	Normal("Normal"),Follower("Follower"),Subscriber("Subscriber"),Regular("Regular"),Moderator("Moderator");
+	
+	private String name;
+	
+	ULevel(String n){
+		name=n;
+	}
 	/**
 	 * @param level - User Level as String
 	 * @return User Level Object
@@ -36,11 +41,21 @@ public enum ULevel {
 			return Normal;
 		case "follower":
 			return Follower;
+		case "regular":
+		case "reg":
+			return Regular;
 		case "subscriber":
 		case "sub":
 			return Subscriber;
+		case "moderator":
+		case "mod":
+			return Moderator;
 		default :
 			return null;
 		}
+	}
+	
+	public String getName(){
+		return name;
 	}
 }
