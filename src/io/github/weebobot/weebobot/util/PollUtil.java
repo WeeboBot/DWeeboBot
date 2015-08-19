@@ -74,7 +74,7 @@ public class PollUtil {
 				channel,
 				"You have %length% seconds to vote.".replace("%length%", length
 						+ ""));
-		new DelayedVoteTask(length * 1000, this);
+		new DelayedVoteTask(length * 1000 + ((answers.length + 3) * 2000), this);
 		return this;
 	}
 

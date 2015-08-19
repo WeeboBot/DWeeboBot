@@ -19,6 +19,7 @@ package io.github.weebobot.weebobot.commands;
 
 import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.util.CLevel;
+import io.github.weebobot.weebobot.util.PollUtil;
 
 public class Poll extends Command {
 	@Override
@@ -42,7 +43,7 @@ public class Poll extends Command {
 		for (int i = 2; i < parameters.length; i++) {
 			answers[i - 2] = parameters[i];
 		}
-		Main.getBot().addPoll(channel, new io.github.weebobot.weebobot.util.PollUtil(channel, parameters[1], answers, Integer.valueOf(parameters[0])).start());
+		Main.getBot().addPoll(channel, new PollUtil(channel, parameters[1], answers, Integer.valueOf(parameters[0])).start());
 		return null;
 	}
 
