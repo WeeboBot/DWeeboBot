@@ -27,7 +27,8 @@ import io.github.weebobot.weebobot.database.Database;
 
 public class CommandsPage {
 
-	private static String template = "/var/www/commands/commandsTemplate.html";
+	private static final String BASE_URL = "/var/www/dashboard/commands/"; 
+	private static final String TEMPLATE = BASE_URL+"commandsTemplate.html";
 	
 	private static final Logger logger = Logger.getLogger(CommandsPage.class+"");
 	
@@ -38,7 +39,7 @@ public class CommandsPage {
 	public static boolean createCommandsHTML(String channelNoHash) {
 		String tableBody = generateTableBodyHTML(channelNoHash);
 		if(tableBody != null) {
-			TFileWriter.overWriteFile(new File("/var/www/commands/%channel%.html".replace("%channel%", channelNoHash)), template.replace("$tablebody", tableBody));
+			TFileWriter.overWriteFile(new File(BASE_URL+"%channel%.html".replace("%channel%", channelNoHash)), TEMPLATE.replace("$tablebody", tableBody));
 			return true;
 		}
 		return false;
@@ -71,10 +72,7 @@ public class CommandsPage {
 	 * @return true if the channel has a commands page
 	 */
 	public static boolean pageExists(String channelNoHash) {
-		if(System.getProperty("os.name").toLowerCase().contains("win")) {
-			return new File("C:/Apache2/htdocs/commands/%channel%.html".replace("%channel%", channelNoHash)).exists();
-		}
-		return new File("/var/www/commands/commandsTemplate.html".replace("%channel%", channelNoHash)).exists();
+		return new File(BASE_URL+"%channel%.html".replace("%channel%", channelNoHash)).exists();
 	}
 
 	/**

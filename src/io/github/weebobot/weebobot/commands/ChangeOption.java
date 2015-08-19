@@ -38,26 +38,26 @@ public class ChangeOption extends Command {
 		
 		try {
 			if (parameters[0].equalsIgnoreCase("paragraph")) {
-				Database.setOption(channel.substring(1), TOptions.paragraphLength, Integer.valueOf(parameters[1]));
+				Database.setOption(channel.substring(1), TOptions.paragraphLength.getOptionID(), parameters[1]);
 				return "You have changed the paragraph length to %option%.".replace("%option%", parameters[1]);
 			} else if (parameters[0].equalsIgnoreCase("emotes")) {
-				Database.setOption(channel.substring(1), TOptions.numEmotes, Integer.valueOf(parameters[1]));
+				Database.setOption(channel.substring(1), TOptions.numEmotes.getOptionID(), parameters[1]);
 				return "You have changed the emote cap to %option%.".replace("%option%", parameters[1]);
 			} else if (parameters[0].equalsIgnoreCase("symbols")) {
-				Database.setOption(channel.substring(1), TOptions.numSymbols, Integer.valueOf(parameters[1]));
+				Database.setOption(channel.substring(1), TOptions.numSymbols.getOptionID(), parameters[1]);
 				return "You have changed the symbol cap to %option%.".replace("%option%", parameters[1]);
 			} else if (parameters[0].equalsIgnoreCase("caps")) {
-				Database.setOption(channel.substring(1), TOptions.numCaps, Integer.valueOf(parameters[1]));
+				Database.setOption(channel.substring(1), TOptions.numCaps.getOptionID(), parameters[1]);
 				return "You have changed the capitals cap to %option%.".replace("%option%", parameters[1]);
 			} else if (parameters[0].equalsIgnoreCase("regulars")) {
-				Database.setOption(channel.substring(1), TOptions.regular, Integer.valueOf(parameters[1]));
+				Database.setOption(channel.substring(1), TOptions.regular.getOptionID(), parameters[1]);
 				return "You have changed the time for regulars to %option%.".replace("%option%", parameters[1]);
 			} else if (parameters[0].equalsIgnoreCase("links")) {
 				if (parameters[1].toLowerCase().equalsIgnoreCase("enable")) {
-					Database.setOption(channel.substring(1), TOptions.link, 0);
+					Database.setOption(channel.substring(1), TOptions.link.getOptionID(), "0");
 					return "Enabled link protection!";
 				} else if (parameters[1].toLowerCase().equalsIgnoreCase("disable")) {
-					Database.setOption(channel.substring(1), TOptions.link, -1);
+					Database.setOption(channel.substring(1), TOptions.link.getOptionID(), "-1");
 					return "Disabled link protection!";
 				} else {
 					return "Valid values for links are: Enable and Disable";

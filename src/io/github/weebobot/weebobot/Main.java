@@ -32,6 +32,7 @@ import io.github.weebobot.weebobot.database.Database;
 import io.github.weebobot.weebobot.util.CommandsPage;
 import io.github.weebobot.weebobot.util.TFileReader;
 import io.github.weebobot.weebobot.util.TOptions;
+import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
 
 public class Main implements Runnable{
@@ -130,13 +131,18 @@ public class Main implements Runnable{
 			if(!Database.isMod(channel.substring(1), channel.substring(1))) {
 				Database.addMod(channel.substring(1), channel.substring(1));
 			}
-			Database.addOption(channel.substring(1), TOptions.welcomeMessage, "Welcome %user% to our channel, may you find it entertaining or flat out enjoyable.");
-			Database.addOption(channel.substring(1), TOptions.numCaps, "20");
-			Database.addOption(channel.substring(1), TOptions.numEmotes, "20");
-			Database.addOption(channel.substring(1), TOptions.numSymbols, "20");
-			Database.addOption(channel.substring(1), TOptions.link, "0");
-			Database.addOption(channel.substring(1), TOptions.regular, "288");
-			Database.addOption(channel.substring(1), TOptions.paragraphLength, "400");
+			Database.addOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), "Welcome %user% to our channel, may you find it entertaining or flat out enjoyable.");
+			Database.addOption(channel.substring(1), TOptions.numCaps.getOptionID(), "20");
+			Database.addOption(channel.substring(1), TOptions.numEmotes.getOptionID(), "20");
+			Database.addOption(channel.substring(1), TOptions.numSymbols.getOptionID(), "20");
+			Database.addOption(channel.substring(1), TOptions.link.getOptionID(), "0");
+			Database.addOption(channel.substring(1), TOptions.regular.getOptionID(), "288");
+			Database.addOption(channel.substring(1), TOptions.paragraphLength.getOptionID(), "400");
+			Database.addOption(channel.substring(1), ULevel.Moderator.getName() + "Immunities", "111111");
+			Database.addOption(channel.substring(1), ULevel.Subscriber.getName() + "Immunities", "001111");
+			Database.addOption(channel.substring(1), ULevel.Regular.getName() + "Immunities", "000011");
+			Database.addOption(channel.substring(1), ULevel.Follower.getName() + "Immunities", "000000");
+			Database.addOption(channel.substring(1), ULevel.Normal.getName() + "Immunities", "000000");
 		}
 		
 		bot.joinChannel(channel);

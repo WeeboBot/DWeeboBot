@@ -308,13 +308,13 @@ public class Database {
 	 * @param value - value to set for the option
 	 * @return true if the message is set successfully
 	 */
-	public static boolean setOption(String channelNoHash, TOptions option, int value) {
+	public static boolean setOption(String channelNoHash, String option, String value) {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(String.format("UPDATE %s.%sOptions SET optionID=?,value=? WHERE optionID=?", DATABASE, channelNoHash));
-			stmt.setString(1, option.getOptionID());
+			stmt.setString(1, option.toLowerCase());
 			stmt.setString(2, value+"");
-			stmt.setString(3, option.getOptionID());
+			stmt.setString(3, option.toLowerCase());
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
 			WLogger.logError(e);
@@ -328,11 +328,11 @@ public class Database {
 	 * @param value - value to set the option to
 	 * @return true if the option is added successfully
 	 */
-	public static boolean addOption(String channelNoHash, TOptions option, String value) {
+	public static boolean addOption(String channelNoHash, String option, String value) {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sOptions VALUES(? , ?)", DATABASE, channelNoHash));
-			stmt.setString(1, option.getOptionID());
+			stmt.setString(1, option.toLowerCase());
 			stmt.setString(2, value+"");
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to add option", e);
@@ -379,7 +379,7 @@ public class Database {
 			stmt.setString(2, parameters);
 			stmt.setString(3, reply);
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, "Unable to set option", e);
+			logger.log(Level.SEVERE, "Unable to add command", e);
 			WLogger.logError(e);
 		}
 		executeUpdate(stmt);
