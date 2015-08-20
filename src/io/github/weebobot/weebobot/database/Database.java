@@ -231,6 +231,16 @@ public class Database {
 	}
 	
 	/**
+	 * Clears the auto replies table for the channel provided.
+	 * 
+	 * @param channelNoHash - the channel to clear auto replies for
+	 */
+	public static void clearAutoRepliesTable(String channelNoHash) {
+		executeUpdate(String.format("DROP TABLE %s.%sAutoReplies", DATABASE, channelNoHash));
+		executeUpdate(String.format("CREATE TABLE %s.%sAutoReplies(keyWord varchar(255), reply varchar(255), PRIMARY KEY (keyWord))", DATABASE, channelNoHash));
+	}
+	
+	/**
 	 * @param user - user to get the oauth for
 	 * @return oauth code for the specified user
 	 */
@@ -370,6 +380,32 @@ public class Database {
 	}
 	
 	/**
+	 * @param channelNoHash - channel to add the auto reply to
+	 * @param keywords - keywords to trigger the auto reply
+	 * @param reply - auto reply to be sent on trigger
+	 */
+	public static void addAutoReply(String channelNoHash, String keywords, String reply) {
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sAutoReplies VALUES(? , ?)", DATABASE, channelNoHash));
+			stmt.setString(1, keywords);
+			stmt.setString(2, reply);
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
+		}
+		executeUpdate(stmt);
+	}
+
+	/**
+	 * @param channelNoHash - channel to get the auto replies for, without the leading #
+	 * @return a result set of the auto replies
+	 */
+	public static ResultSet getAutoReplies(String channelNoHash) {
+		return executeQuery(String.format("SELECT * FROM %s.%sAutoReplies", DATABASE, channelNoHash));
+	}
+	
+	/**
 	 * @param channelNoHash - channel to add the command for, without the leading #
 	 * @param command - command to be added
 	 * @param parameters - parameters that should be passed
@@ -408,6 +444,23 @@ public class Database {
 			return executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\',userLevel=\'%s\' WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator, uLevel, moderator));
 		}
 		return false;
+	}
+
+	/**
+	 * @param channelNoHash - channel to delete the auto reply from, without the leading #
+	 * @param keywords - keywords of the auto reply
+	 * @return true if the auto reply is removed
+	 */
+	public static boolean delAutoReply(String channelNoHash, String keywords) {
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sAutoReplies WHERE keyWord=?", DATABASE, channelNoHash));
+			stmt.setString(1, keywords);
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Unable to set option", e);
+			WLogger.logError(e);
+		}
+		return executeUpdate(stmt);
 	}
 
 	/**
