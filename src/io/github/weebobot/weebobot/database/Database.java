@@ -505,12 +505,14 @@ public class Database {
 	public static void addPoints(String nick, String channelNoHash, int ammount) {
 		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
-			String userLevel = rs.getString(2);
-			int points = rs.getInt(3);
-			boolean visible = rs.getBoolean(4);
-			boolean regular = rs.getBoolean(5);
-			Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
-			return;
+			if(rs.next()){
+				String userLevel = rs.getString(2);
+				int points = rs.getInt(3);
+				boolean visible = rs.getBoolean(4);
+				boolean regular = rs.getBoolean(5);
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
+				return;
+			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
 			WLogger.logError(e);
