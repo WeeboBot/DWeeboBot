@@ -510,7 +510,7 @@ public class Database {
 				int points = rs.getInt(3);
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
-				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
 				return;
 			}
 		} catch (SQLException e) {
@@ -655,7 +655,7 @@ public class Database {
 				int points = rs.getInt(3);
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
-				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%b", DATABASE, channelNoHash, sender, userLevel, points, visible, regular));
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b", DATABASE, channelNoHash, sender, userLevel, points, visible, regular));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);
