@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.github.weebobot.weebobot.Main;
+import io.github.weebobot.weebobot.twitch.TwitchUtilities;
 import io.github.weebobot.weebobot.util.TOptions;
 import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
@@ -86,7 +87,7 @@ public class Database {
 		try {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
-			stmt.executeQuery(String.format("SELECT * FROM %s.%sMods", DATABASE, channelNoHash));
+			stmt.executeQuery(String.format("SELECT * FROM %s.%sOptions", DATABASE, channelNoHash));
 			return false;
 		} catch (SQLException e) {
 			try {
@@ -403,7 +404,8 @@ public class Database {
 	 */
 	public static boolean delModerator(String moderator, String channelNoHash) {
 		if(!Main.isDefaultMod(moderator, channelNoHash)) {
-			return executeUpdate(String.format("DELETE FROM %s.%sMods WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
+			String uLevel=TwitchUtilities.getUserLevelNoMod(channelNoHash, moderator);
+			return executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\',userLevel=\'%s\' WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator, uLevel, moderator));
 		}
 		return false;
 	}
@@ -524,32 +526,15 @@ public class Database {
 	 * @return true if {@link sender} is a regular in {@link channelNoHash}
 	 */
 	public static boolean isRegular(String sender, String channelNoHash) {
-		ResultSet rs=Database.executeQuery(String.format("SELECT * FROM %s.%sRegulars WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
+		ResultSet currentPoints=Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
+		int requiredPoints=Integer.valueOf(Database.getOption(channelNoHash, TOptions.regular.getOptionID()));
 		try {
-			return rs.next();
+			return currentPoints.next() && currentPoints.getInt(2) > requiredPoints;
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "User is not a regular!", e);
 			WLogger.logError(e);
 		}
 		return false;
-	}
-
-	/**
-	 * @param channelNoHash - channel the person is in, without the leading #
-	 * @param regular - person to add to the list
-	 * @return true if adding is successful
-	 */
-	public static boolean addRegular(String channelNoHash, String regular) {
-		return executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, regular));
-	}
-
-	/**
-	 * @param channelNoHash - channel the person is in, without the leading #
-	 * @param regular - person to remove from the list
-	 * @return true if deletion is successful
-	 */
-	public static boolean delRegular(String channelNoHash, String regular) {
-		return executeUpdate(String.format("DELETE FROM %s.%sRegulars WHERE userID=\'%s\'", DATABASE, channelNoHash, regular));
 	}
 
 	public static boolean delCommand(String channelNoHash, String command) {
@@ -569,7 +554,7 @@ public class Database {
 	}
 	
 	public static boolean[] getImmunities(String channelNoHash, String level){
-		String immunity = getOption(channelNoHash, level+"Immunities");
+		String immunity = getOption(channelNoHash, level.toLowerCase()+"Immunities");
 		boolean[] immunities = new boolean[6];
 		immunities[0] = immunity.charAt(0) == '1';
 		immunities[1] = immunity.charAt(1) == '1';
@@ -591,6 +576,40 @@ public class Database {
 			logger.log(Level.SEVERE, String.format("Unable to get welcome message for %s", channelNoHash), e);
 			WLogger.logError(e);
 		}
-		return "normal";
+		return ULevel.Normal.getName();
+	}
+
+	public static String getEmoteList(String channelNoHash) {
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSpam WHERE emote=true", DATABASE, channelNoHash));
+		StringBuilder sb = new StringBuilder();
+		try {
+			while(rs.next()) {
+				sb.append(rs.getString(2));
+				sb.append("|");
+			}
+			return sb.toString();
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Unable to get the emote list for: " + channelNoHash, e);
+			WLogger.logError(e);
+		}
+		return null;
+	}
+
+	public static boolean addUser(String channelNoHash, String sender) {
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
+		try {
+			if(!rs.next()) {
+				boolean visible = true;
+				if(sender.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
+					visible = false;
+				}
+				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);
+			WLogger.logError(e);
+		}
+		return false;
 	}
 }

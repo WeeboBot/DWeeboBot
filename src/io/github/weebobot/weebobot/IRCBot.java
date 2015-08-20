@@ -134,12 +134,15 @@ public class IRCBot extends PircBot {
 	@Override
 	public void onJoin(String channel, String sender, String login,
 			String hostname) {
-		System.out.println("Channel: "+channel+" Sender: "+sender + " Host: "+hostname);
 		try {
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				sendMessage(
 						channel,
 						"I have joined the channel and will stay with you unless you tell me to !leave or my creators do not shut me down properly because they are cruel people with devious minds.");
+				for (User u : getUsers(channel)) {
+					new PointsRunnable(u.getNick(), channel.substring(1));
+					Database.addUser(channel.substring(1), sender);
+				}
 			}
 			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
 				String msg = Database.getWelcomeMessage(channel.substring(1))
@@ -151,9 +154,7 @@ public class IRCBot extends PircBot {
 				}
 			}
 			new PointsRunnable(sender, channel.substring(1));
-			for (User u : getUsers(channel)) {
-				new PointsRunnable(u.getNick(), channel.substring(1));
-			}
+			Database.addUser(channel.substring(1), sender);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onJoin()", e);
@@ -291,17 +292,17 @@ public class IRCBot extends PircBot {
 		if(!immunities[2] && caps != -1 && message.matches("[A-Z\\s]{" + caps + ",}")){
 			new Timeouts(channel, sender, 1, TType.CAPS);
 		}
-		if(!immunities[3] && emotes != -1
-				&& message.matches("(:\\(|:\\)|:/|:D|:o|:p|:z|;\\)|;p|<3|>\\(|B\\)|o_o|R\\)|4Head|ANELE|ArsonNoSexy|AsianGlow|AtGL|AthenaPMS|AtIvy|BabyRage|AtWW|BatChest|BCWarrior|BibleThump|BigBrother|BionicBunion|BlargNaut|BloodTrail|BORT|BrainSlug|BrokeBack|BuddhaBar|CougarHunt|DAESuppy|DansGame|DatSheffy|DBstyle|DendiFace|DogFace|EagleEye|EleGiggle|EvilFetus|FailFish|FPSMarksman|FrankerZ|FreakinStinkin|FUNgineer|FunRun|FuzzyOtterOO|GasJoker|GingerPower|GrammarKing|HassaanChop|HassanChop|HeyGuys|HotPokket|HumbleLife|ItsBoshyTime|Jebaited|KZowl|JKanStyle|JonCarnage|KAPOW|Kappa|Keepo|KevinTurtle|Kippa|Kreygasm|KZassault|KZcover|KZguerilla|KZhelghast|KZskull|Mau5|mcaT|MechaSupes|MrDestructoid|MrDestructoid|MVGame|NightBat|NinjaTroll|NoNoSpot|noScope|NotAtk|OMGScoots|OneHand|OpieOP|OptimizePrime|panicBasket|PanicVis|PazPazowitz|PeoplesChamp|PermaSmug|PicoMause|PipeHype|PJHarley|PJSalt|PMSTwin|PogChamp|Poooound|PRChase|PunchTrees|PuppeyFace|RaccAttack|RalpherZ|RedCoat|ResidentSleeper|RitzMitz|RuleFive|Shazam|shazamicon|ShazBotstix|ShazBotstix|ShibeZ|SMOrc|SMSkull|SoBayed|SoonerLater|SriHead|SSSsss|StoneLightning|StrawBeary|SuperVinlin|SwiftRage|TF2John|TheRinger|TheTarFu|TheThing|ThunBeast|TinyFace|TooSpicy|TriHard|TTours|UleetBackup|UncleNox|UnSane|Volcania|WholeWheat|WinWaker|WTRuck|WutFace|YouWHY|\\(mooning\\)|\\(poolparty\\)|\\(puke\\)|:\\'\\(|:tf:|aPliS|BaconEffect|BasedGod|BroBalt|bttvNice|ButterSauce|cabbag3|CandianRage|CHAccepted|CiGrip|ConcernDoge|D:|DatSauce|FapFapFap|FishMoley|ForeverAlone|FuckYea|GabeN|HailHelix|HerbPerve|Hhhehehe|HHydro|iAMbh|iamsocal|iDog|JessSaiyan|JuliAwesome|KaRappa|KKona|LLuda|M&Mjc|ManlyScreams|NaM|OhGod|OhGodchanZ|OhhhKee|OhMyGoodness|PancakeMix|PedoBear|PedoNam|PokerFace|PoleDoge|RageFace|RebeccaBlack|RollIt!|rStrike|SexPanda|She'llBeRight|ShoopDaWhoop|SourPls|SuchFraud|SwedSwag|TaxiBro|tEh|ToasTy|TopHam|TwaT|UrnCrown|VisLaud|WatChuSay|WhatAYolk|YetiZ|PraiseIt|\\s){"
-						+ emotes + ",}")){
-							new Timeouts(channel, sender, 1, TType.EMOTE);
+		if(!immunities[3] && emotes != -1) {
+			String emoteList=Database.getEmoteList(channel.substring(1));
+			if(emoteList != null && message.matches("(" + emoteList + "\\s){" + emotes + ",}")) {
+				new Timeouts(channel, sender, 1, TType.EMOTE);
+			}
 		}
 		if(!immunities[4] && link !=-1){
 			if (message.matches("([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})")
 					|| message.matches("(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?")
 					&& link != -1) {
 				if (!isPermitted(channel, sender)) {
-					System.out.println("is permit");
 					new Timeouts(channel, sender, 1, TType.LINK);
 				} else {
 					removePermit(channel, sender);
@@ -314,7 +315,7 @@ public class IRCBot extends PircBot {
 		}
 		if (!Database.isMod(sender, channel.substring(1))
 				&& !Database.isRegular(sender, channel.substring(1))
-				&& !TwitchUtilities.isSubscriber(sender, channel)) {
+				&& !TwitchUtilities.isSubscriber(sender, channel.substring(1))) {
 			
 		}
 	}
