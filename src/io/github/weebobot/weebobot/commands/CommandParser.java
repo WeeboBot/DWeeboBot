@@ -71,7 +71,6 @@ public class CommandParser {
 		if(c != null && hasAccess(c, sender, channel)) {
 			ArrayList<String> passed = new ArrayList<>();
 			int i=0;
-			// !addautoreply this "is a" test "lblblblfbldfnf" ------ "this","is a","test"  ------ 'this' '"is' 'a"' 'test'
 			while(i < parameters.length) {
 				if(parameters[i].startsWith("\"")) {
 					String temp=parameters[i].replace("\"", "") + " ";

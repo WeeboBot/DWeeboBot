@@ -67,7 +67,7 @@ public class RaffleUtil {
 			if (Main.getBot().getConfirmationReplies(channel)) {
 				Main.getBot().sendMessage(channel, "%sender% has joined the raffle.".replace("%sender%", sender));
 			}
-		} else if (type.equals(ULevel.Subscriber) && (TwitchUtilities.isSubscriber(channel.substring(1), sender) || sender.equalsIgnoreCase(channel.substring(1)))) {
+		} else if (type.equals(ULevel.Subscriber) && (TwitchUtilities.isSubscriber(sender, channel.substring(1)) || sender.equalsIgnoreCase(channel.substring(1)))) {
 			participants.add(sender);
 			if (Main.getBot().getConfirmationReplies(channel)) {
 				Main.getBot().sendMessage(channel, "%sender% has joined the raffle.".replace("%sender%", sender));

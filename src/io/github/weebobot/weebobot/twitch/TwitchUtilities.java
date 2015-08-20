@@ -37,6 +37,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 
 import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
 
 public class TwitchUtilities {
@@ -119,13 +120,13 @@ public class TwitchUtilities {
 	 * Checks if the sender is a follower of channel
 	 * 
 	 * @param sender
-	 * @param channel
+	 * @param channelNoHash
 	 * @return - true if sender is following channel
 	 */
-	public static boolean isFollower(String channel, String sender) {
+	public static boolean isFollower(String channelNoHash, String sender) {
 		try {
 			String nextUrl = "https://api.twitch.tv/kraken/users/" + sender
-					+ "/follows/channels/" + channel;
+					+ "/follows/channels/" + channelNoHash;
 			JsonObject following = new JsonParser().parse(
 					new JsonReader(new InputStreamReader(new URL(nextUrl)
 							.openStream()))).getAsJsonObject();
@@ -136,7 +137,7 @@ public class TwitchUtilities {
 			}
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channel.substring(1), e);
+					+ " is following " + channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -146,14 +147,14 @@ public class TwitchUtilities {
 	 * Checks if the sender is subscribed to channel
 	 * 
 	 * @param sender
-	 * @param channel
+	 * @param channelNoHash
 	 * @return - true if sender is subscribed to channel
 	 */
-	public static boolean isSubscriber(String sender, String channel) {
+	public static boolean isSubscriber(String sender, String channelNoHash) {
 		try {
-			String userOAuth = Database.getUserOAuth(channel.substring(1));
+			String userOAuth = Database.getUserOAuth(channelNoHash);
 			String nextUrl = "https://api.twitch.tv/kraken/channels/"
-					+ channel.substring(0) + "/subscriptions/?oauth_token="
+					+ channelNoHash + "/subscriptions/?oauth_token="
 					+ userOAuth;
 			JsonObject obj = new JsonParser().parse(
 					new JsonReader(new InputStreamReader(new URL(nextUrl)
@@ -161,7 +162,7 @@ public class TwitchUtilities {
 			if (obj.get("error") != null) { // ie it finds it
 				return false;
 			} else { // it does not find it
-				int count = subscriberCount(channel, userOAuth);
+				int count = subscriberCount(channelNoHash, userOAuth);
 				int pages = count / 25;
 				if (count % 25 != 0) {
 					pages++;
@@ -186,10 +187,10 @@ public class TwitchUtilities {
 				return false;
 			}
 		} catch (FileNotFoundException e) {
-			WLogger.log(channel + "Does not have any subscribers or is not partnered.");
+			WLogger.log(channelNoHash + "Does not have any subscribers or is not partnered.");
 		}catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channel.substring(1), e);
+					+ " is following " + channelNoHash.substring(1), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -269,20 +270,20 @@ public class TwitchUtilities {
 	/**
 	 * Gets the amount of people following the specified channel
 	 * 
-	 * @param channel
+	 * @param channelNoHash
 	 * @return number of followers for channel, 0 if an error occurs
 	 */
-	public static int followerCount(String channel) {
+	public static int followerCount(String channelNoHash) {
 		try {
 			return new JsonParser()
 					.parse(new JsonReader(new InputStreamReader(new URL(
-							BASE_URL + "channels/" + channel.substring(1))
+							BASE_URL + "channels/" + channelNoHash)
 							.openStream()))).getAsJsonObject()
 					.getAsJsonPrimitive("followers").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the follower count for "
-							+ channel.substring(1), e);
+							+ channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return 0;
@@ -291,22 +292,22 @@ public class TwitchUtilities {
 	/**
 	 * Gets the amount of people subscribed to the specified channel
 	 * 
-	 * @param channel
+	 * @param channelNoHash
 	 * @param oAuth
 	 * @return number of subscribers for the channel
 	 */
-	public static int subscriberCount(String channel, String oAuth) {
+	public static int subscriberCount(String channelNoHash, String oAuth) {
 		try {
 			return new JsonParser()
 					.parse(new JsonReader(new InputStreamReader(new URL(
-							BASE_URL + "channels/" + channel.substring(1)
+							BASE_URL + "channels/" + channelNoHash
 									+ "/subscriptions/?oauth_token=" + oAuth)
 							.openStream()))).getAsJsonObject()
 					.getAsJsonPrimitive("_total").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the subscriber count for "
-							+ channel.substring(1), e);
+							+ channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return 0;
@@ -333,6 +334,19 @@ public class TwitchUtilities {
 			WLogger.logError(e);
 		}
 		return false;
+	}
+
+	public static String getUserLevelNoMod(String channelNoHash, String moderator) {
+		if(isSubscriber(moderator, channelNoHash)) {
+			return ULevel.Subscriber.getName();
+		}
+		if(Database.isRegular(moderator, channelNoHash)) {
+			return ULevel.Regular.getName();
+		}
+		if(isFollower(channelNoHash, moderator)) {
+			return ULevel.Follower.getName();
+		}
+		return ULevel.Normal.getName();
 	}
 
 }
