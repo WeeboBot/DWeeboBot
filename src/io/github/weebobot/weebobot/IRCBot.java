@@ -264,38 +264,14 @@ public class IRCBot extends PircBot {
 	 *            000000  -  Normal
 	 */
 	public void checkSpam(String channel, String message, String sender) {
+		String level = Database.getUserLevel(channel.substring(1), sender);
+		boolean[] immunities = Database.getImmunities(channel.substring(1), level);
 		int caps = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numCaps.getOptionID()));
 		int symbols = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numSymbols.getOptionID()));
 		int link = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.link.getOptionID()));
 		int paragraph = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.paragraphLength.getOptionID()));
 		int emotes = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numEmotes.getOptionID()));
-		if (!Database.isMod(sender, channel.substring(1))
-				&& !Database.isRegular(sender, channel.substring(1))
-				&& !TwitchUtilities.isSubscriber(sender, channel)) {
-			if (message.matches("([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})")
-					|| message.matches("(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?")
-					&& link != -1) {
-				if (!isPermitted(channel, sender)) {
-					System.out.println("is permit");
-					new Timeouts(channel, sender, 1, TType.LINK);
-				} else {
-					removePermit(channel, sender);
-				}
-			}
-		}
-		if(!Database.isMod(sender, channel.substring(1)) && !TwitchUtilities.isSubscriber(sender, channel)){
-			if (caps != -1 && message.matches("[A-Z\\s]{" + caps + ",}")) {
-				new Timeouts(channel, sender, 1, TType.CAPS);
-			} else if (symbols != -1
-					&& message.matches("[\\W_\\s]{" + symbols + ",}")) {
-				new Timeouts(channel, sender, 1, TType.SYMBOLS);
-			} else if (paragraph != -1 && message.length() >= paragraph) {
-				new Timeouts(channel, sender, 1, TType.PARAGRAPH);
-			} else if (emotes != -1
-					&& message.matches("(:\\(|:\\)|:/|:D|:o|:p|:z|;\\)|;p|<3|>\\(|B\\)|o_o|R\\)|4Head|ANELE|ArsonNoSexy|AsianGlow|AtGL|AthenaPMS|AtIvy|BabyRage|AtWW|BatChest|BCWarrior|BibleThump|BigBrother|BionicBunion|BlargNaut|BloodTrail|BORT|BrainSlug|BrokeBack|BuddhaBar|CougarHunt|DAESuppy|DansGame|DatSheffy|DBstyle|DendiFace|DogFace|EagleEye|EleGiggle|EvilFetus|FailFish|FPSMarksman|FrankerZ|FreakinStinkin|FUNgineer|FunRun|FuzzyOtterOO|GasJoker|GingerPower|GrammarKing|HassaanChop|HassanChop|HeyGuys|HotPokket|HumbleLife|ItsBoshyTime|Jebaited|KZowl|JKanStyle|JonCarnage|KAPOW|Kappa|Keepo|KevinTurtle|Kippa|Kreygasm|KZassault|KZcover|KZguerilla|KZhelghast|KZskull|Mau5|mcaT|MechaSupes|MrDestructoid|MrDestructoid|MVGame|NightBat|NinjaTroll|NoNoSpot|noScope|NotAtk|OMGScoots|OneHand|OpieOP|OptimizePrime|panicBasket|PanicVis|PazPazowitz|PeoplesChamp|PermaSmug|PicoMause|PipeHype|PJHarley|PJSalt|PMSTwin|PogChamp|Poooound|PRChase|PunchTrees|PuppeyFace|RaccAttack|RalpherZ|RedCoat|ResidentSleeper|RitzMitz|RuleFive|Shazam|shazamicon|ShazBotstix|ShazBotstix|ShibeZ|SMOrc|SMSkull|SoBayed|SoonerLater|SriHead|SSSsss|StoneLightning|StrawBeary|SuperVinlin|SwiftRage|TF2John|TheRinger|TheTarFu|TheThing|ThunBeast|TinyFace|TooSpicy|TriHard|TTours|UleetBackup|UncleNox|UnSane|Volcania|WholeWheat|WinWaker|WTRuck|WutFace|YouWHY|\\(mooning\\)|\\(poolparty\\)|\\(puke\\)|:\\'\\(|:tf:|aPliS|BaconEffect|BasedGod|BroBalt|bttvNice|ButterSauce|cabbag3|CandianRage|CHAccepted|CiGrip|ConcernDoge|D:|DatSauce|FapFapFap|FishMoley|ForeverAlone|FuckYea|GabeN|HailHelix|HerbPerve|Hhhehehe|HHydro|iAMbh|iamsocal|iDog|JessSaiyan|JuliAwesome|KaRappa|KKona|LLuda|M&Mjc|ManlyScreams|NaM|OhGod|OhGodchanZ|OhhhKee|OhMyGoodness|PancakeMix|PedoBear|PedoNam|PokerFace|PoleDoge|RageFace|RebeccaBlack|RollIt!|rStrike|SexPanda|She'llBeRight|ShoopDaWhoop|SourPls|SuchFraud|SwedSwag|TaxiBro|tEh|ToasTy|TopHam|TwaT|UrnCrown|VisLaud|WatChuSay|WhatAYolk|YetiZ|PraiseIt|\\s){"
-									+ emotes + ",}")) {
-				new Timeouts(channel, sender, 1, TType.EMOTE);
-			}
+		if(!immunities[0]){
 			ResultSet rs = Database.getSpam(channel.substring(1));
 			try {
 				while (rs.next()) {
@@ -309,7 +285,38 @@ public class IRCBot extends PircBot {
 				WLogger.logError(e);
 			}
 		}
-
+		if(!immunities[1] && paragraph != -1 && message.length() >= paragraph){
+			new Timeouts(channel, sender, 1, TType.PARAGRAPH);
+		}
+		if(!immunities[2] && caps != -1 && message.matches("[A-Z\\s]{" + caps + ",}")){
+			new Timeouts(channel, sender, 1, TType.CAPS);
+		}
+		if(!immunities[3] && emotes != -1
+				&& message.matches("(:\\(|:\\)|:/|:D|:o|:p|:z|;\\)|;p|<3|>\\(|B\\)|o_o|R\\)|4Head|ANELE|ArsonNoSexy|AsianGlow|AtGL|AthenaPMS|AtIvy|BabyRage|AtWW|BatChest|BCWarrior|BibleThump|BigBrother|BionicBunion|BlargNaut|BloodTrail|BORT|BrainSlug|BrokeBack|BuddhaBar|CougarHunt|DAESuppy|DansGame|DatSheffy|DBstyle|DendiFace|DogFace|EagleEye|EleGiggle|EvilFetus|FailFish|FPSMarksman|FrankerZ|FreakinStinkin|FUNgineer|FunRun|FuzzyOtterOO|GasJoker|GingerPower|GrammarKing|HassaanChop|HassanChop|HeyGuys|HotPokket|HumbleLife|ItsBoshyTime|Jebaited|KZowl|JKanStyle|JonCarnage|KAPOW|Kappa|Keepo|KevinTurtle|Kippa|Kreygasm|KZassault|KZcover|KZguerilla|KZhelghast|KZskull|Mau5|mcaT|MechaSupes|MrDestructoid|MrDestructoid|MVGame|NightBat|NinjaTroll|NoNoSpot|noScope|NotAtk|OMGScoots|OneHand|OpieOP|OptimizePrime|panicBasket|PanicVis|PazPazowitz|PeoplesChamp|PermaSmug|PicoMause|PipeHype|PJHarley|PJSalt|PMSTwin|PogChamp|Poooound|PRChase|PunchTrees|PuppeyFace|RaccAttack|RalpherZ|RedCoat|ResidentSleeper|RitzMitz|RuleFive|Shazam|shazamicon|ShazBotstix|ShazBotstix|ShibeZ|SMOrc|SMSkull|SoBayed|SoonerLater|SriHead|SSSsss|StoneLightning|StrawBeary|SuperVinlin|SwiftRage|TF2John|TheRinger|TheTarFu|TheThing|ThunBeast|TinyFace|TooSpicy|TriHard|TTours|UleetBackup|UncleNox|UnSane|Volcania|WholeWheat|WinWaker|WTRuck|WutFace|YouWHY|\\(mooning\\)|\\(poolparty\\)|\\(puke\\)|:\\'\\(|:tf:|aPliS|BaconEffect|BasedGod|BroBalt|bttvNice|ButterSauce|cabbag3|CandianRage|CHAccepted|CiGrip|ConcernDoge|D:|DatSauce|FapFapFap|FishMoley|ForeverAlone|FuckYea|GabeN|HailHelix|HerbPerve|Hhhehehe|HHydro|iAMbh|iamsocal|iDog|JessSaiyan|JuliAwesome|KaRappa|KKona|LLuda|M&Mjc|ManlyScreams|NaM|OhGod|OhGodchanZ|OhhhKee|OhMyGoodness|PancakeMix|PedoBear|PedoNam|PokerFace|PoleDoge|RageFace|RebeccaBlack|RollIt!|rStrike|SexPanda|She'llBeRight|ShoopDaWhoop|SourPls|SuchFraud|SwedSwag|TaxiBro|tEh|ToasTy|TopHam|TwaT|UrnCrown|VisLaud|WatChuSay|WhatAYolk|YetiZ|PraiseIt|\\s){"
+						+ emotes + ",}")){
+							new Timeouts(channel, sender, 1, TType.EMOTE);
+		}
+		if(!immunities[4] && link !=-1){
+			if (message.matches("([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})")
+					|| message.matches("(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?")
+					&& link != -1) {
+				if (!isPermitted(channel, sender)) {
+					System.out.println("is permit");
+					new Timeouts(channel, sender, 1, TType.LINK);
+				} else {
+					removePermit(channel, sender);
+				}
+			}
+		}
+		if(!immunities[5] && symbols != -1
+				&& message.matches("[\\W_\\s]{" + symbols + ",}")){
+			new Timeouts(channel, sender, 1, TType.SYMBOLS);
+		}
+		if (!Database.isMod(sender, channel.substring(1))
+				&& !Database.isRegular(sender, channel.substring(1))
+				&& !TwitchUtilities.isSubscriber(sender, channel)) {
+			
+		}
 	}
 
 	/**

@@ -51,7 +51,7 @@ public enum ULevel {
 		case "mod":
 			return Moderator;
 		default :
-			return null;
+			return Normal;
 		}
 	}
 	

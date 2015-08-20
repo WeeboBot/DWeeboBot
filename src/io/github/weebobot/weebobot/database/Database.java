@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.util.TOptions;
+import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
 
 public class Database {
@@ -347,9 +348,11 @@ public class Database {
 	 * @return true if user is a moderator in channel
 	 */
 	public static boolean isMod(String moderator, String channelNoHash) {
-		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sMods WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
 		try {
-			return rs.next();
+			if(rs.next()){
+				return rs.getString(2).equalsIgnoreCase("moderator");
+			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", moderator, channelNoHash), e);
 			WLogger.logError(e);
@@ -362,7 +365,7 @@ public class Database {
 	 * @param channelNoHash - channel to add the mod to, without the #
 	 */
 	public static void addMod(String moderator, String channelNoHash) {
-		executeUpdate(String.format("INSERT INTO %s.%sMods VALUES(\'%s\')", DATABASE, channelNoHash, moderator));
+		executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\',userLevel=\'moderator\' WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator, moderator));
 	}
 	
 	/**
@@ -573,7 +576,7 @@ public class Database {
 	}
 
 	public static ResultSet getMods(String channelNoHash) {
-		return executeQuery(String.format("SELECT * FROM %s.%sMods", DATABASE, channelNoHash));
+		return executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userLevel=\'%s\'", DATABASE, channelNoHash, ULevel.Moderator.getName()));
 	}
 	
 	public static boolean[] getImmunities(String channelNoHash, String level){
@@ -586,5 +589,19 @@ public class Database {
 		immunities[4] = immunity.charAt(4) == '1';
 		immunities[5] = immunity.charAt(5) == '1';
 		return immunities;
+	}
+	
+	public static String getUserLevel(String channelNoHash, String user){
+		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, user));
+		try {
+			if(rs.next()) {
+				return rs.getString(2);
+			}
+			return null;
+		} catch (SQLException | NumberFormatException e) {
+			logger.log(Level.SEVERE, String.format("Unable to get welcome message for %s", channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return "normal";
 	}
 }
