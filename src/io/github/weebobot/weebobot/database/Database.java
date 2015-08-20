@@ -116,7 +116,7 @@ public class Database {
             try{
                 stmt4=conn.createStatement();
                 stmt4.closeOnCompletion();
-                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25) PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Users!", ex);
     			WLogger.logError(e);
