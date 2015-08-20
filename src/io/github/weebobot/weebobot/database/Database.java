@@ -457,25 +457,14 @@ public class Database {
 	 * @param ammount - the number of points to add
 	 */
 	public static void addPoints(String nick, String channelNoHash, int ammount) {
-		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
+		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
-			if (!rs.next()) {
-				boolean visible = true;
-				if(nick.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
-					visible = false;
-				}
-				Database.executeUpdate(String.format("INSERT INTO %s.%sPoints VALUES (\'%s\',1, %b)", DATABASE, channelNoHash, nick, visible));
-				return;
-			}
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
-			WLogger.logError(e);
-		}
-		try {
-			Database.executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%d, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, rs.getInt(2)+ammount, rs.getBoolean(3), nick));
-			if (rs.getInt(2) + ammount == Integer.valueOf(getOption(channelNoHash, TOptions.regular.getOptionID()))) {
-				Database.executeUpdate(String.format("INSERT INTO %s.%sRegulars VALUES (\'%s\')", DATABASE, channelNoHash, nick));
-			}
+			String userLevel = rs.getString(2);
+			int points = rs.getInt(3);
+			boolean visible = rs.getBoolean(4);
+			boolean regular = rs.getBoolean(5);
+			Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
+			return;
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
 			WLogger.logError(e);
@@ -488,10 +477,10 @@ public class Database {
 	 * @return number of points the user has
 	 */
 	public static String getPoints(String sender, String channelNoHash) {
-		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
 			if(rs.next()) {
-				return rs.getInt(2)+"";
+				return rs.getInt(3)+"";
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An error occurred getting a user's points.", e);
