@@ -319,7 +319,7 @@ public class TwitchUtilities {
 							BASE_URL + "channels/" + channelNoHash + "/follows")
 							.openStream()))).getAsJsonObject()
 					.getAsJsonPrimitive("followers").getAsInt();
-		} catch (JsonIOException | JsonSyntaxException | IOException e) {
+		} catch (JsonIOException | JsonSyntaxException | IOException | NullPointerException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the follower count for "
 							+ channelNoHash, e);
@@ -343,7 +343,7 @@ public class TwitchUtilities {
 									+ "/subscriptions/?oauth_token=" + oAuth)
 							.openStream()))).getAsJsonObject()
 					.getAsJsonPrimitive("_total").getAsInt();
-		} catch (JsonIOException | JsonSyntaxException | IOException e) {
+		} catch (JsonIOException | JsonSyntaxException | IOException | NullPointerException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the subscriber count for "
 							+ channelNoHash, e);
