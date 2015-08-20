@@ -27,6 +27,7 @@ import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.database.Database;
 import io.github.weebobot.weebobot.util.WLogger;
 
@@ -112,7 +113,7 @@ public class CommandParser {
 	private static boolean hasAccess(Command c, String sender, String channel) {
 		switch(c.getCommandLevel()) {
 		case Mod:
-			return Database.isMod(sender, channel.substring(1));
+			return Database.isMod(sender, channel.substring(1)) || Main.isDefaultMod(sender, channel.substring(1));
 		case Owner:
 			return sender.equalsIgnoreCase(channel.substring(1));
 		case Normal:

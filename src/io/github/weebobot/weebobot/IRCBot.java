@@ -94,8 +94,7 @@ public class IRCBot extends PircBot {
 	protected void onOp(String channel, String sourceNick, String sourceLogin,
 			String sourceHostname, String recipient) {
 		try {
-			new AddModerator().execute(Main.getBotChannel().substring(1),
-					channel, new String[] { recipient });
+			new AddModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onOp() in " + channel,
@@ -115,8 +114,7 @@ public class IRCBot extends PircBot {
 			if (Main.isDefaultMod(recipient, channel.substring(1))) {
 				return;
 			}
-			new DelModerator().execute(Main.getBotChannel().substring(1),
-					recipient, new String[] { sourceHostname });
+			new DelModerator().execute(recipient, Main.getBotChannel().substring(1), new String[] { sourceHostname });
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onDeop() in "

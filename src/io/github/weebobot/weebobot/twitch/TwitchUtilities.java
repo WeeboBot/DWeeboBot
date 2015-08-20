@@ -125,22 +125,46 @@ public class TwitchUtilities {
 	 */
 	public static boolean isFollower(String channelNoHash, String sender) {
 		try {
-			if(channelNoHash.equalsIgnoreCase(sender)) {
-				return false;
-			}
-			String nextUrl = "https://api.twitch.tv/kraken/users/" + sender
-					+ "/follows/channels/" + channelNoHash;
-			JsonObject following = new JsonParser().parse(
+			String nextUrl = "https://api.twitch.tv/kraken/channels/"+channelNoHash+"/follows";
+			JsonObject obj = new JsonParser().parse(
 					new JsonReader(new InputStreamReader(new URL(nextUrl)
 							.openStream()))).getAsJsonObject();
-			if (following.get("error") != null) {
+			if (obj.get("error") != null) { // ie it finds it
 				return false;
-			} else {
-				return true;
+			} else { // it does not find it
+				int count = followerCount(channelNoHash);
+				int pages = count / 25;
+				if (count % 25 != 0) {
+					pages++;
+				}
+				for (int i = 0; i < pages; i++) {
+					for (int j = 0; j < 25; j++) {
+						try {
+							if (sender.equalsIgnoreCase(obj
+									.getAsJsonArray("follows").get(j)
+									.getAsJsonObject().get("user")
+									.getAsJsonObject()
+									.getAsJsonPrimitive("name")
+									.getAsString())) {
+								return true;
+							}
+						} catch (IndexOutOfBoundsException e) {
+							return false;
+						}
+					}
+					nextUrl = URLEncoder.encode(obj.getAsJsonArray("_links")
+							.get(1).getAsJsonPrimitive().getAsString(), CHARSET);
+					obj = new JsonParser().parse(
+							new JsonReader(new InputStreamReader(new URL(
+									nextUrl).openStream()))).getAsJsonObject();
+				}
+				return false;
 			}
-		} catch (JsonIOException | JsonSyntaxException | IOException e) {
+		} catch (FileNotFoundException e) {
+			WLogger.log(channelNoHash + "Does not have any subscribers or is not partnered.");
+		}catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channelNoHash, e);
+					+ " is following " + channelNoHash.substring(1), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -162,9 +186,18 @@ public class TwitchUtilities {
 			if(userOAuth == null) {
 				return false;
 			}
-			JsonObject obj = new JsonParser().parse(
-					new JsonReader(new InputStreamReader(new URL(nextUrl)
-							.openStream()))).getAsJsonObject();
+			JsonObject obj = null;
+			try {
+				obj = new JsonParser().parse(
+						new JsonReader(new InputStreamReader(new URL(nextUrl)
+								.openStream()))).getAsJsonObject();
+			} catch (IOException e) {
+				if(e.getLocalizedMessage().equalsIgnoreCase("Server returned HTTP response code: 422 for URL: https://api.twitch.tv/kraken/channels/"+channelNoHash+"/subscriptions/?oauth_token=" + userOAuth)) {
+					return false;
+				}
+				logger.log(Level.SEVERE, String.format("There was an issue checking is %s is subscribed to %s", sender, channelNoHash), e);
+				WLogger.logError(e);
+			}
 			if (obj.get("error") != null) { // ie it finds it
 				return false;
 			} else { // it does not find it
@@ -196,7 +229,7 @@ public class TwitchUtilities {
 			WLogger.log(channelNoHash + "Does not have any subscribers or is not partnered.");
 		}catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channelNoHash.substring(1), e);
+					+ " is following " + channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -283,7 +316,7 @@ public class TwitchUtilities {
 		try {
 			return new JsonParser()
 					.parse(new JsonReader(new InputStreamReader(new URL(
-							BASE_URL + "channels/" + channelNoHash)
+							BASE_URL + "channels/" + channelNoHash + "/follows")
 							.openStream()))).getAsJsonObject()
 					.getAsJsonPrimitive("followers").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException e) {

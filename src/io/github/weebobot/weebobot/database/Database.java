@@ -351,7 +351,7 @@ public class Database {
 	public static boolean isMod(String moderator, String channelNoHash) {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
 		try {
-			if(rs.next()){
+			if(rs != null && rs.next()){
 				return rs.getString(2).equalsIgnoreCase("moderator");
 			}
 		} catch (SQLException e) {
@@ -366,7 +366,7 @@ public class Database {
 	 * @param channelNoHash - channel to add the mod to, without the #
 	 */
 	public static void addMod(String moderator, String channelNoHash) {
-		executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\',userLevel=\'moderator\' WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator, moderator));
+		executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\',userLevel=\'Moderator\' WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator, moderator));
 	}
 	
 	/**
@@ -393,7 +393,7 @@ public class Database {
 	 * @return a result set of the auto replies
 	 */
 	public static ResultSet getAutoReplies(String channelNoHash) {
-		return executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE commands NOT LIKE !%%", DATABASE, channelNoHash));
+		return executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE command NOT LIKE \'!%%'", DATABASE, channelNoHash));
 	}
 	
 	/**
@@ -510,7 +510,7 @@ public class Database {
 				int points = rs.getInt(3);
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
-				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%d", DATABASE, channelNoHash, nick, userLevel, points, visible, regular));
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, userLevel, points, visible, regular, nick));
 				return;
 			}
 		} catch (SQLException e) {
@@ -651,11 +651,15 @@ public class Database {
 				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
 			} else {
-				String userLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				String userLevel=ULevel.Moderator.getName();
+				if(!isMod(sender, channelNoHash)) {
+					userLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				}
+				WLogger.log(userLevel + ": " + sender);
 				int points = rs.getInt(3);
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
-				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b", DATABASE, channelNoHash, sender, userLevel, points, visible, regular));
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, sender, userLevel, points, visible, regular, sender));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);
