@@ -38,6 +38,9 @@ public class AddCommand extends Command {
 		for(int i = 2;i < parameters.length;i++) {
 			params.append(parameters[i] + " ");
 		}
+		if(!parameters[0].startsWith("!")) {
+			parameters[0] = "!" + parameters[0];
+		}
 		Database.addCommand(channel.substring(1), parameters[0], params.toString(), parameters[1]);
 		return "Added command to the database.";
 	}

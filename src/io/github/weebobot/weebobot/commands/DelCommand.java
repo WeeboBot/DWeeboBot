@@ -34,6 +34,9 @@ public class DelCommand extends Command {
 
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
+		if(!parameters[0].startsWith("!")) {
+			parameters[0] = "!" + parameters[0];
+		}
 		Database.delCommand(channel.substring(1), parameters[0]);
 		return "Removed command from the database.";
 	}
