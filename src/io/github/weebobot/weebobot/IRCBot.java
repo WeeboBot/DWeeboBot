@@ -140,8 +140,8 @@ public class IRCBot extends PircBot {
 						channel,
 						"I have joined the channel and will stay with you unless you tell me to !leave or my creators do not shut me down properly because they are cruel people with devious minds.");
 				for (User u : getUsers(channel)) {
+					Database.updateUser(channel.substring(1), sender);
 					new PointsRunnable(u.getNick(), channel.substring(1));
-					Database.addUser(channel.substring(1), sender);
 				}
 			}
 			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
@@ -153,8 +153,8 @@ public class IRCBot extends PircBot {
 					addWelcome(channel, sender);
 				}
 			}
+			Database.updateUser(channel.substring(1), sender);
 			new PointsRunnable(sender, channel.substring(1));
-			Database.addUser(channel.substring(1), sender);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onJoin()", e);

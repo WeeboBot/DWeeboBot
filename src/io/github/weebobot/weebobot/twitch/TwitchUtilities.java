@@ -125,6 +125,9 @@ public class TwitchUtilities {
 	 */
 	public static boolean isFollower(String channelNoHash, String sender) {
 		try {
+			if(channelNoHash.equalsIgnoreCase(sender)) {
+				return false;
+			}
 			String nextUrl = "https://api.twitch.tv/kraken/users/" + sender
 					+ "/follows/channels/" + channelNoHash;
 			JsonObject following = new JsonParser().parse(
@@ -156,6 +159,9 @@ public class TwitchUtilities {
 			String nextUrl = "https://api.twitch.tv/kraken/channels/"
 					+ channelNoHash + "/subscriptions/?oauth_token="
 					+ userOAuth;
+			if(userOAuth == null) {
+				return false;
+			}
 			JsonObject obj = new JsonParser().parse(
 					new JsonReader(new InputStreamReader(new URL(nextUrl)
 							.openStream()))).getAsJsonObject();

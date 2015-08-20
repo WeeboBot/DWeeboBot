@@ -570,10 +570,9 @@ public class Database {
 	 * @return true if {@link sender} is a regular in {@link channelNoHash}
 	 */
 	public static boolean isRegular(String sender, String channelNoHash) {
-		ResultSet currentPoints=Database.executeQuery(String.format("SELECT * FROM %s.%sPoints WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
-		int requiredPoints=Integer.valueOf(Database.getOption(channelNoHash, TOptions.regular.getOptionID()));
+		ResultSet currentPoints=Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
-			return currentPoints.next() && currentPoints.getInt(2) > requiredPoints;
+			return currentPoints.next() && currentPoints.getBoolean(5);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "User is not a regular!", e);
 			WLogger.logError(e);
@@ -639,7 +638,7 @@ public class Database {
 		return null;
 	}
 
-	public static boolean addUser(String channelNoHash, String sender) {
+	public static boolean updateUser(String channelNoHash, String sender) {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
 			if(!rs.next()) {
@@ -649,6 +648,12 @@ public class Database {
 				}
 				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
+			} else {
+				String userLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				int points = rs.getInt(3);
+				boolean visible = rs.getBoolean(4);
+				boolean regular = rs.getBoolean(5);
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b regular=%b", DATABASE, channelNoHash, sender, userLevel, points, visible, regular));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);
