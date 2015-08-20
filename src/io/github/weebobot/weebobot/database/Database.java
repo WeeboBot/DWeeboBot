@@ -231,16 +231,6 @@ public class Database {
 	}
 	
 	/**
-	 * Clears the auto replies table for the channel provided.
-	 * 
-	 * @param channelNoHash - the channel to clear auto replies for
-	 */
-	public static void clearAutoRepliesTable(String channelNoHash) {
-		executeUpdate(String.format("DROP TABLE %s.%sAutoReplies", DATABASE, channelNoHash));
-		executeUpdate(String.format("CREATE TABLE %s.%sAutoReplies(keyWord varchar(255), reply varchar(255), PRIMARY KEY (keyWord))", DATABASE, channelNoHash));
-	}
-	
-	/**
 	 * @param user - user to get the oauth for
 	 * @return oauth code for the specified user
 	 */
@@ -387,9 +377,10 @@ public class Database {
 	public static void addAutoReply(String channelNoHash, String keywords, String reply) {
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sAutoReplies VALUES(? , ?)", DATABASE, channelNoHash));
+			stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sCommands VALUES(? , ?, ?)", DATABASE, channelNoHash));
 			stmt.setString(1, keywords);
-			stmt.setString(2, reply);
+			stmt.setString(2, "");
+			stmt.setString(3, reply);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
 			WLogger.logError(e);
@@ -402,7 +393,7 @@ public class Database {
 	 * @return a result set of the auto replies
 	 */
 	public static ResultSet getAutoReplies(String channelNoHash) {
-		return executeQuery(String.format("SELECT * FROM %s.%sAutoReplies", DATABASE, channelNoHash));
+		return executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE commands NOT LIKE !%%", DATABASE, channelNoHash));
 	}
 	
 	/**
@@ -454,7 +445,7 @@ public class Database {
 	public static boolean delAutoReply(String channelNoHash, String keywords) {
 		PreparedStatement stmt = null;
 		try {
-			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sAutoReplies WHERE keyWord=?", DATABASE, channelNoHash));
+			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sCommands WHERE command=?", DATABASE, channelNoHash));
 			stmt.setString(1, keywords);
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to set option", e);
