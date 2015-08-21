@@ -18,6 +18,7 @@
 package io.github.weebobot.weebobot.database;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -692,5 +693,22 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return false;
+	}
+	
+	public static boolean getUserSongTables(String user){
+			try {
+				DatabaseMetaData dbm = conn.getMetaData();
+				ResultSet tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
+				if (tables.next()){
+					
+				}else{
+					
+				}
+				
+			} catch (SQLException e) {
+				logger.log(Level.SEVERE, String.format("There was an issue checking for %s's song tables", user), e);
+				WLogger.logError(e);
+			}
+			return false;
 	}
 }
