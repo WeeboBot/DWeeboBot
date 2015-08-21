@@ -33,7 +33,7 @@ import io.github.weebobot.weebobot.commands.CommandParser;
 import io.github.weebobot.weebobot.commands.DelModerator;
 import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.twitch.TwitchUtilities;
+import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.DelayedPermitTask;
 import io.github.weebobot.weebobot.util.DelayedReJoin;
 import io.github.weebobot.weebobot.util.DelayedWelcomeTask;

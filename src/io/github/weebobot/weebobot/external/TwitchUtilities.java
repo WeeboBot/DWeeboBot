@@ -15,7 +15,7 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.weebobot.weebobot.twitch;
+package io.github.weebobot.weebobot.external;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
