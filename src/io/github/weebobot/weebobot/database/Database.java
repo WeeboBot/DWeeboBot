@@ -696,19 +696,28 @@ public class Database {
 	}
 	
 	public static boolean getUserSongTables(String user){
-			try {
-				DatabaseMetaData dbm = conn.getMetaData();
-				ResultSet tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
-				if (tables.next()){
-					
-				}else{
-					
-				}
-				
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE, String.format("There was an issue checking for %s's song tables", user), e);
-				WLogger.logError(e);
+		boolean queue = false;
+		boolean list = false;
+		try {
+			DatabaseMetaData dbm = conn.getMetaData();
+			ResultSet tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
+			if (tables.next()){
+				queue=true;
+			}else{
+				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID int, songURL varchar(255), songTitle varchar(255), songID int)", DATABASE, user));
+				System.out.println(String.format("Created song queue table for %s", user));
 			}
-			return false;
+			tables = dbm.getTables(null, null, String.format("%sSongList", user), null);
+			if (tables.next()){
+				list=true;
+			}else{
+				executeUpdate(String.format("CREATE TABLE %s.%sSongList (listID int, songURL varchar(255), songTitle varchar(255), songID int)", DATABASE, user));
+				System.out.println(String.format("Created song list table for %s", user));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking for %s's song tables", user), e);
+			WLogger.logError(e);
+		}
+		return queue && list;
 	}
 }
