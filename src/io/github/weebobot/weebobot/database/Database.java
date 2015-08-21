@@ -704,7 +704,7 @@ public class Database {
 			if (tables.next()){
 				queue=true;
 			}else{
-				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID int, songURL varchar(255), songTitle varchar(255), songID int)", DATABASE, user));
+				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID int, songURL varchar(255), songTitle varchar(255), songID int, requester varchar(255))", DATABASE, user));
 				System.out.println(String.format("Created song queue table for %s", user));
 			}
 			tables = dbm.getTables(null, null, String.format("%sSongList", user), null);
@@ -719,5 +719,38 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return queue && list;
+	}
+	
+	public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
+		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is already in the song queue!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully added to the song queue!", videoInformation[2]);
+		}
+		return String.format("There was an error adding the song %s to the song queue!", videoInformation[2]);
+	}
+	
+	public static boolean isInQueue(String channelNoHash, int videoID){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songID=%d", DATABASE, channelNoHash, videoID));
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoID, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+	
+	public static String deleteSongFromQueue(String channelNoHash, String[] videoInformation){
+		if(!isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is not in the song queue!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully removed from the song queue!", videoInformation[2]);
+		}
+		return String.format("There was an error removing the song %s from the song queue!", videoInformation[2]);
 	}
 }
