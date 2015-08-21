@@ -318,7 +318,7 @@ public class TwitchUtilities {
 					.parse(new JsonReader(new InputStreamReader(new URL(
 							BASE_URL + "channels/" + channelNoHash + "/follows")
 							.openStream()))).getAsJsonObject()
-					.getAsJsonPrimitive("followers").getAsInt();
+					.getAsJsonPrimitive("_total").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException | NullPointerException e) {
 			logger.log(Level.SEVERE,
 					"An error occurred getting the follower count for "
