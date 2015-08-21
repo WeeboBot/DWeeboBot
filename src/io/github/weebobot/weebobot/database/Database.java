@@ -352,10 +352,28 @@ public class Database {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
 		try {
 			if(rs != null && rs.next()){
-				return rs.getString(2).equalsIgnoreCase("moderator");
+				return rs.getString(2).equalsIgnoreCase("owner");
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", moderator, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+
+	/**
+	 * @param owner - person to check if their a moderator
+	 * @param channelNoHash - channel to check if their a moderator in, without the leading #
+	 * @return true if user is a moderator in channel
+	 */
+	public static boolean isOwner(String owner, String channelNoHash) {
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, owner));
+		try {
+			if(rs != null && rs.next()){
+				return rs.getString(2).equalsIgnoreCase("owner");
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", owner, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -645,21 +663,29 @@ public class Database {
 		try {
 			if(!rs.next()) {
 				boolean visible = true;
+				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
 				if(sender.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
 					visible = false;
+					uLevel = ULevel.Moderator.getName();
 				}
-				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				if(sender.equalsIgnoreCase(channelNoHash)) {
+					uLevel = ULevel.Owner.getName();
+				}
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
 			} else {
-				String userLevel=ULevel.Moderator.getName();
-				if(!isMod(sender, channelNoHash)) {
-					userLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
+				String uLevel;
+				if(isOwner(sender, channelNoHash)) {
+					uLevel=ULevel.Owner.getName();
+				} else if(isMod(sender, channelNoHash)) {
+					uLevel=ULevel.Moderator.getName();
+				} else {
+					uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
 				}
-				WLogger.log(userLevel + ": " + sender);
+				WLogger.log(uLevel + ": " + sender);
 				int points = rs.getInt(3);
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
-				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, sender, userLevel, points, visible, regular, sender));
+				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, sender, uLevel, points, visible, regular, sender));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);

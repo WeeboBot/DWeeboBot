@@ -18,7 +18,7 @@
 package io.github.weebobot.weebobot.util;
 
 public enum ULevel {
-	Normal("Normal"),Follower("Follower"),Subscriber("Subscriber"),Regular("Regular"),Moderator("Moderator");
+	Normal("Normal"),Follower("Follower"),Subscriber("Subscriber"),Regular("Regular"),Moderator("Moderator"),Owner("Owner");
 	
 	private String name;
 	
