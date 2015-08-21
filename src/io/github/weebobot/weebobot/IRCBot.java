@@ -149,6 +149,7 @@ public class IRCBot extends PircBot {
 	@Override
 	public void onJoin(String channel, String sender, String login,
 			String hostname) {
+		Database.getSongTables(sender);
 		try {
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				sendMessage(

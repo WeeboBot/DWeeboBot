@@ -693,4 +693,21 @@ public class Database {
 		}
 		return false;
 	}
+	
+	public static boolean getSongTables(String user){
+		try {
+			java.sql.DatabaseMetaData dbm = conn.getMetaData();
+			ResultSet tables;
+			tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
+			if(tables.next()){
+				System.out.println("Table Exists");
+			}else{
+				System.out.println("Table does not Exist");
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking for %s's SongQueue table", user), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
 }
