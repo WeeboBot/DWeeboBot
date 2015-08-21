@@ -111,14 +111,24 @@ public class CommandParser {
 	 * @return true if the user has valid access
 	 */
 	private static boolean hasAccess(Command c, String sender, String channel) {
+		logger.info("In hasAccess");
 		if(Main.isDefaultMod(sender, channel.substring(1))) {
+			logger.info("In hasAccess | Default Mod");
 			return true;
 		}
 		switch(c.getCommandLevel()) {
 		case Mod:
-			return Database.isMod(sender, channel.substring(1)) || Database.isOwner(sender, channel.substring(1));
+			logger.info("In hasAccess | CASE MOD");
+			if(Database.isMod(sender, channel.substring(1)) || Database.isOwner(sender, channel.substring(1))) {
+				logger.info("In hasAccess | IS MOD OR OWNER");
+				return true;
+			}
 		case Owner:
-			return Database.isOwner(sender, channel.substring(1));
+			logger.info("In hasAccess | CASE OWNER");
+			if(Database.isOwner(sender, channel.substring(1))) {
+				logger.info("In hasAccess | IS OWNER");
+				return true;
+			}
 		case Normal:
 			return true;
 		}

@@ -197,7 +197,6 @@ public class IRCBot extends PircBot {
 	public void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
 		try {
-			logger.info(sender + ":" + message);
 			checkSpam(channel, message, sender);
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				return;
