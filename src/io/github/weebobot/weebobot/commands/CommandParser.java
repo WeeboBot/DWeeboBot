@@ -115,11 +115,17 @@ public class CommandParser {
 			return true;
 		}
 		switch(c.getCommandLevel()) {
-		case Mod:
-			return Database.isMod(sender, channel.substring(1));
 		case Owner:
-			return Database.isOwner(sender, channel.substring(1));
-		case Normal:
+			if(Database.isOwner(sender, channel.substring(1))) {
+				return true;
+			}
+			break;
+		case Mod:
+			if(Database.isMod(sender, channel.substring(1)) || Database.isOwner(sender, channel.substring(1))) {
+				return true;
+			}
+			break;
+		default:
 			return true;
 		}
 		return false;

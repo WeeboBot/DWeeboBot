@@ -94,8 +94,6 @@ public class IRCBot extends PircBot {
 	protected void onOp(String channel, String sourceNick, String sourceLogin,
 			String sourceHostname, String recipient) {
 		try {
-			WLogger.log("onOP for "+recipient+" in "+channel);
-			logger.info("onOP for "+recipient+" in "+channel);
 			if(!Database.isOwner(recipient, channel.substring(1))) {
 				new AddModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
 			}
@@ -110,7 +108,7 @@ public class IRCBot extends PircBot {
 	protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String mode) {
 		if(mode.contains("+o")) {
 			String channel=mode.substring(0, mode.indexOf(" "));
-			String recipient=mode.substring(mode.lastIndexOf(" "));
+			String recipient=mode.substring(mode.lastIndexOf(" ") + 1);
 			onOp(channel, sourceNick, sourceLogin, sourceHostname, recipient);
 		}
 		if(mode.contains("-o")) {
@@ -198,7 +196,6 @@ public class IRCBot extends PircBot {
 	public void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
 		try {
-			logger.info(sender + ":" + message);
 			checkSpam(channel, message, sender);
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				return;

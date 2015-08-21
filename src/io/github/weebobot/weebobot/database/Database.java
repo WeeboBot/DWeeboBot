@@ -353,7 +353,7 @@ public class Database {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
 		try {
 			if(rs != null && rs.next()){
-				return rs.getString(2).equalsIgnoreCase("owner");
+				return rs.getString(2).equalsIgnoreCase("Moderator");
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", moderator, channelNoHash), e);
