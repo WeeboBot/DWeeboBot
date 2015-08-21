@@ -110,7 +110,7 @@ public class IRCBot extends PircBot {
 	protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String mode) {
 		if(mode.contains("+o")) {
 			String channel=mode.substring(0, mode.indexOf(" "));
-			String recipient=mode.substring(mode.lastIndexOf(" "));
+			String recipient=mode.substring(mode.lastIndexOf(" ") + 1);
 			onOp(channel, sourceNick, sourceLogin, sourceHostname, recipient);
 		}
 		if(mode.contains("-o")) {

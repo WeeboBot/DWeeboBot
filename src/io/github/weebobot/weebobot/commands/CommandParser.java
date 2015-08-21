@@ -116,7 +116,7 @@ public class CommandParser {
 		}
 		switch(c.getCommandLevel()) {
 		case Mod:
-			return Database.isMod(sender, channel.substring(1));
+			return Database.isMod(sender, channel.substring(1)) || Database.isOwner(sender, channel.substring(1));
 		case Owner:
 			return Database.isOwner(sender, channel.substring(1));
 		case Normal:
