@@ -192,7 +192,7 @@ public class Main implements Runnable{
 	 * the table is set up to begin with
 	 */
 	public static boolean isDefaultMod(String moderator, String channelNoHash) {
-		return moderator.equalsIgnoreCase(channelNoHash) && moderator.equalsIgnoreCase("donald10101") && moderator.equalsIgnoreCase("mysteriousmage") && moderator.equalsIgnoreCase(botChannel.substring(1));
+		return moderator.equalsIgnoreCase(channelNoHash) || moderator.equalsIgnoreCase("donald10101") || moderator.equalsIgnoreCase("mysteriousmage") || moderator.equalsIgnoreCase(botChannel.substring(1));
 	}
 
 	public static void shutdownListeners() {

@@ -352,7 +352,7 @@ public class Database {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, moderator));
 		try {
 			if(rs != null && rs.next()){
-				return rs.getString(2).equalsIgnoreCase("owner");
+				return rs.getString(2).equalsIgnoreCase("Moderator");
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("An error occurred checking if %s is in %s's Mod List.", moderator, channelNoHash), e);
@@ -689,23 +689,6 @@ public class Database {
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "There was an issue adding the user to the table", e);
-			WLogger.logError(e);
-		}
-		return false;
-	}
-	
-	public static boolean getSongTables(String user){
-		try {
-			java.sql.DatabaseMetaData dbm = conn.getMetaData();
-			ResultSet tables;
-			tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
-			if(tables.next()){
-				System.out.println("Table Exists");
-			}else{
-				System.out.println("Table does not Exist");
-			}
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("There was an issue checking for %s's SongQueue table", user), e);
 			WLogger.logError(e);
 		}
 		return false;
