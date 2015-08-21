@@ -171,6 +171,40 @@ public class TwitchUtilities {
 	}
 
 	/**
+	 * @param channelNoHash
+	 *            - channel to run the commercial in without the leading #
+	 * @return true if the commercial runs successfully
+	 */
+	public static boolean runCommercial(String channelNoHash) {
+		String USER_AGENT = "Mozilla/5.0";
+		String oauth_token = Database.getUserOAuth(channelNoHash);
+		String url = BASE_URL + "channels/" + channelNoHash
+				+ "/commercial/?oauth_token=" + oauth_token;
+		URL obj = null;
+		try {
+			obj = new URL(url);
+		} catch (MalformedURLException e) {
+			logger.log(Level.SEVERE,
+					"An error occurred trying to start a commercial for "
+							+ channelNoHash, e);
+			WLogger.logError(e);
+		}
+	
+		HttpsURLConnection con = null;
+		try {
+			con = (HttpsURLConnection) obj.openConnection();
+			con.setRequestMethod("POST");
+		} catch (IOException e) {
+			logger.log(Level.SEVERE,
+					"An error occurred trying to start a commercial for "
+							+ channelNoHash, e);
+			WLogger.logError(e);
+		}
+		con.setRequestProperty("User-agent", USER_AGENT);
+		return false;
+	}
+
+	/**
 	 * Checks if the sender is subscribed to channel
 	 * 
 	 * @param sender
@@ -232,40 +266,6 @@ public class TwitchUtilities {
 					+ " is following " + channelNoHash, e);
 			WLogger.logError(e);
 		}
-		return false;
-	}
-
-	/**
-	 * @param channelNoHash
-	 *            - channel to run the commercial in without the leading #
-	 * @return true if the commercial runs successfully
-	 */
-	public static boolean runCommercial(String channelNoHash) {
-		String USER_AGENT = "Mozilla/5.0";
-		String oauth_token = Database.getUserOAuth(channelNoHash);
-		String url = BASE_URL + "channels/" + channelNoHash
-				+ "/commercial/?oauth_token=" + oauth_token;
-		URL obj = null;
-		try {
-			obj = new URL(url);
-		} catch (MalformedURLException e) {
-			logger.log(Level.SEVERE,
-					"An error occurred trying to start a commercial for "
-							+ channelNoHash, e);
-			WLogger.logError(e);
-		}
-
-		HttpsURLConnection con = null;
-		try {
-			con = (HttpsURLConnection) obj.openConnection();
-			con.setRequestMethod("POST");
-		} catch (IOException e) {
-			logger.log(Level.SEVERE,
-					"An error occurred trying to start a commercial for "
-							+ channelNoHash, e);
-			WLogger.logError(e);
-		}
-		con.setRequestProperty("User-agent", USER_AGENT);
 		return false;
 	}
 
