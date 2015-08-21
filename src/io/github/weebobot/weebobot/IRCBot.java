@@ -94,7 +94,11 @@ public class IRCBot extends PircBot {
 	protected void onOp(String channel, String sourceNick, String sourceLogin,
 			String sourceHostname, String recipient) {
 		try {
-			new AddModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
+			WLogger.log("onOP for "+recipient+" in "+channel);
+			logger.info("onOP for "+recipient+" in "+channel);
+			if(!Database.isOwner(recipient, channel.substring(1))) {
+				new AddModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
+			}
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onOp() in " + channel,
@@ -102,6 +106,19 @@ public class IRCBot extends PircBot {
 			WLogger.logError(e);
 		}
 	}
+	
+	protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String mode) {
+		if(mode.contains("+o")) {
+			String channel=mode.substring(0, mode.indexOf(" "));
+			String recipient=mode.substring(mode.lastIndexOf(" "));
+			onOp(channel, sourceNick, sourceLogin, sourceHostname, recipient);
+		}
+		if(mode.contains("-o")) {
+			String channel=mode.substring(0, mode.indexOf(" "));
+			String recipient=mode.substring(mode.lastIndexOf(" "));
+			onDeop(channel, sourceNick, sourceLogin, sourceHostname, recipient);
+		}
+	};
 
 	/**
 	 * Ensures that anyone who is unmodded in the channel is removed from the
@@ -180,6 +197,7 @@ public class IRCBot extends PircBot {
 	public void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
 		try {
+			logger.info(sender + ":" + message);
 			checkSpam(channel, message, sender);
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				return;
