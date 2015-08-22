@@ -73,7 +73,11 @@ public class Main implements Runnable{
 				try {
 					command = message.substring(1, message.indexOf(' '));
 				} catch(StringIndexOutOfBoundsException e) {
-					command = message.substring(1, message.length());
+					try{
+						command = message.substring(1, message.length());
+					}catch(StringIndexOutOfBoundsException e1){
+						command = " ";
+					}
 				}
 				if(command.equalsIgnoreCase(params[0].substring(1))) {
 					params = new String[0];

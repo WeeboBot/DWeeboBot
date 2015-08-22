@@ -704,14 +704,14 @@ public class Database {
 			if (tables.next()){
 				queue=true;
 			}else{
-				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER, requester varchar(25))", DATABASE, user));
+				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER, requester varchar(25), PRIMARY KEY(queueID))", DATABASE, user));
 				System.out.println(String.format("Created song queue table for %s", user));
 			}
 			tables = dbm.getTables(null, null, String.format("%sSongList", user), null);
 			if (tables.next()){
 				list=true;
 			}else{
-				executeUpdate(String.format("CREATE TABLE %s.%sSongList (listID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER)", DATABASE, user));
+				executeUpdate(String.format("CREATE TABLE %s.%sSongList (listID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER, PRIMARY KEY(listID))", DATABASE, user));
 				System.out.println(String.format("Created song list table for %s", user));
 			}
 		} catch (SQLException e) {
@@ -725,7 +725,7 @@ public class Database {
 		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
 			return String.format("The song %s is already in the song queue!", videoInformation[2]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (\'%s\',\'%s\',%d,\'%s\')", DATABASE, channelNoHash, videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), sender))){
 			return String.format("The song %s has been successfully added to the song queue!", videoInformation[2]);
 		}
 		return String.format("There was an error adding the song %s to the song queue!", videoInformation[2]);
@@ -746,7 +746,7 @@ public class Database {
 	
 	public static boolean isInQueue(String channelNoHash, String videoLink){
 		try {
-			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songLink=%d", DATABASE, channelNoHash, videoLink));
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
 				return true;
 			}
@@ -761,7 +761,7 @@ public class Database {
 		if(!isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
 			return String.format("The song %s is not in the song queue!", videoInformation[2]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+		if(executeUpdate(String.format("DELETE FROM %s.%sSongQueue WHERE songID=%d)", DATABASE, channelNoHash, Integer.valueOf(videoInformation[3])))){
 			return String.format("The song %s has been successfully removed from the song queue!", videoInformation[2]);
 		}
 		return String.format("There was an error removing the song %s from the song queue!", videoInformation[2]);
@@ -771,7 +771,7 @@ public class Database {
 		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
 			return String.format("The song %s is already in your playlist!", videoInformation[2]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (\'%s\',\'%s\',%d)", DATABASE, channelNoHash, videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3])))){
 			return String.format("The song %s has been successfully added to your personal playlist!", videoInformation[2]);
 		}
 		return String.format("There was an error adding the song %s to your playlist!", videoInformation[2]);
@@ -792,12 +792,12 @@ public class Database {
 	
 	public static boolean isInList(String channelNoHash, String videoLink){
 		try {
-			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songLink=%d", DATABASE, channelNoHash, videoLink));
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoLink, channelNoHash), e);
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -807,9 +807,34 @@ public class Database {
 		if(!isInList(channelNoHash, Integer.valueOf(videoInformation[3]))){
 			return String.format("The song %s is not in your playlist!", videoInformation[2]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+		if(executeUpdate(String.format("DELETE FROM %s.%sSongList WHERE songID=%d)", DATABASE, channelNoHash, Integer.valueOf(videoInformation[3])))){
 			return String.format("The song %s has been successfully removed from your playlist!", videoInformation[2]);
 		}
 		return String.format("There was an error removing the song %s from your playlist!", videoInformation[2]);
+	}
+	
+	public static String[] getSongInfoFromLink(String videoLink){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, videoLink));
+			if(rs.next()){
+				String[] videoInformation = new String[4];
+				videoInformation[0] = "" + rs.getInt(1);
+				videoInformation[1] = rs.getString(2);
+				videoInformation[2] = rs.getString(3);
+				videoInformation[3] = "" + rs.getInt(4);
+				return videoInformation;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d", videoLink), e);
+			WLogger.logError(e);
+		}
+		return null;
+	}
+	
+	public static String getNewSongID(String songUrl, String songTitle) {
+		executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (\'%s\',\'%s\')", DATABASE, Main.getBotChannel().substring(1), songUrl, songTitle));
+		String[] info = getSongInfoFromLink(songUrl);
+		executeUpdate(String.format("UPDATE %s.%sSongList SET listID=%d, songURL=\'%s\', songTitle=\'%s\', songID=%d", DATABASE, Main.getBotChannel().substring(1), info[0], info[1], info[2], info[0]));
+		return info[0];
 	}
 }
