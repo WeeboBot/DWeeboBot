@@ -33,7 +33,9 @@ public class PointsRunnable implements Runnable {
 		if(c == null) {
 			c = new ArrayList<>();
 		}
-		c.add(channelNoHash);
+		if(!c.contains(channelNoHash)) {
+			c.add(channelNoHash);
+		}
 		currentUsers.put(user, c);
 	}
 

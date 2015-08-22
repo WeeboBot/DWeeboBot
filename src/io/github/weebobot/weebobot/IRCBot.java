@@ -327,7 +327,7 @@ public class IRCBot extends PircBot {
 			ResultSet rs = Database.getSpam(channel.substring(1));
 			try {
 				while (rs.next()) {
-					if (message.matches("(" + rs.getString(1) + ")+")){
+					if (rs.getBoolean(1) && message.matches("(" + rs.getString(1) + ")+")){
 						new Timeouts(channel, sender, 1, TType.SPAM);
 					}
 				}
