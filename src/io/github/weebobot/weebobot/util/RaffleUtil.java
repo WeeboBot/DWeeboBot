@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import io.github.weebobot.weebobot.Main;
-import io.github.weebobot.weebobot.twitch.TwitchUtilities;
+import io.github.weebobot.weebobot.external.TwitchUtilities;
 
 public class RaffleUtil {
 

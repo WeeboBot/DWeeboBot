@@ -18,6 +18,7 @@
 package io.github.weebobot.weebobot.database;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.github.weebobot.weebobot.Main;
-import io.github.weebobot.weebobot.twitch.TwitchUtilities;
+import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.TOptions;
 import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
@@ -659,5 +660,123 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return false;
+	}
+	
+	public static boolean getUserSongTables(String user){
+		boolean queue = false;
+		boolean list = false;
+		try {
+			DatabaseMetaData dbm = conn.getMetaData();
+			ResultSet tables = dbm.getTables(null, null, String.format("%sSongQueue", user), null);
+			if (tables.next()){
+				queue=true;
+			}else{
+				executeUpdate(String.format("CREATE TABLE %s.%sSongQueue (queueID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER, requester varchar(25))", DATABASE, user));
+				System.out.println(String.format("Created song queue table for %s", user));
+			}
+			tables = dbm.getTables(null, null, String.format("%sSongList", user), null);
+			if (tables.next()){
+				list=true;
+			}else{
+				executeUpdate(String.format("CREATE TABLE %s.%sSongList (listID INTEGER AUTO_INCREMENT, songURL varchar(255), songTitle varchar(255), songID INTEGER)", DATABASE, user));
+				System.out.println(String.format("Created song list table for %s", user));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking for %s's song tables", user), e);
+			WLogger.logError(e);
+		}
+		return queue && list;
+	}
+	
+	public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
+		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is already in the song queue!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully added to the song queue!", videoInformation[2]);
+		}
+		return String.format("There was an error adding the song %s to the song queue!", videoInformation[2]);
+	}
+	
+	public static boolean isInQueue(String channelNoHash, int videoID){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songID=%d", DATABASE, channelNoHash, videoID));
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoID, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+	
+	public static boolean isInQueue(String channelNoHash, String videoLink){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songLink=%d", DATABASE, channelNoHash, videoLink));
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoLink, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+	
+	public static String deleteSongFromQueue(String channelNoHash, String[] videoInformation){
+		if(!isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is not in the song queue!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully removed from the song queue!", videoInformation[2]);
+		}
+		return String.format("There was an error removing the song %s from the song queue!", videoInformation[2]);
+	}
+	
+	public static String addSongToList(String channelNoHash, String sender, String[] videoInformation){
+		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is already in your playlist!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully added to your personal playlist!", videoInformation[2]);
+		}
+		return String.format("There was an error adding the song %s to your playlist!", videoInformation[2]);
+	}
+	
+	public static boolean isInList(String channelNoHash, int videoID){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songID=%d", DATABASE, channelNoHash, videoID));
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in your playlist", videoID, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+	
+	public static boolean isInList(String channelNoHash, String videoLink){
+		try {
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songLink=%d", DATABASE, channelNoHash, videoLink));
+			if(rs.next()){
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoLink, channelNoHash), e);
+			WLogger.logError(e);
+		}
+		return false;
+	}
+	
+	public static String deleteSongFromList(String channelNoHash, String[] videoInformation){
+		if(!isInList(channelNoHash, Integer.valueOf(videoInformation[3]))){
+			return String.format("The song %s is not in your playlist!", videoInformation[2]);
+		}
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (%d,\'%s\',\'%s\',%d,\'%s\')", Integer.valueOf(videoInformation[0]), videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), videoInformation[4]))){
+			return String.format("The song %s has been successfully removed from your playlist!", videoInformation[2]);
+		}
+		return String.format("There was an error removing the song %s from your playlist!", videoInformation[2]);
 	}
 }
