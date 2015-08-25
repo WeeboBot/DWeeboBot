@@ -4,7 +4,7 @@
 /.metadata/
 /.settings/
 
-.projrct
+*.projrct
 *.jar
 *.html
 
