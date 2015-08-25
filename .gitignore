@@ -1,12 +1,6 @@
 # Eclipse
 /bin/
 /target/
-/.metadata/
-/.settings/
-
-.project
-
-*.jar
 
 #Netbeans
 /dist/
