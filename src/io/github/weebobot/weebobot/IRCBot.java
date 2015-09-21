@@ -129,7 +129,7 @@ public class IRCBot extends PircBot {
 			if (Main.isDefaultMod(recipient, channel.substring(1))) {
 				return;
 			}
-			new DelModerator().execute(recipient, Main.getBotChannel().substring(1), new String[] { sourceHostname });
+			new DelModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onDeop() in "
