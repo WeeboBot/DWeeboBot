@@ -29,6 +29,7 @@ import org.jibble.pircbot.IrcException;
 import io.github.weebobot.weebobot.backend.Backend;
 import io.github.weebobot.weebobot.commands.CommandParser;
 import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.external.YoutubeUtilities;
 import io.github.weebobot.weebobot.util.CommandsPage;
 import io.github.weebobot.weebobot.util.TFileReader;
 import io.github.weebobot.weebobot.util.TOptions;
@@ -56,6 +57,7 @@ public class Main implements Runnable{
 	 * @param args
 	 *            [0] - Twitch OAuth
 	 *            [1] - Database Password
+	 *            [2] - YouTube Developers API Key
 	 */
 	public static void main(String[] args) {
 		listeners = new ArrayList<>();
@@ -93,6 +95,7 @@ public class Main implements Runnable{
 	@Override
 	public void run() {
 		Database.initDBConnection(args[1]);
+		YoutubeUtilities.setKey(args[2]);
 		bot = new IRCBot();
 
 		bot.setVerbose(true);

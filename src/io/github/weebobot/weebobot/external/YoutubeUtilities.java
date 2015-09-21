@@ -12,10 +12,12 @@ import io.github.weebobot.weebobot.database.Database;
 public class YoutubeUtilities {
 	
 	private static YouTube youtube;
+	private static String key;
 	
 	public static boolean isValidLink(String videoLink) {
 		try{
 			YouTube.Search.List search = youtube.search().list("id,snippet");
+			search.setKey(key);
 			search.setType("video");
 			search.setQ(videoLink);
 			search.setMaxResults(1l);
@@ -30,6 +32,7 @@ public class YoutubeUtilities {
 	public static String[] getSongInfoFromLink(String videoLink) {
 		try{
 			YouTube.Search.List search = youtube.search().list("id,snippet");
+			search.setKey(key);
 			search.setType("video");
 			search.setQ(videoLink);
 			search.setMaxResults(1l);
@@ -47,6 +50,10 @@ public class YoutubeUtilities {
 		}catch(IOException e){
 		}
 		return null;
+	}
+
+	public static String setKey(String apiKey) {
+		return key;
 	}
 
 }
