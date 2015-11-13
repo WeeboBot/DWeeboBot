@@ -30,35 +30,36 @@ public class Setup extends Command {
 				"To begin with, we use a two step system to define a few options. Let's begin with timing out a user.");
 			Main.getBot().sendMessage(
 				channel,
-				"Users are timed out for excessive caps, symbols, emotes, long messages, links, blacklisted words (spam).");
+				"Users are timed out for excessive caps, symbols, emotes, long messages, links, and blacklisted words (spam).");
 			Main.getBot().sendMessage(
 				channel,
 				"We would like you to configure the ammount of capital letters, symbols, and emotes (all of which default to 20), and paragraphs(defaults to 250 characters) allowed in a message.");
 			Main.getBot().sendMessage(
 				channel,
-				"To change this, please run !changeOption <caps, symbols, emotes, paragraph>|<new value>. Note: If you make paragraph to short users may not be able to post proper sentences. Think of it like twitter messages.");
+				"To change this, please run !changeOption <caps, symbols, emotes, paragraph> <new value>. Note: If you make paragraph too short users may not be able to post proper sentences. Think of it like twitter messages.");
 			Main.getBot().sendMessage(
 					channel,
 					"If you would like to disable any spam protection simply set its value to -1, except for links which only take \"enable\" or \"disable\".");
-			Main.getBot().sendMessage(channel, "Now you need to set up how regulars are set up in your channel. Regulars are essentially people who have spent a certain ammount of time in your chat (which you define)");
-			Main.getBot().sendMessage(channel, "To become a regular a user must earn a certain number of points which are earned by being in chat, 1 point for every 5 minutes.");
-			Main.getBot().sendMessage(channel, "Set how many hours a user must be in the chat to become a regular by typing !changeOption regular|<time in hours>");
+			Main.getBot().sendMessage(channel, "Now you need to set up how regulars are handled in your channel. Regulars are essentially people who have spent a certain ammount of time in your chat (which you define).");
+			Main.getBot().sendMessage(channel, "To become a regular a user must earn a certain number of points, which are earned by being in chat while the stream is live, 1 point for every 5 minutes.");
+			Main.getBot().sendMessage(channel, "Set how many points a user must earn to become a regular by typing \"!changeOption regular <ammount>\" without the quotes!");
 			Main.getBot().sendMessage(
 				channel,
 				"Once you are finished type \"!setup continue\" in chat!");
 		} else {
 			Main.getBot().sendMessage(
 				channel,
-				"Next we are going to configure the welcome message for when new users enter your channel. It has a default (which should have been said to you by now), but if you want to change it you can type !changewelcome <message>.");
+				"Next we are going to configure the welcome message for when new users enter your channel. By default it is off, but if you want to enable it you can type !changewelcome \"message\" (with the quotes).");
 			Main.getBot().sendMessage(
 				channel,
 				"If you want the users name to appear in the join message use %user%. This will cause the bot to replace that with the name of the person who is joining.");
 			Main.getBot().sendMessage(
 				channel,
-				"If you would like to permanantely disable this feature type \"!changeWelcome none\" without the quotes! To temporarily disable it type !disableWelcome and to enable it type !enableWelcome (This only works if the message is something other than \"none\")!");
+				"If you would like to disable this feature again type \"!changeWelcome none\" without the quotes! To temporarily disable it type !disableWelcome and to enable it type !enableWelcome (This only works if the message is something other than \"none\")!");
 			Main.getBot().sendMessage(
 				channel,
-				"Also, if you would like to use subscriber raffles or change the stream title and game, please go to http://pcmrbot.no-ip.info/authorize to authorize the bot!");
+				"Also, if you would like to use subscriber raffles or change the stream title and game, please go to http://weebobot.com/login to authorize the bot!");
+			Main.getBot().sendMessage(channel, "Congrats, you're all done! Go take a nap ResidentSleeper");
 		}
 		return null;
 	}
