@@ -157,18 +157,19 @@ public class IRCBot extends PircBot {
 					Database.updateUser(channel.substring(1), sender);
 					new PointsRunnable(u.getNick(), channel.substring(1));
 				}
-			}
-			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
-				String msg = Database.getWelcomeMessage(channel.substring(1))
-						.replace("%user%", sender);
-				if (!msg.equalsIgnoreCase("none")
-						&& !recentlyWelcomed(sender, channel)) {
-					sendMessage(channel, msg);
-					addWelcome(channel, sender);
+			} else {
+				if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
+					String msg = Database.getWelcomeMessage(channel.substring(1))
+							.replace("%user%", sender);
+					if (!msg.equalsIgnoreCase("none")
+							&& !recentlyWelcomed(sender, channel)) {
+						sendMessage(channel, msg);
+						addWelcome(channel, sender);
+					}
 				}
+				Database.updateUser(channel.substring(1), sender);
+				new PointsRunnable(sender, channel.substring(1));
 			}
-			Database.updateUser(channel.substring(1), sender);
-			new PointsRunnable(sender, channel.substring(1));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onJoin()", e);
