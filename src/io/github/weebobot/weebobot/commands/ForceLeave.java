@@ -36,8 +36,11 @@ public class ForceLeave extends Command {
 	public String execute(String channel, String sender, String... parameters) {
 		if(channel.equalsIgnoreCase(Main.getBotChannel())) {
 			if(parameters[0].startsWith("#")) {
+				Main.getBot().sendMessage(parameters[0], "I am leaving the channel!");
 				Main.partChannel(parameters[0]);
 			} else {
+
+				Main.getBot().sendMessage("#"+parameters[0], "I am leaving the channel!");
 				Main.partChannel("#"+parameters[0]);
 			}
 			return "Forcefully leaving %channel%".replace("%channel%", parameters[0]);
