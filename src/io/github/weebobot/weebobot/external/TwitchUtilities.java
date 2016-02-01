@@ -17,6 +17,16 @@
 
 package io.github.weebobot.weebobot.external;
 
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.util.ULevel;
+import io.github.weebobot.weebobot.util.WLogger;
+
+import javax.net.ssl.HttpsURLConnection;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,18 +37,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
-
-import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.util.ULevel;
-import io.github.weebobot.weebobot.util.WLogger;
 
 public class TwitchUtilities {
 
@@ -152,8 +150,7 @@ public class TwitchUtilities {
 							return false;
 						}
 					}
-					nextUrl = URLEncoder.encode(obj.getAsJsonArray("_links")
-							.get(1).getAsJsonPrimitive().getAsString(), CHARSET);
+					nextUrl = obj.getAsJsonObject("_links").getAsJsonPrimitive("next").getAsString();
 					obj = new JsonParser().parse(
 							new JsonReader(new InputStreamReader(new URL(
 									nextUrl).openStream()))).getAsJsonObject();
@@ -161,10 +158,10 @@ public class TwitchUtilities {
 				return false;
 			}
 		} catch (FileNotFoundException e) {
-			WLogger.log(channelNoHash + "Does not have any subscribers or is not partnered.");
-		}catch (JsonIOException | JsonSyntaxException | IOException e) {
+			WLogger.log(channelNoHash + "Does not have any followers.");
+		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channelNoHash.substring(1), e);
+					+ " is following " + channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -250,9 +247,9 @@ public class TwitchUtilities {
 							return true;
 						}
 					}
-					nextUrl = URLEncoder.encode(obj.getAsJsonArray("_links")
-							.get(1).getAsJsonPrimitive().getAsString()
-							+ "?oauth_token=" + userOAuth, CHARSET);
+					nextUrl = obj.getAsJsonObject("_links")
+							.getAsJsonPrimitive().getAsString()
+							+ "?oauth_token=" + userOAuth;
 					obj = new JsonParser().parse(
 							new JsonReader(new InputStreamReader(new URL(
 									nextUrl).openStream()))).getAsJsonObject();
@@ -375,14 +372,14 @@ public class TwitchUtilities {
 		return false;
 	}
 
-	public static String getUserLevelNoMod(String channelNoHash, String moderator) {
-		if(isSubscriber(moderator, channelNoHash)) {
+	public static String getUserLevelNoMod(String channelNoHash, String user) {
+		if(isSubscriber(user, channelNoHash)) {
 			return ULevel.Subscriber.getName();
 		}
-		if(Database.isRegular(moderator, channelNoHash)) {
+		if(Database.isRegular(user, channelNoHash)) {
 			return ULevel.Regular.getName();
 		}
-		if(isFollower(channelNoHash, moderator)) {
+		if(isFollower(channelNoHash, user)) {
 			return ULevel.Follower.getName();
 		}
 		return ULevel.Normal.getName();

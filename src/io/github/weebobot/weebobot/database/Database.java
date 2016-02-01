@@ -17,21 +17,15 @@
 
 package io.github.weebobot.weebobot.database;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.TOptions;
 import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
+
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Database {
 
@@ -588,7 +582,7 @@ public class Database {
 	/**
 	 * @param sender - person to check if is regular
 	 * @param channelNoHash - channel the person is in, without the leading #
-	 * @return true if {@link sender} is a regular in {@link channelNoHash}
+	 * @return true if {@param sender} is a regular in {@param channelNoHash}
 	 */
 	public static boolean isRegular(String sender, String channelNoHash) {
 		ResultSet currentPoints=Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
@@ -660,17 +654,20 @@ public class Database {
 	}
 
 	public static boolean updateUser(String channelNoHash, String sender) {
+		System.out.println(String.format("Updating %s in %s", sender, channelNoHash));
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
 			if(!rs.next()) {
 				boolean visible = true;
 				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
-				if(sender.toLowerCase().matches(String.format("(%s|%s)", channelNoHash.toLowerCase(), Main.getBotChannel().substring(1)))){
+				System.out.println(String.format("User level is %s", uLevel));
+				if(sender.equalsIgnoreCase(Main.getBotChannel().substring(1))){
 					visible = false;
 					uLevel = ULevel.Moderator.getName();
-				}
-				if(sender.equalsIgnoreCase(channelNoHash)) {
+					System.out.println("User is a moderator");
+				} else if(sender.equalsIgnoreCase(channelNoHash)) {
 					uLevel = ULevel.Owner.getName();
+					System.out.println("User is a moderator");
 				}
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
 			} else {
