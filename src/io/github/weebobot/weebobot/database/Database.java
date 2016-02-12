@@ -642,7 +642,10 @@ public class Database {
 		StringBuilder sb = new StringBuilder();
 		try {
 			while(rs.next()) {
-				sb.append(rs.getString(2));
+				String emote = rs.getString(2);
+                emote = emote.replaceAll('!' + 7 + "", "\\(");
+                emote = emote.replaceAll('!' + 8 + "", "\\)");
+				sb.append(emote);
 				sb.append("|");
 			}
 			return sb.toString();
@@ -834,4 +837,12 @@ public class Database {
 		executeUpdate(String.format("UPDATE %s.%sSongList SET listID=%d, songURL=\'%s\', songTitle=\'%s\', songID=%d", DATABASE, Main.getBotChannel().substring(1), info[0], info[1], info[2], info[0]));
 		return info[0];
 	}
+
+    public static boolean emoteExists(String emote) {
+        return executeQuery(String.format("SELECT * FROM %s.globalEmotes WHERE emote=\'%s\'", DATABASE, emote)) == null;
+    }
+
+    public static void addEmote(String emote) {
+        executeUpdate(String.format("INSERT INTO %s.globalEmotes VALUES (\'%s\')", DATABASE, emote));
+    }
 }

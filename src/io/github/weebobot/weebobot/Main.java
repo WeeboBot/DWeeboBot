@@ -17,24 +17,19 @@
 
 package io.github.weebobot.weebobot;
 
+import io.github.weebobot.weebobot.backend.Backend;
+import io.github.weebobot.weebobot.commands.CommandParser;
+import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.external.YoutubeUtilities;
+import io.github.weebobot.weebobot.util.*;
+import org.jibble.pircbot.IrcException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jibble.pircbot.IrcException;
-
-import io.github.weebobot.weebobot.backend.Backend;
-import io.github.weebobot.weebobot.commands.CommandParser;
-import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.external.YoutubeUtilities;
-import io.github.weebobot.weebobot.util.CommandsPage;
-import io.github.weebobot.weebobot.util.TFileReader;
-import io.github.weebobot.weebobot.util.TOptions;
-import io.github.weebobot.weebobot.util.ULevel;
-import io.github.weebobot.weebobot.util.WLogger;
 
 public class Main implements Runnable{
 	
@@ -96,6 +91,7 @@ public class Main implements Runnable{
 	public void run() {
 		Database.initDBConnection(args[1]);
 		YoutubeUtilities.setKey(args[2]);
+		new EmoteRunnable();
 		bot = new IRCBot();
 
 		bot.setVerbose(true);

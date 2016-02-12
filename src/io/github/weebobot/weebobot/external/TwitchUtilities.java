@@ -17,10 +17,7 @@
 
 package io.github.weebobot.weebobot.external;
 
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import io.github.weebobot.weebobot.database.Database;
 import io.github.weebobot.weebobot.util.ULevel;
@@ -35,12 +32,17 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TwitchUtilities {
 
 	private final static String BASE_URL = "https://api.twitch.tv/kraken/";
+    private final static String EMOTE_URL = "https://twitchemotes.com/api_cache/v2/";
+    private final static String BTTV_URL = "https://api.betterttv.net/";
 	private final static String CHARSET = StandardCharsets.UTF_8.name();
 
 	private final static Logger logger = Logger.getLogger(TwitchUtilities.class
@@ -385,4 +387,84 @@ public class TwitchUtilities {
 		return ULevel.Normal.getName();
 	}
 
+	public static void updateEmoteDatabase() {
+        for(String emote : getSubEmotes()) {
+            if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote);
+            }
+        }
+
+        for(String emote : getGlobalEmotes()) {
+            if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote);
+            }
+        }
+
+        for(String emote : getBTTVEmotes()) {
+            if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote);
+            }
+        }
+	}
+
+    private static ArrayList<String> getGlobalEmotes() {
+        ArrayList<String> globalEmotes = new ArrayList<>();
+        try {
+            Set<Map.Entry<String, JsonElement>> channels = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(new URL(EMOTE_URL + "global.json").openStream())))
+                    .getAsJsonObject().getAsJsonObject("emotes").entrySet();
+
+            for(Map.Entry entry: channels) {
+                globalEmotes.add(entry.getKey().toString());
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        }
+        return globalEmotes;
+    }
+
+    private static ArrayList<String> getSubEmotes() {
+        ArrayList<String> subEmotes = new ArrayList<>();
+        try {
+            Set<Map.Entry<String, JsonElement>> channels = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(new URL(EMOTE_URL + "subscriber.json").openStream())))
+                    .getAsJsonObject().getAsJsonObject("channels").entrySet();
+
+            for(Map.Entry entry: channels) {
+                for (JsonElement element : new JsonParser().parse(new JsonReader(
+                        new InputStreamReader(new URL(EMOTE_URL + "subscriber.json").openStream())))
+                        .getAsJsonObject().getAsJsonObject("channels").getAsJsonObject((String)entry.getKey()).getAsJsonArray("emotes").getAsJsonArray()) {
+                    subEmotes.add(element.getAsJsonObject().getAsJsonPrimitive("code").getAsString());
+                }
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        }
+        return subEmotes;
+    }
+
+    private static ArrayList<String> getBTTVEmotes() {
+        ArrayList<String> bttvEmotes = new ArrayList<>();
+        try {
+            JsonArray jsonEmotes = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(new URL(BTTV_URL + "emotes").openStream())))
+                    .getAsJsonObject().getAsJsonArray("emotes").getAsJsonArray();
+
+            for (JsonElement element :jsonEmotes) {
+                bttvEmotes.add(element.getAsJsonObject().getAsJsonPrimitive("regex").getAsString());
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        }
+        return bttvEmotes;
+    }
 }
