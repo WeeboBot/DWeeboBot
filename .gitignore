@@ -11,5 +11,12 @@ build.xml
 nbactions.xml
 nb-configuration.xml
 
+#IntelliJ
+*.iml
+*.ipr
+*.iws
+
 connectedChannels.txt
+script.txt
+bot.err
 .classpath

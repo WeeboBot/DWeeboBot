@@ -112,7 +112,7 @@ public class Database {
             try{
                 stmt4=conn.createStatement();
                 stmt4.closeOnCompletion();
-                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), points INTEGER, visibility BOOLEAN, regular BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Users!", ex);
     			WLogger.logError(e);
@@ -642,12 +642,10 @@ public class Database {
 		StringBuilder sb = new StringBuilder();
 		try {
 			while(rs.next()) {
-				String emote = rs.getString(2);
-                emote = emote.replaceAll('!' + 7 + "", "\\(");
-                emote = emote.replaceAll('!' + 8 + "", "\\)");
-				sb.append(emote);
+				sb.append(rs.getString(2));
 				sb.append("|");
 			}
+            sb.append(getGlobalEmoteList());
 			return sb.toString();
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to get the emote list for: " + channelNoHash, e);
@@ -655,6 +653,26 @@ public class Database {
 		}
 		return null;
 	}
+
+    private static String getGlobalEmoteList() {
+        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.globalEmotes", DATABASE));
+        StringBuilder sb = new StringBuilder();
+        try {
+            while(rs.next()) {
+                sb.append(rs.getString(1));
+                sb.append("|");
+            }
+            String list = sb.toString();
+            if(list.endsWith("|")) {
+                list = list.substring(0, list.length()-1);
+            }
+            return list;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Unable to get the global emote list", e);
+            WLogger.logError(e);
+        }
+        return null;
+    }
 
 	public static boolean updateUser(String channelNoHash, String sender) {
 		System.out.println(String.format("Updating %s in %s", sender, channelNoHash));
@@ -839,10 +857,24 @@ public class Database {
 	}
 
     public static boolean emoteExists(String emote) {
-        return executeQuery(String.format("SELECT * FROM %s.globalEmotes WHERE emote=\'%s\'", DATABASE, emote)) == null;
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement(String.format("SELECT * FROM %s.globalEmotes WHERE emote=?", DATABASE));
+            stmt.setString(1, emote);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return executeQuery(stmt) != null;
     }
 
     public static void addEmote(String emote) {
-        executeUpdate(String.format("INSERT INTO %s.globalEmotes VALUES (\'%s\')", DATABASE, emote));
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(String.format("INSERT INTO %s.globalEmotes VALUES (?)", DATABASE));
+			stmt.setString(1, emote);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+        executeUpdate(stmt);
     }
 }

@@ -60,8 +60,8 @@ public class TwitchUtilities {
 		String url = BASE_URL + "channels/" + channelNoHash + "/";
 		String _method = "put";
 		String oauth_token = Database.getUserOAuth(channelNoHash);
-		String query = null;
-		URLConnection connection = null;
+		String query;
+		URLConnection connection;
 		if (oauth_token == null) {
 			return false;
 		}
@@ -97,9 +97,11 @@ public class TwitchUtilities {
 		String url = BASE_URL + "channels/" + channelNoHash + "/";
 		String _method = "put";
 		String oauth_token = Database.getUserOAuth(channelNoHash);
-		String query = null;
-		URLConnection connection = null;
+		String query;
+		URLConnection connection;
 		try {
+            if(oauth_token == null)
+                throw new NullPointerException();
 			query = String.format("channel[game]=%s&_method=%s&oauth_token=%s",
 					URLEncoder.encode(game, CHARSET),
 					URLEncoder.encode(_method, CHARSET),
@@ -108,7 +110,7 @@ public class TwitchUtilities {
 			connection.setRequestProperty("Accept-Charset", CHARSET);
 			connection.getInputStream();
 			return true;
-		} catch (IOException e) {
+		} catch (NullPointerException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred updating the game for "
 					+ channelNoHash, e);
 			WLogger.logError(e);
@@ -119,8 +121,8 @@ public class TwitchUtilities {
 	/**
 	 * Checks if the sender is a follower of channel
 	 * 
-	 * @param sender
-	 * @param channelNoHash
+	 * @param sender - the user who sent the message
+	 * @param channelNoHash - the channel the message was sent in
 	 * @return - true if sender is following channel
 	 */
 	public static boolean isFollower(String channelNoHash, String sender) {
@@ -191,7 +193,7 @@ public class TwitchUtilities {
 	
 		HttpsURLConnection con = null;
 		try {
-			con = (HttpsURLConnection) obj.openConnection();
+            con = (HttpsURLConnection) obj.openConnection();
 			con.setRequestMethod("POST");
 		} catch (IOException e) {
 			logger.log(Level.SEVERE,
@@ -206,8 +208,8 @@ public class TwitchUtilities {
 	/**
 	 * Checks if the sender is subscribed to channel
 	 * 
-	 * @param sender
-	 * @param channelNoHash
+	 * @param sender - user who sent the message
+	 * @param channelNoHash - channel the message was sent in
 	 * @return - true if sender is subscribed to channel
 	 */
 	public static boolean isSubscriber(String sender, String channelNoHash) {
@@ -330,8 +332,8 @@ public class TwitchUtilities {
 	/**
 	 * Gets the amount of people subscribed to the specified channel
 	 * 
-	 * @param channelNoHash
-	 * @param oAuth
+	 * @param channelNoHash - channel to get subscriber count for
+	 * @param oAuth - oAuth of the channel
 	 * @return number of subscribers for the channel
 	 */
 	public static int subscriberCount(String channelNoHash, String oAuth) {
@@ -388,21 +390,21 @@ public class TwitchUtilities {
 	}
 
 	public static void updateEmoteDatabase() {
+		for(String emote : getGlobalEmotes()) {
+			if(!Database.emoteExists(emote)) {
+				Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
+			}
+		}
+
+		for(String emote : getBTTVEmotes()) {
+			if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
+			}
+		}
+
         for(String emote : getSubEmotes()) {
             if(!Database.emoteExists(emote)) {
-                Database.addEmote(emote);
-            }
-        }
-
-        for(String emote : getGlobalEmotes()) {
-            if(!Database.emoteExists(emote)) {
-                Database.addEmote(emote);
-            }
-        }
-
-        for(String emote : getBTTVEmotes()) {
-            if(!Database.emoteExists(emote)) {
-                Database.addEmote(emote);
+                Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
             }
         }
 	}
