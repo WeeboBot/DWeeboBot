@@ -18,5 +18,6 @@ nb-configuration.xml
 
 connectedChannels.txt
 script.txt
+ftp.log
 bot.err
 .classpath

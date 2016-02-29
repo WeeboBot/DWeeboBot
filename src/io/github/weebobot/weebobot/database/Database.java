@@ -861,10 +861,12 @@ public class Database {
         try {
             stmt = conn.prepareStatement(String.format("SELECT * FROM %s.globalEmotes WHERE emote=?", DATABASE));
             stmt.setString(1, emote);
+
+            return executeQuery(stmt).next();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return executeQuery(stmt) != null;
+        return false;
     }
 
     public static void addEmote(String emote) {
