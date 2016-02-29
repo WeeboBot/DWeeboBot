@@ -17,6 +17,16 @@
 
 package io.github.weebobot.weebobot;
 
+import io.github.weebobot.weebobot.commands.AddModerator;
+import io.github.weebobot.weebobot.commands.CommandParser;
+import io.github.weebobot.weebobot.commands.DelModerator;
+import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
+import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.external.TwitchUtilities;
+import io.github.weebobot.weebobot.util.*;
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.User;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,24 +34,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jibble.pircbot.PircBot;
-import org.jibble.pircbot.User;
-
-import io.github.weebobot.weebobot.commands.AddModerator;
-import io.github.weebobot.weebobot.commands.CommandParser;
-import io.github.weebobot.weebobot.commands.DelModerator;
-import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
-import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.external.TwitchUtilities;
-import io.github.weebobot.weebobot.util.DelayedPermitTask;
-import io.github.weebobot.weebobot.util.DelayedReJoin;
-import io.github.weebobot.weebobot.util.DelayedWelcomeTask;
-import io.github.weebobot.weebobot.util.PointsRunnable;
-import io.github.weebobot.weebobot.util.TOptions;
-import io.github.weebobot.weebobot.util.TType;
-import io.github.weebobot.weebobot.util.Timeouts;
-import io.github.weebobot.weebobot.util.WLogger;
 
 /**
  *
@@ -344,8 +336,8 @@ public class IRCBot extends PircBot {
 			new Timeouts(channel, sender, 1, TType.CAPS);
 		}
 		if(!immunities[3] && emotes != -1) {
-			String emoteList=Database.getEmoteList(channel.substring(1));
-			if(emoteList != null && message.matches("(" + emoteList + "\\s){" + emotes + ",}")) {
+			String emoteList=Database.getEmoteList(channel.substring(1)).replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\\\", "\\\\").replaceAll("\\$", "\\$").replaceAll("\\^", "\\^").replaceAll("\\+", "\\+").replaceAll("\\.", "\\.").replaceAll("\\|", "\\|").replaceAll("\\?", "\\?").replaceAll("\\*", "\\*").replaceAll("\\[", "\\[").replaceAll("\\{", "\\{");
+			if(emoteList != null && message.matches("((\\s)?(" + emoteList + ")(\\s)?){" + emotes + ",}")) {
 				new Timeouts(channel, sender, 1, TType.EMOTE);
 			}
 		}

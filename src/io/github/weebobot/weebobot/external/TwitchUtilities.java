@@ -392,17 +392,17 @@ public class TwitchUtilities {
 	public static void updateEmoteDatabase() {
 		for(String emote : getGlobalEmotes()) {
 			if(!Database.emoteExists(emote)) {
-				Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
+				Database.addEmote(emote);
 			}
 		}
 		for(String emote : getBTTVEmotes()) {
 			if(!Database.emoteExists(emote)) {
-                Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
+                Database.addEmote(emote);
 			}
 		}
         for(String emote : getSubEmotes()) {
             if(!Database.emoteExists(emote)) {
-                Database.addEmote(emote.replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\'", "\\\'"));
+                Database.addEmote(emote);
             }
         }
 	}
