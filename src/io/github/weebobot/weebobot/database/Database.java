@@ -738,15 +738,31 @@ public class Database {
 		}
 		return queue && list;
 	}
+
+    public static int addSongToGlobalList(String songURL, String songTitle) {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement(String.format("INSERT INTO %s.globalSongList (songURL,songTitle) VALUES(?,?)", DATABASE));
+            stmt.setString(1, songURL);
+            stmt.setString(2, songTitle);
+            executeUpdate(stmt);
+            ResultSet rs = executeQuery(String.format("SELECT COUNT(*) FROM %s.globalSongList", DATABASE));
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 	
 	public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
-		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
-			return String.format("The song %s is already in the song queue!", videoInformation[2]);
+		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[2]))){
+			return String.format("The song %s is already in the song queue!", videoInformation[1]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue VALUES (\'%s\',\'%s\',%d,\'%s\')", DATABASE, channelNoHash, videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3]), sender))){
-			return String.format("The song %s has been successfully added to the song queue!", videoInformation[2]);
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue (songURL,songTitle,songID,requester) VALUES (\'%s\',\'%s\',%d,\'%s\')", DATABASE, channelNoHash, videoInformation[0], videoInformation[1], Integer.valueOf(videoInformation[2]), sender))){
+			return String.format("The song %s has been successfully added to the song queue!", videoInformation[1]);
 		}
-		return String.format("There was an error adding the song %s to the song queue!", videoInformation[2]);
+		return String.format("There was an error adding the song %s to the song queue!", videoInformation[1]);
 	}
 	
 	public static boolean isInQueue(String channelNoHash, int videoID){
@@ -831,9 +847,9 @@ public class Database {
 		return String.format("There was an error removing the song %s from your playlist!", videoInformation[2]);
 	}
 	
-	public static String[] getSongInfoFromLink(String videoLink){
+	public static String[] getSongInfoFromLink(String channelNoHash, String videoLink){
 		try {
-			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, videoLink));
+			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
 				String[] videoInformation = new String[4];
 				videoInformation[0] = "" + rs.getInt(1);
@@ -849,12 +865,21 @@ public class Database {
 		return null;
 	}
 	
-	public static String getNewSongID(String songUrl, String songTitle) {
-		executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (\'%s\',\'%s\')", DATABASE, Main.getBotChannel().substring(1), songUrl, songTitle));
-		String[] info = getSongInfoFromLink(songUrl);
-		executeUpdate(String.format("UPDATE %s.%sSongList SET listID=%d, songURL=\'%s\', songTitle=\'%s\', songID=%d", DATABASE, Main.getBotChannel().substring(1), info[0], info[1], info[2], info[0]));
-		return info[0];
-	}
+//	public static String getNewSongID(String channelNoHash, String songUrl, String songTitle) {
+//        PreparedStatement stmt = null;
+//        try {
+//            stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sSongList (songURL,songTitle,songID) VALUES (?,?,?)", DATABASE, channelNoHash));
+//            stmt.setString(1, songUrl);
+//            stmt.setString(2, songTitle);
+//            stmt.setString(3, );
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        executeUpdate(stmt);
+//		String[] info = getSongInfoFromLink(channelNoHash, songUrl);
+//		executeUpdate(String.format("UPDATE %s.%sSongList SET listID=%s, songURL=\'%s\', songTitle=\'%s\', songID=0", DATABASE, channelNoHash, info[0], info[1], info[2], info[0]));
+//		return info[0];
+//	}
 
     public static boolean emoteExists(String emote) {
         PreparedStatement stmt = null;

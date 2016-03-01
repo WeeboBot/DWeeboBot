@@ -90,7 +90,7 @@ public class Main implements Runnable{
 	@Override
 	public void run() {
 		Database.initDBConnection(args[1]);
-		YoutubeUtilities.setKey(args[2]);
+		YoutubeUtilities.init(args[2]);
 		new EmoteRunnable();
 		bot = new IRCBot();
 
