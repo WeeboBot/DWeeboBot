@@ -22,7 +22,6 @@ import io.github.weebobot.weebobot.commands.CommandParser;
 import io.github.weebobot.weebobot.commands.DelModerator;
 import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.*;
 import org.jibble.pircbot.PircBot;
 import org.jibble.pircbot.User;
@@ -311,7 +310,12 @@ public class IRCBot extends PircBot {
 	 */
 	public void checkSpam(String channel, String message, String sender) {
 		String level = Database.getUserLevel(channel.substring(1), sender);
-		boolean[] immunities = Database.getImmunities(channel.substring(1), level);
+		boolean[] immunities = null;
+		try {
+			immunities = Database.getImmunities(channel.substring(1), level);
+		} catch (NullPointerException e) {
+			immunities = new boolean[] {false, false, false, false, false, false};
+		}
 		int caps = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numCaps.getOptionID()));
 		int symbols = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numSymbols.getOptionID()));
 		int link = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.link.getOptionID()));
@@ -339,7 +343,7 @@ public class IRCBot extends PircBot {
 		}
 		if(!immunities[3] && emotes != -1) {
 			String emoteList=Database.getEmoteList(channel.substring(1)).replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\\\", "\\\\").replaceAll("\\$", "\\$").replaceAll("\\^", "\\^").replaceAll("\\+", "\\+").replaceAll("\\.", "\\.").replaceAll("\\|", "\\|").replaceAll("\\?", "\\?").replaceAll("\\*", "\\*").replaceAll("\\[", "\\[").replaceAll("\\{", "\\{");
-			if(emoteList != null && message.matches("((\\s)?(" + emoteList + ")(\\s)?){" + emotes + ",}")) {
+			if(emoteList != null && message.matches("(?:(?:\\s)?(" + emoteList + ")(?:\\s)?){20,}")) {
 				new Timeouts(channel, sender, 1, TType.EMOTE);
 			}
 		}
@@ -357,11 +361,6 @@ public class IRCBot extends PircBot {
 		if(!immunities[5] && symbols != -1
 				&& message.matches("[\\W_\\s]{" + symbols + ",}")){
 			new Timeouts(channel, sender, 1, TType.SYMBOLS);
-		}
-		if (!Database.isMod(sender, channel.substring(1))
-				&& !Database.isRegular(sender, channel.substring(1))
-				&& !TwitchUtilities.isSubscriber(sender, channel.substring(1))) {
-			
 		}
 	}
 

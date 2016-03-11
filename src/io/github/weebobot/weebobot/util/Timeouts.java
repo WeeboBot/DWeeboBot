@@ -62,7 +62,7 @@ public class Timeouts implements Runnable {
 						"/timeout " + user + " 300");
 				Main.getBot().sendMessage(
 						channel,
-						type.getRandomMessage(channel)
+						type.getRandomMessage(channel.substring(1))
 								+ " Second warning, 5 minute timeout!");
 				type.updateOffender(user, channel, 2);
 			} else if (type.getOffender(user, channel) == 2) {
@@ -70,7 +70,7 @@ public class Timeouts implements Runnable {
 						"/timeout " + user + " 600");
 				Main.getBot().sendMessage(
 						channel,
-						type.getRandomMessage(channel)
+						type.getRandomMessage(channel.substring(1))
 								+ "Third warning, 10 minute timeout!");
 				type.updateOffender(user, channel, 3);
 			} else if (type.getOffender(user, channel) == 3) {
@@ -78,7 +78,7 @@ public class Timeouts implements Runnable {
 						"/timeout " + user + " 900");
 				Main.getBot().sendMessage(
 						channel,
-						type.getRandomMessage(channel)
+						type.getRandomMessage(channel.substring(1))
 								+ " Fourth warning, 15 minute timeout!");
 				type.updateOffender(user, channel, 4);
 			} else if (type.getOffender(user, channel) == 4) {
@@ -86,7 +86,7 @@ public class Timeouts implements Runnable {
 						"/timeout " + user + " 1200");
 				Main.getBot().sendMessage(
 						channel,
-						type.getRandomMessage(channel)
+						type.getRandomMessage(channel.substring(1))
 								+ " Fifth warning, 20 minute timeout!");
 				type.updateOffender(user, channel, 5);
 			} else {
@@ -94,7 +94,7 @@ public class Timeouts implements Runnable {
 						"/timeout " + user + " 7200");
 				Main.getBot().sendMessage(
 						channel,
-						type.getRandomMessage(channel)
+						type.getRandomMessage(channel.substring(1))
 								+ " Sixth warning, 2 hour timeout! You dun' goofed!");
 				type.removeOffender(user, channel);
 			}
@@ -103,7 +103,7 @@ public class Timeouts implements Runnable {
 			Main.getBot().sendMessage(channel,
 					"/timeout " + user + " " + time);
 			Main.getBot().sendMessage(channel,
-					type.getRandomMessage(channel) + " That's a warning!");
+					type.getRandomMessage(channel.substring(1)) + " That's a warning!");
 		}
 	}
 }

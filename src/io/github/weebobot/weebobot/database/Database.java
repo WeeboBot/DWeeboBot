@@ -912,13 +912,17 @@ public class Database {
     }
 
     public static boolean delMessage(String channelNoHash, String usage, String message) {
-        return executeUpdate(String.format("DELETE FROM %s.customMessages WHERE channel=\'%s\' AND usage=\'%s\' AND message=\'%s\'", DATABASE, channelNoHash, usage, message));
+        return executeUpdate(String.format("DELETE FROM %s.customMessages WHERE channel=\'%s\' AND regime=\'%s\' AND message=\'%s\'", DATABASE, channelNoHash, usage, message));
     }
 
     public static ArrayList<String> getTimeoutMessages(String channelNoHash, TType tType) {
         ArrayList<String> messages = new ArrayList<>();
+		PreparedStatement stmt = null;
         try {
-            ResultSet rs = executeQuery(String.format("SELECT * FROM %s.customMessages WHERE channel=\'%s\' AND usage=\'%s\'", DATABASE, channelNoHash, tType.getId()));
+            stmt = conn.prepareStatement(String.format("SELECT * FROM %s.customMessages WHERE channel=? AND regime=?", DATABASE));
+            stmt.setString(1, channelNoHash);
+            stmt.setString(2, tType.getId());
+            ResultSet rs = executeQuery(stmt);
             while(rs.next()) {
                 messages.add(rs.getString(2));
             }
