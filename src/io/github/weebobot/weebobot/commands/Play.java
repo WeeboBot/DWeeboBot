@@ -66,10 +66,10 @@ public class Play extends Command{
 			}
 			return null;
 		}
-//		need to implement proper souncloud checking
-//		if(link.matches("(https?:\\/\\/)?(www\\.)?(soundcloud.com|snd.sc)\\/(.*)")){
-//			
-//		}
+//		need to implement proper soundcloud checking
+		if(link.matches("(https?://)?(www\\.)?(soundcloud.com|snd.sc)/([\\w]*)*/([\\w-]*)*")){
+			return link.replaceAll("(https?://)", "").replaceAll("(www\\.)", "").replaceAll("(soundcloud.com|snd.sc)", "");
+		}
 		return null;
 	}
 }
