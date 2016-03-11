@@ -465,7 +465,7 @@ public class IRCBot extends PircBot {
 	 * @param raffle
 	 *            - the Raffle Object
 	 */
-	public void addRaffle(String channel, io.github.weebobot.weebobot.util.RaffleUtil raffle) {
+	public void addRaffle(String channel, RaffleUtil raffle) {
 		raffles.put(channel, raffle);
 	}
 
@@ -482,7 +482,7 @@ public class IRCBot extends PircBot {
 	 *            - the channel to get the Raffle for
 	 * @return the Raffle Object
 	 */
-	public io.github.weebobot.weebobot.util.RaffleUtil getRaffle(String channel) {
+	public RaffleUtil getRaffle(String channel) {
 		return raffles.get(channel);
 	}
 
@@ -562,8 +562,7 @@ public class IRCBot extends PircBot {
 	 * @param voteTimeOut
 	 *            - VoteTimeOut Object
 	 */
-	public void addVoteTimeOut(String channel,
-			io.github.weebobot.weebobot.util.VoteTimeOutUtill voteTimeOut) {
+	public void addVoteTimeOut(String channel, VoteTimeOutUtill voteTimeOut) {
 		voteTimeOuts.put(channel, voteTimeOut);
 	}
 
@@ -572,7 +571,7 @@ public class IRCBot extends PircBot {
 	 *            - channel to get the VoteTimeOut Object for
 	 * @return VoteTimeOut Object
 	 */
-	public io.github.weebobot.weebobot.util.VoteTimeOutUtill getVoteTimeOut(
+	public VoteTimeOutUtill getVoteTimeOut(
 			String channel) {
 		return voteTimeOuts.get(channel);
 	}
