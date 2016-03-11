@@ -12,6 +12,8 @@ nbactions.xml
 nb-configuration.xml
 
 #IntelliJ
+
+/.idea/
 *.iml
 *.ipr
 *.iws
@@ -21,3 +23,4 @@ script.txt
 ftp.log
 bot.err
 .classpath
+Driver.java
