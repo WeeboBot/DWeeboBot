@@ -17,27 +17,33 @@
 
 package io.github.weebobot.weebobot.util;
 
+import io.github.weebobot.weebobot.database.Database;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
 public enum TType {
 
-	CAPS("No need to yell buddy! (Too many Capital letters)"), SYMBOLS(
-			"Hey! Watch it! (Too many symbols)"), EMOTE(
-			"We get it, you like using that emote! (Too many emotes)"), LINK(
-			"You can't just go posting things williy nilly (Link)"), SPAM(
-			"You sure do like to say that, huh? (Spam)", "Do you kiss you're mother with that mouth? (Spam)"), PARAGRAPH(
-			"A bit long winded aren't we? (Too many characters in your message)");
+	CAPS("caps", "No need to yell buddy! (Too many Capital letters)"),
+	SYMBOLS("symbols", "Hey! Watch it! (Too many symbols)"),
+    EMOTE("emote", "We get it, you like using that emote! (Too many emotes)"),
+    LINK("link", "You can't just go posting things williy nilly (Link)"),
+    SPAM("spam", "You sure do like to say that, huh? (Spam)", "Do you kiss you're mother with that mouth? (Spam)"),
+    PARAGRAPH("paragraph", "A bit long winded aren't we? (Too many characters in your message)");
 
-	private final String[] messages;
+    private final String id;
+	private final ArrayList<String> messages;
 	private final HashMap<String, HashMap<String,Integer>> offenders;
 
 	/**
 	 * @return a random message for this type of timeout
 	 */
-	public String getRandomMessage() {
-		Random rand = new Random();
-		return messages[rand.nextInt(messages.length)];
+	public String getRandomMessage(String channel) {
+        ArrayList<String> tempMessages = new ArrayList<>();
+        tempMessages.addAll(messages);
+        tempMessages.addAll(Database.getTimeoutMessages(channel, this));
+		return messages.get(new Random().nextInt(messages.size()));
 	}
 
 	/**
@@ -91,11 +97,28 @@ public enum TType {
 		}
 	}
 
+    /**
+     *
+     * @return the id for this TType
+     */
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return getId();
+    }
+
 	/**
 	 * @param m - Array of messages
 	 */
-	TType(String... m) {
-		messages = m;
+	TType(String id, String... m) {
+        this.id = id;
+		messages = new ArrayList<>();
 		offenders = new HashMap<>();
-	}
+        for (String message:m) {
+            messages.add(message);
+        }
+    }
 }

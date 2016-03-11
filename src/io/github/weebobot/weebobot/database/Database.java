@@ -20,10 +20,12 @@ package io.github.weebobot.weebobot.database;
 import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.TOptions;
+import io.github.weebobot.weebobot.util.TType;
 import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -903,5 +905,26 @@ public class Database {
 			e.printStackTrace();
 		}
         executeUpdate(stmt);
+    }
+
+    public static void addMessage(String channelNoHash, String usage, String message) {
+        executeUpdate(String.format("INSERT INTO %s.customMessages VALUES(\'%s\', \'%s\', \'%s\')", DATABASE, channelNoHash, usage, message));
+    }
+
+    public static boolean delMessage(String channelNoHash, String usage, String message) {
+        return executeUpdate(String.format("DELETE FROM %s.customMessages WHERE channel=\'%s\' AND usage=\'%s\' AND message=\'%s\'", DATABASE, channelNoHash, usage, message));
+    }
+
+    public static ArrayList<String> getTimeoutMessages(String channelNoHash, TType tType) {
+        ArrayList<String> messages = new ArrayList<>();
+        try {
+            ResultSet rs = executeQuery(String.format("SELECT * FROM %s.customMessages WHERE channel=\'%s\' AND usage=\'%s\'", DATABASE, channelNoHash, tType.getId()));
+            while(rs.next()) {
+                messages.add(rs.getString(2));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
     }
 }
