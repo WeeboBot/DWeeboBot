@@ -137,7 +137,7 @@ public class Main implements Runnable{
 			if(!Database.isMod(channel.substring(1), channel.substring(1))) {
 				Database.addMod(channel.substring(1), channel.substring(1));
 			}
-			Database.addOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), "Welcome %user% to our channel, may you find it entertaining or flat out enjoyable.");
+			Database.addOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), "none");
 			Database.addOption(channel.substring(1), TOptions.numCaps.getOptionID(), "20");
 			Database.addOption(channel.substring(1), TOptions.numEmotes.getOptionID(), "20");
 			Database.addOption(channel.substring(1), TOptions.numSymbols.getOptionID(), "20");

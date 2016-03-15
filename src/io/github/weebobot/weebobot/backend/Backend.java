@@ -29,7 +29,7 @@ import io.github.weebobot.weebobot.util.WLogger;
 
 public class Backend implements Runnable{
 	
-	public static int pingPort =6668;
+	public static int pingPort = 6668;
 	public static int commandPort = 6669;
 	
 	private static Logger logger = Logger.getLogger(Backend.class + "");

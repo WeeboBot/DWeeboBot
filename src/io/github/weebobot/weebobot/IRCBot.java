@@ -157,9 +157,9 @@ public class IRCBot extends PircBot {
 					sendMessage(channel, msg);
 					addWelcome(channel, sender);
 				}
+				Database.updateUser(channel.substring(1), sender);
+				new PointsRunnable(sender, channel.substring(1));
 			}
-			Database.updateUser(channel.substring(1), sender);
-			new PointsRunnable(sender, channel.substring(1));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,
 					"An error occurred while executing onJoin()", e);
