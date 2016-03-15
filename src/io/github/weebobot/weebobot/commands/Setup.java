@@ -33,7 +33,7 @@ public class Setup extends Command {
 				"Users are timed out for excessive caps, symbols, emotes, long messages, links, and blacklisted words (spam).");
 			Main.getBot().sendMessage(
 				channel,
-				"We would like you to configure the ammount of capital letters, symbols, and emotes (all of which default to 20), and paragraphs(defaults to 250 characters) allowed in a message.");
+				"We would like you to configure the amount of capital letters, symbols, and emotes (all of which default to 20), and paragraph length (defaults to 400 characters) allowed in a message.");
 			Main.getBot().sendMessage(
 				channel,
 				"To change this, please run !changeOption <caps, symbols, emotes, paragraph> <new value>. Note: If you make paragraph too short users may not be able to post proper sentences. Think of it like twitter messages.");
