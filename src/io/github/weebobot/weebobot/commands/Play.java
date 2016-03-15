@@ -43,6 +43,7 @@ public class Play extends Command{
 	}
 	
 	private String getProperLink(String link){
+		// Youtube
         if(link.startsWith("?v=")) {
             return link;
         }
@@ -66,10 +67,12 @@ public class Play extends Command{
 			}
 			return null;
 		}
-//		need to implement proper soundcloud checking
+        //END Youtube
+		//Spotify
 		if(link.matches("(https?://)?(www\\.)?(soundcloud.com|snd.sc)/([\\w]*)*/([\\w-]*)*")){
 			return link.replaceAll("(https?://)", "").replaceAll("(www\\.)", "").replaceAll("(soundcloud.com|snd.sc)", "");
 		}
+        //END Spotify
 		return null;
 	}
 }
