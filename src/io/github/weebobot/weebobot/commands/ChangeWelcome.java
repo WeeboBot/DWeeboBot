@@ -35,8 +35,15 @@ public class ChangeWelcome extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		String message = parameters[0];
-		Database.setWelcomeMessage(channel.substring(1), TOptions.welcomeMessage, message);
+		if(parameters.length == 0) {
+            return "Usage: !changewelcome \"Your new welcome message\"";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : parameters) {
+            sb.append(s);
+        }
+        String message = sb.toString();
+		Database.setOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), message);
 		if(!message.equalsIgnoreCase("none")) {
 			return "The welcome message has been changed to: %message%".replace("%message%", message);
 		}

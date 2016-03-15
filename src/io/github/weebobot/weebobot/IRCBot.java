@@ -150,7 +150,7 @@ public class IRCBot extends PircBot {
 				}
 			}
 			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
-				String msg = Database.getWelcomeMessage(channel.substring(1))
+				String msg = Database.getOption(channel.substring(1), TOptions.welcomeMessage.getOptionID())
 						.replace("%user%", sender);
 				if (!msg.equalsIgnoreCase("none")
 						&& !recentlyWelcomed(sender, channel)) {

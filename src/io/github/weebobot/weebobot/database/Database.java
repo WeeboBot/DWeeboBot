@@ -19,7 +19,6 @@ package io.github.weebobot.weebobot.database;
 
 import io.github.weebobot.weebobot.Main;
 import io.github.weebobot.weebobot.external.TwitchUtilities;
-import io.github.weebobot.weebobot.util.TOptions;
 import io.github.weebobot.weebobot.util.TType;
 import io.github.weebobot.weebobot.util.ULevel;
 import io.github.weebobot.weebobot.util.WLogger;
@@ -261,44 +260,6 @@ public class Database {
 			WLogger.logError(e);
 		}
 		return null;
-	}
-	
-	/**
-	 * @param channelNoHash - channel to get the welcome message for, without the leading #
-	 * @return The welcome message
-	 */
-	public static String getWelcomeMessage(String channelNoHash) {
-		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sOptions WHERE optionID=\'%s\'", DATABASE, channelNoHash, TOptions.welcomeMessage));
-		try {
-			if(rs.next()) {
-				return rs.getString(2);
-			}
-			return null;
-		} catch (SQLException | NumberFormatException e) {
-			logger.log(Level.SEVERE, String.format("Unable to get welcome message for %s", channelNoHash), e);
-			WLogger.logError(e);
-		}
-		return null;
-	}
-
-	/**
-	 * @param channelNoHash - channel to set the welcome message for, without the leading #
-	 * @param option - timeout option
-	 * @param value - new welcome message
-	 * @return true if the message is set successfully
-	 */
-	public static boolean setWelcomeMessage(String channelNoHash, TOptions option, String value) {
-		PreparedStatement stmt = null;
-		try {
-			stmt = conn.prepareStatement(String.format("UPDATE %s.%sOptions SET optionID=?,value=? WHERE optionID=?", DATABASE, channelNoHash));
-			stmt.setString(1, option.getOptionID());
-			stmt.setString(2, value);
-			stmt.setString(3, option.getOptionID());
-		} catch (SQLException e) {
-			logger.log(Level.SEVERE, "An error occurred setting the welcome message", e);
-			WLogger.logError(e);
-		}
-		return executeUpdate(stmt);
 	}
 
 	/**
