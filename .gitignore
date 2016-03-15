@@ -1,6 +1,12 @@
 # Eclipse
 /bin/
 /target/
+/.metadata/
+/.settings/
+
+*.projrct
+*.jar
+*.html
 
 #Netbeans
 /dist/
@@ -11,5 +17,16 @@ build.xml
 nbactions.xml
 nb-configuration.xml
 
+#IntelliJ
+
+/.idea/
+*.iml
+*.ipr
+*.iws
+
 connectedChannels.txt
+script.txt
+ftp.log
+bot.err
 .classpath
+Driver.java
