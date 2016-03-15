@@ -20,6 +20,7 @@ package io.github.weebobot.weebobot;
 import io.github.weebobot.weebobot.backend.Backend;
 import io.github.weebobot.weebobot.commands.CommandParser;
 import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.external.SoundCloudUtilities;
 import io.github.weebobot.weebobot.external.YoutubeUtilities;
 import io.github.weebobot.weebobot.util.*;
 import org.jibble.pircbot.IrcException;
@@ -53,6 +54,7 @@ public class Main implements Runnable{
 	 *            [0] - Twitch OAuth
 	 *            [1] - Database Password
 	 *            [2] - YouTube Developers API Key
+     *            [3] - Soundcloud CLIENT_SECRET
 	 */
 	public static void main(String[] args) {
 		listeners = new ArrayList<>();
@@ -91,6 +93,7 @@ public class Main implements Runnable{
 	public void run() {
 		Database.initDBConnection(args[1]);
 		YoutubeUtilities.init(args[2]);
+		SoundCloudUtilities.setClientSecret(args[3]);
 		new EmoteRunnable();
 		bot = new IRCBot();
 

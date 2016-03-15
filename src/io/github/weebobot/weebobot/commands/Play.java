@@ -37,7 +37,7 @@ public class Play extends Command{
                 System.out.println("Link is invalid");
 				return String.format("%s that is an invalid link", sender);
 			}
-			return Database.addSongToQueue(channel.substring(1), sender, SoundCloudUtilities.getSongInfoFromLink(link));
+			return Database.addSongToQueue(channel.substring(1), sender, SoundCloudUtilities.getSongInfoFromId(link));
 		}
 		return Database.addSongToQueue(channel.substring(1), sender, YoutubeUtilities.getSongInfoFromLink(link, channel.substring(1)));
 	}
