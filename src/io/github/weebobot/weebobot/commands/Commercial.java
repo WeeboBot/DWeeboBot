@@ -35,23 +35,33 @@ public class Commercial extends Command {
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
 		if(parameters.length == 0) {
-			TwitchUtilities.runCommercial(channel.substring(1));
-			return "Running a default length commercial on %channel%".replace("%channel%", channel);
+			if(TwitchUtilities.runCommercial(channel.substring(1))) {
+				return "Running a default length commercial on %channel%".replace("%channel%", channel);
+			}
 		}
 		String length=parameters[0];
 		int time = 0;
 		try {
 			time = Integer.valueOf(length);
 		} catch (NumberFormatException e) {
-			TwitchUtilities.runCommercial(channel.substring(1));
-			return	String.format("%s is not a valid time. Running a default length commercial on %s!", length, channel);
+            if(TwitchUtilities.runCommercial(channel.substring(1))) {
+                return String.format("%s is not a valid time. Running a default length commercial on %s!", length, channel);
+            } else {
+                return "I am not authorized to do that, visit http://weebobot.com/login to allow me to do this and so much more!";
+            }
 		}
 		if (time <= 180 && time % 30 == 0) {
-			TwitchUtilities.runCommercial(channel.substring(1), time);
-			return String.format("Running a %s for %length% seconds on %s", length, channel);
+            if(TwitchUtilities.runCommercial(channel.substring(1), time)) {
+                return String.format("Running a %s for %length% seconds on %s", length, channel);
+            } else {
+                return "I am not authorized to do that, visit http://weebobot.com/login to allow me to do this and so much more!";
+            }
 		} else {
-			TwitchUtilities.runCommercial(channel.substring(1));
-			return	String.format("%s is not a valid time. Running a default length commercial on %s!", length, channel);
+            if(TwitchUtilities.runCommercial(channel.substring(1))) {
+                return String.format("%s is not a valid time. Running a default length commercial on %s!", length, channel);
+            } else {
+                return "I am not authorized to do that, visit http://weebobot.com/login to allow me to do this and so much more!";
+            }
 		}
 	}
 
