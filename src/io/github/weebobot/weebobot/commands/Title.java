@@ -34,7 +34,7 @@ public class Title extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String...parameters) {
-		if(Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) {
+		if((Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) && parameters.length > 0) {
             StringBuilder sb = new StringBuilder();
             for(String s:parameters){
                 sb.append(s + " ");

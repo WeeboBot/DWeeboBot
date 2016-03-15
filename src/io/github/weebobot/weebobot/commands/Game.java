@@ -35,7 +35,7 @@ public class Game extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String...parameters) {
-		if(Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) {
+		if((Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) && parameters.length > 0) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < parameters.length - 1; i++) {
                 sb.append(parameters[i] + " ");
