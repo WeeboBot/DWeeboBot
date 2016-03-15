@@ -35,7 +35,6 @@ public class ChangeOption extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String...parameters){
-		
 		try {
 			if (parameters[0].equalsIgnoreCase("paragraph")) {
 				Database.setOption(channel.substring(1), TOptions.paragraphLength.getOptionID(), parameters[1]);
@@ -66,7 +65,7 @@ public class ChangeOption extends Command {
 		} catch (NumberFormatException e) {
 			return "You must pass a number for the value of %option%".replace("%option%", parameters[0]);
 		}
-		return "I am sorry, but you have tried to change a type of value that is not supported. Valid options are \"symbols\", \"emotes\", or \"paragraph\", \"caps\", \"links\", \"regulars\"";
+		return "I am sorry, but you have tried to change a type of value that is not supported. Valid options are \"symbols\", \"emotes\", \"paragraph\", \"caps\", \"links\", or \"regulars\"";
 	}
 }
 

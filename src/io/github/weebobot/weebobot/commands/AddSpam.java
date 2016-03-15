@@ -34,9 +34,14 @@ public class AddSpam extends Command {
 
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		String word = parameters[0];
-		Database.addSpam(channel.substring(1), false, word);
-		return "Added %word% to the spam database!".replace("%word%", word);
+        String word = parameters[0];
+        boolean emote = false;
+        if(parameters.length == 2 && parameters[0].equalsIgnoreCase("emote")) {
+            emote = true;
+            word = parameters[1];
+        }
+		Database.addSpam(channel.substring(1), emote, word);
+		return "Added %word% to the spam database".replace("%word%", word) + ((emote) ? " as an emote!" : "!");
 	}
 
 }

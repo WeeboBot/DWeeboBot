@@ -17,32 +17,33 @@
 
 package io.github.weebobot.weebobot.external;
 
+import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.util.ULevel;
+import io.github.weebobot.weebobot.util.WLogger;
+
+import javax.net.ssl.HttpsURLConnection;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
-
-import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.util.ULevel;
-import io.github.weebobot.weebobot.util.WLogger;
 
 public class TwitchUtilities {
 
 	private final static String BASE_URL = "https://api.twitch.tv/kraken/";
+    private final static String EMOTE_URL = "https://twitchemotes.com/api_cache/v2/";
+    private final static String BTTV_URL = "https://api.betterttv.net/";
 	private final static String CHARSET = StandardCharsets.UTF_8.name();
 
 	private final static Logger logger = Logger.getLogger(TwitchUtilities.class
@@ -60,8 +61,8 @@ public class TwitchUtilities {
 		String url = BASE_URL + "channels/" + channelNoHash + "/";
 		String _method = "put";
 		String oauth_token = Database.getUserOAuth(channelNoHash);
-		String query = null;
-		URLConnection connection = null;
+		String query;
+		URLConnection connection;
 		if (oauth_token == null) {
 			return false;
 		}
@@ -83,7 +84,17 @@ public class TwitchUtilities {
 			WLogger.logError(e);
 			return false;
 		}
-	}
+    }
+
+	public static String getTitle(String channelNoHash) {
+        try {
+            return new JsonParser().parse(
+                    new JsonReader(new InputStreamReader(new URL(
+                            BASE_URL + "channels/" + channelNoHash).openStream()))).getAsJsonObject().getAsJsonPrimitive("status").getAsString();
+        } catch (IOException e) {
+            return "There was an issue getting the title for this channel. Please try again later!";
+        }
+    }
 
 	/**
 	 * Changes the game on the streamers page
@@ -97,9 +108,11 @@ public class TwitchUtilities {
 		String url = BASE_URL + "channels/" + channelNoHash + "/";
 		String _method = "put";
 		String oauth_token = Database.getUserOAuth(channelNoHash);
-		String query = null;
-		URLConnection connection = null;
+		String query;
+		URLConnection connection;
 		try {
+            if(oauth_token == null)
+                throw new NullPointerException();
 			query = String.format("channel[game]=%s&_method=%s&oauth_token=%s",
 					URLEncoder.encode(game, CHARSET),
 					URLEncoder.encode(_method, CHARSET),
@@ -108,7 +121,7 @@ public class TwitchUtilities {
 			connection.setRequestProperty("Accept-Charset", CHARSET);
 			connection.getInputStream();
 			return true;
-		} catch (IOException e) {
+		} catch (NullPointerException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred updating the game for "
 					+ channelNoHash, e);
 			WLogger.logError(e);
@@ -116,11 +129,21 @@ public class TwitchUtilities {
 		return false;
 	}
 
+    public static String getGame(String channelNoHash) {
+        try {
+            return new JsonParser().parse(
+                    new JsonReader(new InputStreamReader(new URL(
+                            BASE_URL + "channels/" + channelNoHash).openStream()))).getAsJsonObject().getAsJsonPrimitive("game").getAsString();
+        } catch (IOException e) {
+            return "There was an issue getting the game for this channel. Please try again later!";
+        }
+    }
+
 	/**
 	 * Checks if the sender is a follower of channel
 	 * 
-	 * @param sender
-	 * @param channelNoHash
+	 * @param sender - the user who sent the message
+	 * @param channelNoHash - the channel the message was sent in
 	 * @return - true if sender is following channel
 	 */
 	public static boolean isFollower(String channelNoHash, String sender) {
@@ -152,8 +175,7 @@ public class TwitchUtilities {
 							return false;
 						}
 					}
-					nextUrl = URLEncoder.encode(obj.getAsJsonArray("_links")
-							.get(1).getAsJsonPrimitive().getAsString(), CHARSET);
+					nextUrl = obj.getAsJsonObject("_links").getAsJsonPrimitive("next").getAsString();
 					obj = new JsonParser().parse(
 							new JsonReader(new InputStreamReader(new URL(
 									nextUrl).openStream()))).getAsJsonObject();
@@ -161,10 +183,10 @@ public class TwitchUtilities {
 				return false;
 			}
 		} catch (FileNotFoundException e) {
-			WLogger.log(channelNoHash + "Does not have any subscribers or is not partnered.");
-		}catch (JsonIOException | JsonSyntaxException | IOException e) {
+			WLogger.log(channelNoHash + "Does not have any followers.");
+		} catch (JsonIOException | JsonSyntaxException | IOException e) {
 			logger.log(Level.SEVERE, "An error occurred checking if " + sender
-					+ " is following " + channelNoHash.substring(1), e);
+					+ " is following " + channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -192,7 +214,7 @@ public class TwitchUtilities {
 	
 		HttpsURLConnection con = null;
 		try {
-			con = (HttpsURLConnection) obj.openConnection();
+            con = (HttpsURLConnection) obj.openConnection();
 			con.setRequestMethod("POST");
 		} catch (IOException e) {
 			logger.log(Level.SEVERE,
@@ -207,8 +229,8 @@ public class TwitchUtilities {
 	/**
 	 * Checks if the sender is subscribed to channel
 	 * 
-	 * @param sender
-	 * @param channelNoHash
+	 * @param sender - user who sent the message
+	 * @param channelNoHash - channel the message was sent in
 	 * @return - true if sender is subscribed to channel
 	 */
 	public static boolean isSubscriber(String sender, String channelNoHash) {
@@ -250,9 +272,9 @@ public class TwitchUtilities {
 							return true;
 						}
 					}
-					nextUrl = URLEncoder.encode(obj.getAsJsonArray("_links")
-							.get(1).getAsJsonPrimitive().getAsString()
-							+ "?oauth_token=" + userOAuth, CHARSET);
+					nextUrl = obj.getAsJsonObject("_links")
+							.getAsJsonPrimitive().getAsString()
+							+ "?oauth_token=" + userOAuth;
 					obj = new JsonParser().parse(
 							new JsonReader(new InputStreamReader(new URL(
 									nextUrl).openStream()))).getAsJsonObject();
@@ -313,11 +335,11 @@ public class TwitchUtilities {
 	 * @return number of followers for channel, 0 if an error occurs
 	 */
 	public static int followerCount(String channelNoHash) {
-		try {
+		try(InputStream stream = new URL(
+                BASE_URL + "channels/" + channelNoHash + "/follows")
+                .openStream()) {
 			return new JsonParser()
-					.parse(new JsonReader(new InputStreamReader(new URL(
-							BASE_URL + "channels/" + channelNoHash + "/follows")
-							.openStream()))).getAsJsonObject()
+					.parse(new JsonReader(new InputStreamReader(stream))).getAsJsonObject()
 					.getAsJsonPrimitive("_total").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException | NullPointerException e) {
 			logger.log(Level.SEVERE,
@@ -331,17 +353,17 @@ public class TwitchUtilities {
 	/**
 	 * Gets the amount of people subscribed to the specified channel
 	 * 
-	 * @param channelNoHash
-	 * @param oAuth
+	 * @param channelNoHash - channel to get subscriber count for
+	 * @param oAuth - oAuth of the channel
 	 * @return number of subscribers for the channel
 	 */
 	public static int subscriberCount(String channelNoHash, String oAuth) {
-		try {
+		try(InputStream stream = new URL(
+                BASE_URL + "channels/" + channelNoHash
+                        + "/subscriptions/?oauth_token=" + oAuth)
+                .openStream()) {
 			return new JsonParser()
-					.parse(new JsonReader(new InputStreamReader(new URL(
-							BASE_URL + "channels/" + channelNoHash
-									+ "/subscriptions/?oauth_token=" + oAuth)
-							.openStream()))).getAsJsonObject()
+					.parse(new JsonReader(new InputStreamReader(stream))).getAsJsonObject()
 					.getAsJsonPrimitive("_total").getAsInt();
 		} catch (JsonIOException | JsonSyntaxException | IOException | NullPointerException e) {
 			logger.log(Level.SEVERE,
@@ -358,11 +380,10 @@ public class TwitchUtilities {
 	 * @return true if the channel is live, false otherwise
 	 */
 	public static boolean isLive(String channelNoHash) {
-		try {
+		try(InputStream stream = new URL(BASE_URL + "streams/" + channelNoHash).openStream()) {
 			new JsonParser()
 					.parse(new JsonReader(
-							new InputStreamReader(new URL(BASE_URL + "streams/"
-									+ channelNoHash).openStream())))
+							new InputStreamReader(stream)))
 					.getAsJsonObject().getAsJsonObject("stream").getAsJsonNull();
 			return false;
 		} catch (IllegalStateException | ClassCastException e) {
@@ -375,17 +396,112 @@ public class TwitchUtilities {
 		return false;
 	}
 
-	public static String getUserLevelNoMod(String channelNoHash, String moderator) {
-		if(isSubscriber(moderator, channelNoHash)) {
+	public static String getUserLevelNoMod(String channelNoHash, String user) {
+		if(isSubscriber(user, channelNoHash)) {
 			return ULevel.Subscriber.getName();
 		}
-		if(Database.isRegular(moderator, channelNoHash)) {
+		if(Database.isRegular(user, channelNoHash)) {
 			return ULevel.Regular.getName();
 		}
-		if(isFollower(channelNoHash, moderator)) {
+		if(isFollower(channelNoHash, user)) {
 			return ULevel.Follower.getName();
 		}
 		return ULevel.Normal.getName();
 	}
 
+	public static void updateEmoteDatabase() {
+		for(String emote : getGlobalEmotes()) {
+			if(!Database.emoteExists(emote)) {
+				Database.addEmote(emote);
+			}
+		}
+		for(String emote : getBTTVEmotes()) {
+			if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote);
+			}
+		}
+        for(String emote : getSubEmotes()) {
+            if(!Database.emoteExists(emote)) {
+                Database.addEmote(emote);
+            }
+        }
+	}
+
+    private static ArrayList<String> getGlobalEmotes() {
+        ArrayList<String> globalEmotes = new ArrayList<>();
+        try(InputStream stream = new URL(EMOTE_URL + "global.json").openStream()) {
+            Set<Map.Entry<String, JsonElement>> channels = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(stream)))
+                    .getAsJsonObject().getAsJsonObject("emotes").entrySet();
+
+            for(Map.Entry entry: channels) {
+                globalEmotes.add(entry.getKey().toString());
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        }
+        return globalEmotes;
+    }
+
+    public static ArrayList<String> getSubEmotes() {
+        ArrayList<String> subEmotes = new ArrayList<>();
+        InputStream stream = null;
+        InputStream stream1 = null;
+        try {
+            stream = new URL(EMOTE_URL + "sets.json").openStream();
+            Set<Map.Entry<String, JsonElement>> channels = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(stream)))
+                    .getAsJsonObject().getAsJsonObject("sets").entrySet();
+            stream1 = new URL(EMOTE_URL + "subscriber.json").openStream();
+            JsonObject subEmotesObject = new JsonParser().parse(new JsonReader(
+                    new InputStreamReader(stream1))).getAsJsonObject().getAsJsonObject("channels");
+            channels.stream().filter(entry -> !entry.getValue().toString().replaceAll("\"", "").startsWith("--")).forEach(entry -> {
+                JsonElement channel = subEmotesObject.getAsJsonObject(entry.getValue().toString().replaceAll("\"", ""));
+                if (channel != null) {
+                    for (JsonElement element : channel.getAsJsonObject().getAsJsonArray("emotes").getAsJsonArray()) {
+                        subEmotes.add(element.getAsJsonObject().getAsJsonPrimitive("code").getAsString());
+                    }
+                }
+            });
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+                if (stream1 != null) {
+                    stream1.close();
+                }
+            } catch(IOException e) {
+                WLogger.logError(e);
+            }
+        }
+        return subEmotes;
+    }
+
+    private static ArrayList<String> getBTTVEmotes() {
+        ArrayList<String> bttvEmotes = new ArrayList<>();
+        try(InputStream stream = new URL(BTTV_URL + "emotes").openStream()) {
+            JsonArray jsonEmotes = new JsonParser()
+                    .parse(new JsonReader(
+                            new InputStreamReader(stream)))
+                    .getAsJsonObject().getAsJsonArray("emotes").getAsJsonArray();
+
+            for (JsonElement element :jsonEmotes) {
+                bttvEmotes.add(element.getAsJsonObject().getAsJsonPrimitive("regex").getAsString());
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            logger.log(Level.WARNING,
+                    "An error occurred updating the emote database!", e);
+            WLogger.logError(e);
+        }
+        return bttvEmotes;
+    }
 }

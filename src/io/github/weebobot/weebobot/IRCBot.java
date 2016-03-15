@@ -17,6 +17,15 @@
 
 package io.github.weebobot.weebobot;
 
+import io.github.weebobot.weebobot.commands.AddModerator;
+import io.github.weebobot.weebobot.commands.CommandParser;
+import io.github.weebobot.weebobot.commands.DelModerator;
+import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
+import io.github.weebobot.weebobot.database.Database;
+import io.github.weebobot.weebobot.util.*;
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.User;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,24 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jibble.pircbot.PircBot;
-import org.jibble.pircbot.User;
-
-import io.github.weebobot.weebobot.commands.AddModerator;
-import io.github.weebobot.weebobot.commands.CommandParser;
-import io.github.weebobot.weebobot.commands.DelModerator;
-import io.github.weebobot.weebobot.customcommands.CustomCommandParser;
-import io.github.weebobot.weebobot.database.Database;
-import io.github.weebobot.weebobot.external.TwitchUtilities;
-import io.github.weebobot.weebobot.util.DelayedPermitTask;
-import io.github.weebobot.weebobot.util.DelayedReJoin;
-import io.github.weebobot.weebobot.util.DelayedWelcomeTask;
-import io.github.weebobot.weebobot.util.PointsRunnable;
-import io.github.weebobot.weebobot.util.TOptions;
-import io.github.weebobot.weebobot.util.TType;
-import io.github.weebobot.weebobot.util.Timeouts;
-import io.github.weebobot.weebobot.util.WLogger;
 
 /**
  *
@@ -129,7 +120,7 @@ public class IRCBot extends PircBot {
 			if (Main.isDefaultMod(recipient, channel.substring(1))) {
 				return;
 			}
-			new DelModerator().execute(recipient, Main.getBotChannel().substring(1), new String[] { sourceHostname });
+			new DelModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onDeop() in "
@@ -157,15 +148,14 @@ public class IRCBot extends PircBot {
 					Database.updateUser(channel.substring(1), sender);
 					new PointsRunnable(u.getNick(), channel.substring(1));
 				}
-			} else {
-				if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
-					String msg = Database.getWelcomeMessage(channel.substring(1))
-							.replace("%user%", sender);
-					if (!msg.equalsIgnoreCase("none")
-							&& !recentlyWelcomed(sender, channel)) {
-						sendMessage(channel, msg);
-						addWelcome(channel, sender);
-					}
+			}
+			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
+				String msg = Database.getOption(channel.substring(1), TOptions.welcomeMessage.getOptionID())
+						.replace("%user%", sender);
+				if (!msg.equalsIgnoreCase("none")
+						&& !recentlyWelcomed(sender, channel)) {
+					sendMessage(channel, msg);
+					addWelcome(channel, sender);
 				}
 				Database.updateUser(channel.substring(1), sender);
 				new PointsRunnable(sender, channel.substring(1));
@@ -197,7 +187,9 @@ public class IRCBot extends PircBot {
 	public void onMessage(String channel, String sender, String login,
 			String hostname, String message) {
 		try {
-			checkSpam(channel, message, sender);
+			if (!Main.isDefaultMod(sender, channel.substring(1))) {
+				checkSpam(channel, message, sender);
+			}
 			if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
 				return;
 			}
@@ -318,7 +310,12 @@ public class IRCBot extends PircBot {
 	 */
 	public void checkSpam(String channel, String message, String sender) {
 		String level = Database.getUserLevel(channel.substring(1), sender);
-		boolean[] immunities = Database.getImmunities(channel.substring(1), level);
+		boolean[] immunities = null;
+		try {
+			immunities = Database.getImmunities(channel.substring(1), level);
+		} catch (NullPointerException e) {
+			immunities = new boolean[] {false, false, false, false, false, false};
+		}
 		int caps = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numCaps.getOptionID()));
 		int symbols = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.numSymbols.getOptionID()));
 		int link = Integer.valueOf(Database.getOption(channel.substring(1), TOptions.link.getOptionID()));
@@ -345,8 +342,8 @@ public class IRCBot extends PircBot {
 			new Timeouts(channel, sender, 1, TType.CAPS);
 		}
 		if(!immunities[3] && emotes != -1) {
-			String emoteList=Database.getEmoteList(channel.substring(1));
-			if(emoteList != null && message.matches("(" + emoteList + "\\s){" + emotes + ",}")) {
+			String emoteList=Database.getEmoteList(channel.substring(1)).replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\\\", "\\\\").replaceAll("\\$", "\\$").replaceAll("\\^", "\\^").replaceAll("\\+", "\\+").replaceAll("\\.", "\\.").replaceAll("\\|", "\\|").replaceAll("\\?", "\\?").replaceAll("\\*", "\\*").replaceAll("\\[", "\\[").replaceAll("\\{", "\\{");
+			if(emoteList != null && message.matches("(?:(?:\\s)?(" + emoteList + ")(?:\\s)?){20,}")) {
 				new Timeouts(channel, sender, 1, TType.EMOTE);
 			}
 		}
@@ -364,11 +361,6 @@ public class IRCBot extends PircBot {
 		if(!immunities[5] && symbols != -1
 				&& message.matches("[\\W_\\s]{" + symbols + ",}")){
 			new Timeouts(channel, sender, 1, TType.SYMBOLS);
-		}
-		if (!Database.isMod(sender, channel.substring(1))
-				&& !Database.isRegular(sender, channel.substring(1))
-				&& !TwitchUtilities.isSubscriber(sender, channel.substring(1))) {
-			
 		}
 	}
 
@@ -472,7 +464,7 @@ public class IRCBot extends PircBot {
 	 * @param raffle
 	 *            - the Raffle Object
 	 */
-	public void addRaffle(String channel, io.github.weebobot.weebobot.util.RaffleUtil raffle) {
+	public void addRaffle(String channel, RaffleUtil raffle) {
 		raffles.put(channel, raffle);
 	}
 
@@ -489,7 +481,7 @@ public class IRCBot extends PircBot {
 	 *            - the channel to get the Raffle for
 	 * @return the Raffle Object
 	 */
-	public io.github.weebobot.weebobot.util.RaffleUtil getRaffle(String channel) {
+	public RaffleUtil getRaffle(String channel) {
 		return raffles.get(channel);
 	}
 
@@ -569,8 +561,7 @@ public class IRCBot extends PircBot {
 	 * @param voteTimeOut
 	 *            - VoteTimeOut Object
 	 */
-	public void addVoteTimeOut(String channel,
-			io.github.weebobot.weebobot.util.VoteTimeOutUtill voteTimeOut) {
+	public void addVoteTimeOut(String channel, VoteTimeOutUtill voteTimeOut) {
 		voteTimeOuts.put(channel, voteTimeOut);
 	}
 
@@ -579,7 +570,7 @@ public class IRCBot extends PircBot {
 	 *            - channel to get the VoteTimeOut Object for
 	 * @return VoteTimeOut Object
 	 */
-	public io.github.weebobot.weebobot.util.VoteTimeOutUtill getVoteTimeOut(
+	public VoteTimeOutUtill getVoteTimeOut(
 			String channel) {
 		return voteTimeOuts.get(channel);
 	}

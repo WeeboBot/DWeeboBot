@@ -17,13 +17,14 @@
 
 package io.github.weebobot.weebobot.commands;
 
+import io.github.weebobot.weebobot.database.Database;
 import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.CLevel;
 
 public class Title extends Command {
 	@Override
 	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+		return CLevel.Normal;
 	}
 	
 	@Override
@@ -33,16 +34,19 @@ public class Title extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String...parameters) {
+		if((Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) && parameters.length > 0) {
             StringBuilder sb = new StringBuilder();
             for(String s:parameters){
-            	sb.append(s + " ");
+                sb.append(s + " ");
             }
-		if (TwitchUtilities.updateTitle(channel.substring(1),
-				sb.toString())) {
-			return "Successfully changed the stream title to \"%title%\"!".replace("%title%", sb.toString());
-		} else {
-			return "I am not authorized to do that, visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
-		}
+            if (TwitchUtilities.updateTitle(channel.substring(1),
+                    sb.toString())) {
+                return "Successfully changed the stream title to \"%title%\"!".replace("%title%", sb.toString());
+            } else {
+                return "I am not authorized to do that, visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
+            }
+        }
+        return TwitchUtilities.getTitle(channel.substring(1));
 	}
 
 }
