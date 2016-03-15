@@ -17,6 +17,7 @@
 
 package io.github.weebobot.weebobot.commands;
 
+import io.github.weebobot.weebobot.database.Database;
 import io.github.weebobot.weebobot.external.TwitchUtilities;
 import io.github.weebobot.weebobot.util.CLevel;
 
@@ -24,7 +25,7 @@ public class Game extends Command {
 
 	@Override
 	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+		return CLevel.Normal;
 	}
 	
 	@Override
@@ -34,19 +35,21 @@ public class Game extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String...parameters) {
+		if(Database.isMod(channel.substring(1), sender) || Database.isOwner(channel.substring(1), sender)) {
             StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < parameters.length - 1; i++) {
-            	sb.append(parameters[i] + " ");
+            for (int i = 0; i < parameters.length - 1; i++) {
+                sb.append(parameters[i] + " ");
             }
-            sb.append(parameters[parameters.length-1]);
-            
-		if (TwitchUtilities.updateGame(channel.substring(1),
-				sb.toString())) {
-			return "Successfully changed the stream game to \""
-							+ sb.toString() + "\"!";
-		} else {
-			return "I am not authorized to do that visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
-		}
+            sb.append(parameters[parameters.length - 1]);
+            if (TwitchUtilities.updateGame(channel.substring(1),
+                    sb.toString())) {
+                return "Successfully changed the stream game to \""
+                        + sb.toString() + "\"!";
+            } else {
+                return "I am not authorized to do that visit http://weebobot.no-ip.info/login to allow me to do this and so much more!";
+            }
+        }
+        return TwitchUtilities.getGame(channel.substring(1));
 	}
 
 }

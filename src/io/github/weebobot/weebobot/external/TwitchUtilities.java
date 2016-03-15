@@ -86,6 +86,16 @@ public class TwitchUtilities {
 		}
     }
 
+	public static String getTitle(String channelNoHash) {
+        try {
+            return new JsonParser().parse(
+                    new JsonReader(new InputStreamReader(new URL(
+                            BASE_URL + "channels/" + channelNoHash).openStream()))).getAsJsonObject().getAsJsonPrimitive("status").getAsString();
+        } catch (IOException e) {
+            return "There was an issue getting the title for this channel. Please try again later!";
+        }
+    }
+
 	/**
 	 * Changes the game on the streamers page
 	 * 
@@ -118,6 +128,16 @@ public class TwitchUtilities {
 		}
 		return false;
 	}
+
+    public static String getGame(String channelNoHash) {
+        try {
+            return new JsonParser().parse(
+                    new JsonReader(new InputStreamReader(new URL(
+                            BASE_URL + "channels/" + channelNoHash).openStream()))).getAsJsonObject().getAsJsonPrimitive("game").getAsString();
+        } catch (IOException e) {
+            return "There was an issue getting the game for this channel. Please try again later!";
+        }
+    }
 
 	/**
 	 * Checks if the sender is a follower of channel
