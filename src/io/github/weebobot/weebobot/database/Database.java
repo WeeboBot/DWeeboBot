@@ -720,10 +720,10 @@ public class Database {
 	
 	public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
 		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[2]))){
-			return String.format("The song %s is already in the song queue!", videoInformation[1]);
+			return String.format("The song \"%s\" is already in the song queue!", videoInformation[1]);
 		}
 		if(executeUpdate(String.format("INSERT INTO %s.%sSongQueue (songURL,songTitle,songID,requester) VALUES (\'%s\',\'%s\',%d,\'%s\')", DATABASE, channelNoHash, videoInformation[0], videoInformation[1], Integer.valueOf(videoInformation[2]), sender))){
-			return String.format("The song %s has been successfully added to the song queue!", videoInformation[1]);
+			return String.format("The song \"%s\" has been successfully added to the song queue!", videoInformation[1]);
 		}
 		return String.format("There was an error adding the song %s to the song queue!", videoInformation[1]);
 	}
