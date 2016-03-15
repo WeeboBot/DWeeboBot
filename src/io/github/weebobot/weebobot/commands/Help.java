@@ -29,7 +29,7 @@ public class Help extends Command {
 	
 	@Override
 	public String getCommandText() {
-		return "help";
+		return null;
 	}
 
 	@Override
