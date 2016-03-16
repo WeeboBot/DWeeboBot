@@ -28,7 +28,7 @@ public class SoundCloudUtilities {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 			connection.setRequestMethod("GET");
 			int responseCode = connection.getResponseCode();
-			if (responseCode > 400) {
+			if (responseCode >= 400) {
 				return false;
 			}
 		} catch (IOException e) {
