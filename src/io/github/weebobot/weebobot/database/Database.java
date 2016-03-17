@@ -521,14 +521,14 @@ public class Database {
 				if(rs.getBoolean(3)) {
 					output.append(rs.getString(1));
                     output.append(": ");
-                    output.append(rs.getInt(2));
+                    output.append(rs.getInt(3));
                     output.append(", ");
 					amount--;
 				}
 			}
 			output.append(rs.getString(1));
             output.append(": ");
-            output.append(rs.getInt(2));
+            output.append(rs.getInt(3));
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Error occurred creating Top list!", e);
 			WLogger.logError(e);
@@ -682,7 +682,6 @@ public class Database {
      * @return true if the operation is successful, false otherwise
      */
     public static boolean updateUser(String channelNoHash, String sender) {
-		System.out.println(String.format("Updating %s in %s", sender, channelNoHash));
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
 			if(!rs.next()) {
@@ -692,6 +691,7 @@ public class Database {
 					visible = false;
 					uLevel = ULevel.Moderator.getName();
 				} else if(sender.equalsIgnoreCase(channelNoHash)) {
+                    visible = false;
 					uLevel = ULevel.Owner.getName();
 				}
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
