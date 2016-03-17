@@ -342,10 +342,7 @@ public class IRCBot extends PircBot {
 			new Timeouts(channel, sender, 1, TType.CAPS);
 		}
 		if(!immunities[3] && emotes != -1) {
-			String emoteList=Database.getEmoteList(channel.substring(1)).replaceAll("\\(", "\\\\(").replaceAll("\\)", "\\\\)").replaceAll("\\\\", "\\\\").replaceAll("\\$", "\\$").replaceAll("\\^", "\\^").replaceAll("\\+", "\\+").replaceAll("\\.", "\\.").replaceAll("\\|", "\\|").replaceAll("\\?", "\\?").replaceAll("\\*", "\\*").replaceAll("\\[", "\\[").replaceAll("\\{", "\\{");
-			if(emoteList != null && message.matches("(?:(?:\\s)?(" + emoteList + ")(?:\\s)?){20,}")) {
-				new Timeouts(channel, sender, 1, TType.EMOTE);
-			}
+			new EmoteTimeoutRunnable(channel, sender, message, emotes);
 		}
 		if(!immunities[4] && link !=-1){
 			if (message.matches("([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})")

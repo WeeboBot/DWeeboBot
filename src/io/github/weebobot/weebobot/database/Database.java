@@ -600,16 +600,15 @@ public class Database {
 		return ULevel.Normal.getName();
 	}
 
-	public static String getEmoteList(String channelNoHash) {
+	public static ArrayList<String> getEmoteListAsArray(String channelNoHash) {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSpam WHERE emote=true", DATABASE, channelNoHash));
-		StringBuilder sb = new StringBuilder();
+		ArrayList<String> emotes = new ArrayList<>();
 		try {
 			while(rs.next()) {
-				sb.append(rs.getString(2));
-				sb.append("|");
+				emotes.add(rs.getString(2));
 			}
-            sb.append(getGlobalEmoteList());
-			return sb.toString();
+			emotes.addAll(getGlobalEmoteListAsArray());
+			return emotes;
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to get the emote list for: " + channelNoHash, e);
 			WLogger.logError(e);
@@ -617,25 +616,20 @@ public class Database {
 		return null;
 	}
 
-    private static String getGlobalEmoteList() {
-        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.globalEmotes", DATABASE));
-        StringBuilder sb = new StringBuilder();
-        try {
-            while(rs.next()) {
-                sb.append(rs.getString(1));
-                sb.append("|");
-            }
-            String list = sb.toString();
-            if(list.endsWith("|")) {
-                list = list.substring(0, list.length()-1);
-            }
-            return list;
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Unable to get the global emote list", e);
-            WLogger.logError(e);
-        }
-        return null;
-    }
+	private static ArrayList<String> getGlobalEmoteListAsArray() {
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.globalEmotes", DATABASE));
+		ArrayList<String> emotes = new ArrayList<>();
+		try {
+			while(rs.next()) {
+				emotes.add(rs.getString(1));
+			}
+			return emotes;
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Unable to get the global emote list", e);
+			WLogger.logError(e);
+		}
+		return null;
+	}
 
 	public static boolean updateUser(String channelNoHash, String sender) {
 		System.out.println(String.format("Updating %s in %s", sender, channelNoHash));
