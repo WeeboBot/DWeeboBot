@@ -46,10 +46,10 @@ public class IRCBot extends PircBot {
 	private static HashMap<String, Boolean> confirmationReplies;
 	private static HashMap<String, Boolean> slowMode;
 	private static HashMap<String, Boolean> subMode;
-	private static HashMap<String, Boolean> isReJoin;
-	private static HashMap<String, io.github.weebobot.weebobot.util.PollUtil> polls;
-	private static HashMap<String, io.github.weebobot.weebobot.util.RaffleUtil> raffles;
-	private static HashMap<String, io.github.weebobot.weebobot.util.VoteTimeOutUtill> voteTimeOuts;
+	private static ArrayList<String> isReJoin;
+	private static HashMap<String, PollUtil> polls;
+	private static HashMap<String, RaffleUtil> raffles;
+    private static HashMap<String, VoteTimeOutUtill> voteTimeOuts;
 	private static HashMap<String, ArrayList<DelayedPermitTask>> permits;
 	private static HashMap<String, ArrayList<String>> welcomes;
 	private static final Logger logger = Logger.getLogger(IRCBot.class + "");
@@ -71,10 +71,11 @@ public class IRCBot extends PircBot {
 		chatPostSeen = new HashMap<>();
 		slowMode = new HashMap<>();
 		subMode = new HashMap<>();
-		isReJoin = new HashMap<>();
+		isReJoin = new ArrayList<>();
 		polls = new HashMap<>();
 		raffles = new HashMap<>();
 		permits = new HashMap<>();
+        voteTimeOuts = new HashMap<>();
 		welcomes = new HashMap<>();
 	}
 
@@ -86,7 +87,7 @@ public class IRCBot extends PircBot {
 			String sourceHostname, String recipient) {
 		try {
 			if(!Database.isOwner(recipient, channel.substring(1))) {
-				new AddModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
+				new AddModerator().execute(channel, Main.getBotChannel().substring(1), recipient);
 			}
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
@@ -107,7 +108,7 @@ public class IRCBot extends PircBot {
 			String recipient=mode.substring(mode.lastIndexOf(" "));
 			onDeop(channel, sourceNick, sourceLogin, sourceHostname, recipient);
 		}
-	};
+	}
 
 	/**
 	 * Ensures that anyone who is unmodded in the channel is removed from the
@@ -120,7 +121,7 @@ public class IRCBot extends PircBot {
 			if (Main.isDefaultMod(recipient, channel.substring(1))) {
 				return;
 			}
-			new DelModerator().execute(channel, Main.getBotChannel().substring(1), new String[] { recipient });
+			new DelModerator().execute(channel, Main.getBotChannel().substring(1), recipient);
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"An error was thrown while executing onDeop() in "
@@ -148,15 +149,18 @@ public class IRCBot extends PircBot {
 					Database.updateUser(channel.substring(1), sender);
 					new PointsRunnable(u.getNick(), channel.substring(1));
 				}
+                return;
 			}
-			if (welcomeEnabled.get(channel) && !isReJoin.containsKey(channel)) {
-				String msg = Database.getOption(channel.substring(1), TOptions.welcomeMessage.getOptionID())
-						.replace("%user%", sender);
-				if (!msg.equalsIgnoreCase("none")
-						&& !recentlyWelcomed(sender, channel)) {
-					sendMessage(channel, msg);
-					addWelcome(channel, sender);
-				}
+			if (!Database.isOwner(sender, channel.substring(1)) && welcomeEnabled.get(channel) && !isReJoin.contains(channel)) {
+				String msg = Database.getOption(channel.substring(1), TOptions.welcomeMessage.getOptionID());
+                if(msg != null) {
+                    msg = msg.replace("%user%", sender);
+                    if (!msg.equalsIgnoreCase("none")
+                            && !recentlyWelcomed(sender, channel)) {
+                        sendMessage(channel, msg);
+                        addWelcome(channel, sender);
+                    }
+                }
                 Database.updateUser(channel.substring(1), sender);
                 new PointsRunnable(sender, channel.substring(1));
 			} else {
@@ -171,9 +175,6 @@ public class IRCBot extends PircBot {
 	}
 
 	/**
-	 * Sends a message to the bot's channel when someone leaves a channel the
-	 * bot is in
-	 * 
 	 * Stops the point accumulation for that user in the channel specified
 	 */
 	@Override
@@ -219,7 +220,7 @@ public class IRCBot extends PircBot {
 					sendMessage(channel, reply);
 				}
 			}
-			autoReplyCheck(channel, message, sender);
+			autoReplyCheck(channel, message);
 			chatPostSeen.put(sender,
 					channel.substring(1) + "|" + new Date().toString());
 		} catch (Exception e) {
@@ -242,7 +243,8 @@ public class IRCBot extends PircBot {
 	/**
 	 * If IRC sends something PIRCBot doesn't recognize this is called.
 	 */
-	public void onUnkown(String line){
+	@Override
+    public void onUnknown(String line){
 		logger.info(line);
 		WLogger.log("Unknown IRC Line: " + line);
 	}
@@ -267,7 +269,7 @@ public class IRCBot extends PircBot {
 	 * @param message
 	 *            - the message that might contain keywords
 	 */
-	public void autoReplyCheck(String channel, String message, String sender) {
+	public void autoReplyCheck(String channel, String message) {
 
 		message = message.toLowerCase();
 		ResultSet rs = Database.getAutoReplies(channel.substring(1));
@@ -275,12 +277,12 @@ public class IRCBot extends PircBot {
 			while (rs.next()) {
 				String[] keyword = rs.getString(1).split(",");
 				boolean matches = true;
-				for (int i = 0; i < keyword.length; i++) {
-					if (!message.contains(keyword[i].toLowerCase())) {
-						matches = false;
-						break;
-					}
-				}
+                for (String s : keyword) {
+                    if (!message.contains(s.toLowerCase())) {
+                        matches = false;
+                        break;
+                    }
+                }
 				if (matches) {
 					sendMessage(channel, rs.getString("reply"));
 				}
@@ -311,9 +313,10 @@ public class IRCBot extends PircBot {
 	 *            000000  -  Follower
 	 *            000000  -  Normal
 	 */
-	public void checkSpam(String channel, String message, String sender) {
+	@SuppressWarnings("ConstantConditions")
+    public void checkSpam(String channel, String message, String sender) {
 		String level = Database.getUserLevel(channel.substring(1), sender);
-		boolean[] immunities = null;
+		boolean[] immunities;
 		try {
 			immunities = Database.getImmunities(channel.substring(1), level);
 		} catch (NullPointerException e) {
@@ -349,7 +352,7 @@ public class IRCBot extends PircBot {
 		}
 		if(!immunities[4] && link !=-1){
 			if (message.matches("([a-z0-9_\\.-]+)@([\\da-z\\.-]+)\\.([a-z\\.]{2,6})")
-					|| message.matches("(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?")
+					|| message.matches("(https?://)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([/\\w \\.-]*)*/?")
 					&& link != -1) {
 				if (!isPermitted(channel, sender)) {
 					new Timeouts(channel, sender, 1, TType.LINK);
@@ -641,7 +644,7 @@ public class IRCBot extends PircBot {
 	 */
 	public void setReJoin(String channel, boolean reJoin) {
 		if (reJoin) {
-			isReJoin.put(channel, reJoin);
+			isReJoin.add(channel);
 			new DelayedReJoin(channel);
 		}
 	}
@@ -703,10 +706,7 @@ public class IRCBot extends PircBot {
 	 *         false otherwise
 	 */
 	private boolean recentlyWelcomed(String sender, String channel) {
-		ArrayList<String> p = welcomes.get(sender);
-		if (p == null) {
-			return false;
-		}
-		return p.contains(channel);
-	}
+        ArrayList<String> p = welcomes.get(sender);
+        return p != null && p.contains(channel);
+    }
 }
