@@ -79,7 +79,6 @@ public class Database {
 		Statement stmt2;
 		Statement stmt3;
 		Statement stmt4;
-		Statement stmt5;
 		try {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
@@ -102,26 +101,18 @@ public class Database {
 				logger.log(Level.SEVERE, String.format("Unable to create table %sSpam!", channelNoHash), ex);
 				WLogger.logError(e);
 			}
-			try{
+            try{
                 stmt3=conn.createStatement();
                 stmt3.closeOnCompletion();
-                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sPoints(userID varchar(25), points INTEGER, visibility BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
-            }catch(SQLException ex){
-                logger.log(Level.SEVERE, "Unable to create table Points!", ex);
-    			WLogger.logError(e);
-            }
-            try{
-                stmt4=conn.createStatement();
-                stmt4.closeOnCompletion();
-                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), points INTEGER, visibility BOOLEAN, regular BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), points INTEGER, visibility BOOLEAN, regular BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Users!", ex);
     			WLogger.logError(e);
             }
             try{
-                stmt5=conn.createStatement();
-                stmt5.closeOnCompletion();
-                stmt5.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
+                stmt4=conn.createStatement();
+                stmt4.closeOnCompletion();
+                stmt4.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
             }catch(SQLException ex){
                 logger.log(Level.SEVERE, "Unable to create table Commands!", ex);
     			WLogger.logError(e);
@@ -133,11 +124,11 @@ public class Database {
 	/**
 	 * Sends an update to the database (eg. INSERT, DELETE, etc.)
 	 * 
-	 * @param sqlCommand
+	 * @param sqlCommand - the command to be executed
 	 * @return - true if it successfully executes the update
 	 */
 	protected static boolean executeUpdate(String sqlCommand) {
-		Statement stmt = null;
+		Statement stmt;
 		try {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
@@ -158,8 +149,8 @@ public class Database {
 
 	/**
 	 * Sends a query to the database (eg. SELECT, etc.)
-	 * @param sqlQuery
-	 * @return
+	 * @param sqlQuery - the query to be executed
+	 * @return - the results of the query
 	 */
 	protected static ResultSet executeQuery(String sqlQuery) {
 		Statement stmt = null;
@@ -172,8 +163,10 @@ public class Database {
 			WLogger.logError(e);
 		}
 		try {
-			rs = stmt.executeQuery(sqlQuery);
-		} catch (SQLException e) {
+            if (stmt != null) {
+                rs = stmt.executeQuery(sqlQuery);
+            }
+        } catch (SQLException e) {
 			logger.log(Level.SEVERE, String.format("Unable to execute query: %s", sqlQuery), e);
 			WLogger.logError(e);
 		}
@@ -183,21 +176,21 @@ public class Database {
 	/**
 	 * Sends an update to the database (eg. INSERT, DELETE, etc.)
 	 * 
-	 * @param stmt
+	 * @param stmt - the PreparedStatement to execute
 	 * @return - true if it successfully executes the update
 	 */
 	protected static boolean executeUpdate(PreparedStatement stmt) {
 		try {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLCommand"), e);
+			logger.log(Level.SEVERE, "Unable to create connection for SQLCommand", e);
 			WLogger.logError(e);
 			return false;
 		}
 		try {
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("Unable to execute statment"), e);
+			logger.log(Level.SEVERE, "Unable to execute statment", e);
 			WLogger.logError(e);
 			return false;
 		}
@@ -206,21 +199,21 @@ public class Database {
 
 	/**
 	 * Sends a query to the database (eg. SELECT, etc.)
-	 * @param stmt
-	 * @return
+	 * @param stmt - the PreparedStatement to be executed
+	 * @return - results of the query
 	 */
 	protected static ResultSet executeQuery(PreparedStatement stmt) {
 		ResultSet rs = null;
 		try {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("Unable to create connection for SQLQuery"), e);
+			logger.log(Level.SEVERE, "Unable to create connection for SQLQuery", e);
 			WLogger.logError(e);
 		}
 		try {
 			rs = stmt.executeQuery();
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("Unable to execute query"), e);
+			logger.log(Level.SEVERE, "Unable to execute query", e);
 			WLogger.logError(e);
 		}
 		return rs;
@@ -476,18 +469,17 @@ public class Database {
 	/**
 	 * @param nick - person to add points to
 	 * @param channelNoHash - channel the user is in, without the leading #
-	 * @param ammount - the number of points to add
+	 * @param amount - the number of points to add
 	 */
-	public static void addPoints(String nick, String channelNoHash, int ammount) {
+	public static void addPoints(String nick, String channelNoHash, int amount) {
 		ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
 		try {
 			if(rs.next()){
 				String userLevel = rs.getString(2);
-				int points = rs.getInt(3);
+				int points = rs.getInt(3) + amount;
 				boolean visible = rs.getBoolean(4);
 				boolean regular = rs.getBoolean(5);
 				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, userLevel, points, visible, regular, nick));
-				return;
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "An Error occured updating "+nick+"'s points!\n", e);
@@ -514,32 +506,55 @@ public class Database {
 	}
 
 	/**
-	 * @param ammount - number of players to get
+	 * @param amount - number of players to get
 	 * @param channelNoHash - channel the people are in
 	 * @return formatted string of top x players
 	 */
-	public static String topPlayers(int ammount, String channelNoHash) {
+	public static String topPlayers(int amount, String channelNoHash) {
 		StringBuilder output = new StringBuilder();
-		output.append("The top " + ammount + " points holder(s) are: ");
-		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sPoints ORDER BY points DESC", DATABASE, channelNoHash));
+		output.append("The top ");
+        output.append(amount);
+        output.append(" points holder(s) are: ");
+		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
-			while(rs.next()&&ammount>1){
+			while(rs.next()&&amount>1){
 				if(rs.getBoolean(3)) {
-					output.append(rs.getString(1)+": "+rs.getInt(2) + ", ");
-					ammount--;
+					output.append(rs.getString(1));
+                    output.append(": ");
+                    output.append(rs.getInt(2));
+                    output.append(", ");
+					amount--;
 				}
 			}
-			output.append(rs.getString(1)+": "+rs.getInt(2));
+			output.append(rs.getString(1));
+            output.append(": ");
+            output.append(rs.getInt(2));
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Error occurred creating Top list!", e);
 			WLogger.logError(e);
 		}
 		return output.toString();
 	}
-	
-	public static boolean topExemption(String channelNoHash, String username, boolean visible){
-		String points = getPoints(username, channelNoHash);
-		return executeUpdate(String.format("UPDATE %s.%sPoints SET userID=\'%s\', points=%s, visibility=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, username, points, visible, username));
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param username - user to set exemption for
+     * @param visible - whether the user should be exempt or not
+     * @return - true if the operation is successful, false otherwise
+     */
+    public static boolean topExemption(String channelNoHash, String username, boolean visible){
+        ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, username));
+        try {
+            if(rs.next()){
+                String userLevel = rs.getString(2);
+                int points = rs.getInt(3);
+                boolean regular = rs.getBoolean(5);
+                return Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, username, userLevel, points, visible, regular, username));
+            }
+        } catch (SQLException e) {
+            WLogger.logError(e);
+        }
+        return false;
 	}
 
 	/**
@@ -558,7 +573,12 @@ public class Database {
 		return false;
 	}
 
-	public static boolean delCommand(String channelNoHash, String command) {
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param command - Command to be deleted
+     * @return - ture if the operation is successful, false otherwise
+     */
+    public static boolean delCommand(String channelNoHash, String command) {
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sCommands WHERE command=?", DATABASE, channelNoHash));
@@ -570,12 +590,24 @@ public class Database {
 		return executeUpdate(stmt);
 	}
 
-	public static ResultSet getMods(String channelNoHash) {
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @return - ResultSet of Users with the level "Moderator"
+     */
+    public static ResultSet getMods(String channelNoHash) {
 		return executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userLevel=\'%s\'", DATABASE, channelNoHash, ULevel.Moderator.getName()));
 	}
-	
-	public static boolean[] getImmunities(String channelNoHash, String level){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param level - User level to get immunities for
+     * @return - Boolean array of immunities
+     */
+    public static boolean[] getImmunities(String channelNoHash, String level){
 		String immunity = getOption(channelNoHash, level.toLowerCase()+"Immunities");
+        if(immunity == null) {
+            return new boolean[]{false,false,false,false,false,false};
+        }
 		boolean[] immunities = new boolean[6];
 		immunities[0] = immunity.charAt(0) == '1';
 		immunities[1] = immunity.charAt(1) == '1';
@@ -585,8 +617,13 @@ public class Database {
 		immunities[5] = immunity.charAt(5) == '1';
 		return immunities;
 	}
-	
-	public static String getUserLevel(String channelNoHash, String user){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param user - user to get the level of
+     * @return - Level of the user, Normal if they are not found
+     */
+    public static String getUserLevel(String channelNoHash, String user){
 		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, user));
 		try {
 			if(rs.next()) {
@@ -600,14 +637,19 @@ public class Database {
 		return ULevel.Normal.getName();
 	}
 
-	public static ArrayList<String> getEmoteListAsArray(String channelNoHash) {
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @return - Emote list for the channel as well as the global emote list
+     */
+    public static ArrayList<String> getEmoteListAsArray(String channelNoHash) {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSpam WHERE emote=true", DATABASE, channelNoHash));
 		ArrayList<String> emotes = new ArrayList<>();
 		try {
 			while(rs.next()) {
 				emotes.add(rs.getString(2));
 			}
-			emotes.addAll(getGlobalEmoteListAsArray());
+            ArrayList<String> globalEmotes = getGlobalEmoteListAsArray();
+			emotes.addAll(globalEmotes == null ? new ArrayList<>() : globalEmotes);
 			return emotes;
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Unable to get the emote list for: " + channelNoHash, e);
@@ -616,7 +658,10 @@ public class Database {
 		return null;
 	}
 
-	private static ArrayList<String> getGlobalEmoteListAsArray() {
+    /**
+     * @return - Array of Global Emotes
+     */
+    private static ArrayList<String> getGlobalEmoteListAsArray() {
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.globalEmotes", DATABASE));
 		ArrayList<String> emotes = new ArrayList<>();
 		try {
@@ -631,21 +676,23 @@ public class Database {
 		return null;
 	}
 
-	public static boolean updateUser(String channelNoHash, String sender) {
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param sender - The user to change the status of
+     * @return true if the operation is successful, false otherwise
+     */
+    public static boolean updateUser(String channelNoHash, String sender) {
 		System.out.println(String.format("Updating %s in %s", sender, channelNoHash));
 		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
 		try {
 			if(!rs.next()) {
 				boolean visible = true;
 				String uLevel = TwitchUtilities.getUserLevelNoMod(channelNoHash, sender);
-				System.out.println(String.format("User level is %s", uLevel));
 				if(sender.equalsIgnoreCase(Main.getBotChannel().substring(1))){
 					visible = false;
 					uLevel = ULevel.Moderator.getName();
-					System.out.println("User is a moderator");
 				} else if(sender.equalsIgnoreCase(channelNoHash)) {
 					uLevel = ULevel.Owner.getName();
-					System.out.println("User is a moderator");
 				}
 				return executeUpdate(String.format("INSERT INTO %s.%sUsers VALUES (\'%s\',\'%s\',1,%b,%b)", DATABASE, channelNoHash, sender, uLevel, visible, false));
 			} else {
@@ -669,8 +716,12 @@ public class Database {
 		}
 		return false;
 	}
-	
-	public static boolean getUserSongTables(String user){
+
+    /**
+     * @param user - User to get the song tables for
+     * @return true if both tables exist, false otherwise
+     */
+    public static boolean getUserSongTables(String user){
 		boolean queue = false;
 		boolean list = false;
 		try {
@@ -696,8 +747,13 @@ public class Database {
 		return queue && list;
 	}
 
+    /**
+     * @param songURL - URL of the song to be added
+     * @param songTitle - title of the song to be added
+     * @return - ID the song was given
+     */
     public static int addSongToGlobalList(String songURL, String songTitle) {
-        PreparedStatement stmt = null;
+        PreparedStatement stmt;
         try {
             stmt = conn.prepareStatement(String.format("INSERT INTO %s.globalSongList (songURL,songTitle) VALUES(?,?)", DATABASE));
             stmt.setString(1, songURL);
@@ -711,8 +767,14 @@ public class Database {
         }
         return -1;
     }
-	
-	public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param sender - The person who requested the song
+     * @param videoInformation - Array of info on the song
+     * @return - The status of the addition
+     */
+    public static String addSongToQueue(String channelNoHash, String sender, String[] videoInformation){
 		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[2]))){
 			return String.format("The song \"%s\" is already in the song queue!", videoInformation[1]);
 		}
@@ -721,7 +783,12 @@ public class Database {
 		}
 		return String.format("There was an error adding the song %s to the song queue!", videoInformation[1]);
 	}
-	
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoID - ID for the video in question
+     * @return - true if the video is in the users list, false otherwise
+     */
 	public static boolean isInQueue(String channelNoHash, int videoID){
 		try {
 			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songID=%d", DATABASE, channelNoHash, videoID));
@@ -734,40 +801,61 @@ public class Database {
 		}
 		return false;
 	}
-	
-	public static boolean isInQueue(String channelNoHash, String videoLink){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoLink - Link for the video in question
+     * @return - true if the video is in the users list, false otherwise
+     */
+    public static boolean isInQueue(String channelNoHash, String videoLink){
 		try {
 			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in %s's song queue", videoLink, channelNoHash), e);
+			logger.log(Level.SEVERE, String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
 	}
-	
-	public static String deleteSongFromQueue(String channelNoHash, String[] videoInformation){
-		if(!isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
-			return String.format("The song %s is not in the song queue!", videoInformation[2]);
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoInformation - Array of info on the video to delete
+     * @return - The status of the deletion
+     */
+    public static String deleteSongFromQueue(String channelNoHash, String[] videoInformation){
+		if(!isInQueue(channelNoHash, Integer.valueOf(videoInformation[2]))){
+			return String.format("The song %s is not in the song queue!", videoInformation[1]);
 		}
-		if(executeUpdate(String.format("DELETE FROM %s.%sSongQueue WHERE songID=%d)", DATABASE, channelNoHash, Integer.valueOf(videoInformation[3])))){
-			return String.format("The song %s has been successfully removed from the song queue!", videoInformation[2]);
+		if(executeUpdate(String.format("DELETE FROM %s.%sSongQueue WHERE songID=%d)", DATABASE, channelNoHash, Integer.valueOf(videoInformation[2])))){
+			return String.format("The song %s has been successfully removed from the song queue!", videoInformation[1]);
 		}
-		return String.format("There was an error removing the song %s from the song queue!", videoInformation[2]);
+		return String.format("There was an error removing the song %s from the song queue!", videoInformation[1]);
 	}
-	
-	public static String addSongToList(String channelNoHash, String sender, String[] videoInformation){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param sender - the person who requested the song
+     * @param videoInformation - Array of info on the video
+     * @return - Status of the addition to the users list
+     */
+    public static String addSongToList(String channelNoHash, String sender, String[] videoInformation){
 		if(isInQueue(channelNoHash, Integer.valueOf(videoInformation[3]))){
-			return String.format("The song %s is already in your playlist!", videoInformation[2]);
+			return String.format("The song %s is already in your playlist!", videoInformation[1]);
 		}
-		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (\'%s\',\'%s\',%d)", DATABASE, channelNoHash, videoInformation[1], videoInformation[2], Integer.valueOf(videoInformation[3])))){
-			return String.format("The song %s has been successfully added to your personal playlist!", videoInformation[2]);
+		if(executeUpdate(String.format("INSERT INTO %s.%sSongList VALUES (\'%s\',\'%s\',%d)", DATABASE, sender, videoInformation[0], videoInformation[1], Integer.valueOf(videoInformation[2])))){
+			return String.format("The song %s has been successfully added to your personal playlist!", videoInformation[1]);
 		}
-		return String.format("There was an error adding the song %s to your playlist!", videoInformation[2]);
+		return String.format("There was an error adding the song %s to your playlist!", videoInformation[1]);
 	}
-	
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoID - Video to check for the existence of
+     * @return - true if the video is in the list, false otherwise
+     */
 	public static boolean isInList(String channelNoHash, int videoID){
 		try {
 			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songID=%d", DATABASE, channelNoHash, videoID));
@@ -775,13 +863,18 @@ public class Database {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d is in your playlist", videoID, channelNoHash), e);
+			logger.log(Level.SEVERE, String.format("There was an issue checking if the song %s is in %s's playlist", videoID, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
 	}
-	
-	public static boolean isInList(String channelNoHash, String videoLink){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoLink - Video to check for the existence of
+     * @return - true if the video is in the list, false otherwise
+     */
+    public static boolean isInList(String channelNoHash, String videoLink){
 		try {
 			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
@@ -793,8 +886,13 @@ public class Database {
 		}
 		return false;
 	}
-	
-	public static String deleteSongFromList(String channelNoHash, String[] videoInformation){
+
+    /**
+     * @param channelNoHash - Channel without the leading Hash
+     * @param videoInformation - Array of information for the video to be deleted
+     * @return - Status on the deletion of the song
+     */
+    public static String deleteSongFromList(String channelNoHash, String[] videoInformation){
 		if(!isInList(channelNoHash, Integer.valueOf(videoInformation[3]))){
 			return String.format("The song %s is not in your playlist!", videoInformation[2]);
 		}
@@ -803,8 +901,13 @@ public class Database {
 		}
 		return String.format("There was an error removing the song %s from your playlist!", videoInformation[2]);
 	}
-	
-	public static String[] getSongInfoFromLink(String channelNoHash, String videoLink){
+
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param videoLink - Video to get the info for
+     * @return - Array of info for the video provided
+     */
+    public static String[] getSongInfoFromLink(String channelNoHash, String videoLink){
 		try {
 			ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongList WHERE songURL=\'%s\'", DATABASE, channelNoHash, videoLink));
 			if(rs.next()){
@@ -816,11 +919,27 @@ public class Database {
 				return videoInformation;
 			}
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, String.format("There was an issue checking if song %d", videoLink), e);
+			logger.log(Level.SEVERE, String.format("There was an issue getting the info for the song %s", videoLink), e);
 			WLogger.logError(e);
 		}
 		return null;
 	}
+
+    /**
+     * @param channelNoHash - Channel without the leading hash
+     * @return The song at the top of the channel specified's queue.
+     */
+    public static String getCurrentSong(String channelNoHash) {
+        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSongQueue ORDER BY queueID ASCENDING", DATABASE, channelNoHash));
+        try {
+            if(rs.next()) {
+                return rs.getString("songURL");
+            }
+        } catch (SQLException e) {
+            WLogger.logError(e);
+        }
+        return null;
+    }
 	
 //	public static String getNewSongID(String channelNoHash, String songUrl, String songTitle) {
 //        PreparedStatement stmt = null;
@@ -838,19 +957,26 @@ public class Database {
 //		return info[0];
 //	}
 
+    /**
+     * @param emote - emote to check the database for
+     * @return - true if the emote is in the database, false otherwise
+     */
     public static boolean emoteExists(String emote) {
-        PreparedStatement stmt = null;
+        PreparedStatement stmt;
         try {
             stmt = conn.prepareStatement(String.format("SELECT * FROM %s.globalEmotes WHERE emote=?", DATABASE));
             stmt.setString(1, emote);
 
             return executeQuery(stmt).next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            WLogger.logError(e);
         }
         return false;
     }
 
+    /**
+     * @param emote - emote to add to the database
+     */
     public static void addEmote(String emote) {
 		PreparedStatement stmt = null;
 		try {
@@ -862,17 +988,33 @@ public class Database {
         executeUpdate(stmt);
     }
 
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param usage - What the message is used for
+     * @param message - The message to be added
+     */
     public static void addMessage(String channelNoHash, String usage, String message) {
         executeUpdate(String.format("INSERT INTO %s.customMessages VALUES(\'%s\', \'%s\', \'%s\')", DATABASE, channelNoHash, usage, message));
     }
 
+    /**
+     * @param channelNoHash - Channel without the leading #
+     * @param usage - What the message is used for
+     * @param message - message to be deleted from the database
+     * @return true if it the message deleted, false otherwise
+     */
     public static boolean delMessage(String channelNoHash, String usage, String message) {
         return executeUpdate(String.format("DELETE FROM %s.customMessages WHERE channel=\'%s\' AND regime=\'%s\' AND message=\'%s\'", DATABASE, channelNoHash, usage, message));
     }
 
+    /**
+     * @param channelNoHash - Channel without the leqading #
+     * @param tType - the Timeout Type to get messages for
+     * @return - An array of messages
+     */
     public static ArrayList<String> getTimeoutMessages(String channelNoHash, TType tType) {
         ArrayList<String> messages = new ArrayList<>();
-		PreparedStatement stmt = null;
+		PreparedStatement stmt;
         try {
             stmt = conn.prepareStatement(String.format("SELECT * FROM %s.customMessages WHERE channel=? AND regime=?", DATABASE));
             stmt.setString(1, channelNoHash);
@@ -882,7 +1024,7 @@ public class Database {
                 messages.add(rs.getString(2));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            WLogger.logError(e);
         }
         return messages;
     }
