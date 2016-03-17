@@ -515,7 +515,7 @@ public class Database {
 		output.append("The top ");
         output.append(amount);
         output.append(" points holder(s) are: ");
-		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers ORDER BY points DESC", DATABASE, channelNoHash));
+		ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE visibility = true ORDER BY points DESC", DATABASE, channelNoHash));
 		try {
 			while(rs.next()&&amount>1){
 				if(rs.getBoolean(3)) {
