@@ -4,11 +4,11 @@
 /.metadata/
 /.settings/
 
-*.projrct
+*.project
 *.jar
 *.html
 
-#Netbeans
+# Netbeans
 /dist/
 /nbproject/
 /build/
@@ -17,12 +17,11 @@ build.xml
 nbactions.xml
 nb-configuration.xml
 
-#IntelliJ
-
+# IntelliJ
 /.idea/
-*.iml
 *.ipr
 *.iws
+*.iml
 
 connectedChannels.txt
 script.txt

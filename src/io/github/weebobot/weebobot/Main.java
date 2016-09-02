@@ -157,7 +157,7 @@ public class Main implements Runnable{
 		bot.setSlowMode(channel, false);
 		bot.setSubMode(channel, false);
 		bot.setReJoin(channel, isReJoin);
-		CommandsPage.createCommandsHTML(channel.substring(1));
+//		CommandsPage.createCommandsHTML(channel.substring(1));
 		if (firstTime) {
 			bot.onFirstJoin(channel);
 		}
