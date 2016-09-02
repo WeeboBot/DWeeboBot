@@ -2,11 +2,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>WeeboBot</groupId>
-	<name>WeeboBot</name>
+	<name>DWeeboBot</name>
 	<repositories>
 		<repository>
 			<id>stackmagic.github.maven-repo</id>
 			<url>http://stackmagic.github.com/maven-repo/maven2</url>
+		</repository>
+		<repository> <!-- This repo fixes issues with transitive dependencies -->
+			<id>jcenter</id>
+			<url>http://jcenter.bintray.com</url>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 	<build>
@@ -18,7 +26,7 @@
 					<finalName>WeeboBot</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>io.github.weebobot.weebobot.Main</mainClass>
+                            <mainClass>io.github.weebobot.dweebobot.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -91,7 +99,12 @@
             <artifactId>google-api-services-youtube</artifactId>
             <version>v3-rev162-1.21.0</version>
         </dependency>
+		<dependency>
+			<groupId>com.github.austinv11</groupId>
+			<artifactId>Discord4J</artifactId>
+			<version>2.5.4</version>
+		</dependency>
 	</dependencies>
-	<artifactId>WeeboBot</artifactId>
+	<artifactId>DWeeboBot</artifactId>
 	<version>alpha-v01</version>
 </project>
