@@ -18,6 +18,7 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.util.CLevel;
+import sx.blah.discord.handle.obj.IMessage;
 
 public abstract class Command {
 
@@ -38,5 +39,14 @@ public abstract class Command {
 	 * @return a formatted message to send to the channel or null if no message is required
 	 */
 	public abstract String execute(String channel, String sender, String... parameters);
+
+	/**
+	 * @param message - IMessage object
+	 * @param parameters - parameters sent with the command
+	 * @return a formatted message to send to the channel or null if no message is required
+	 */
+	public String execute(IMessage message, String... parameters) {
+		return execute(message.getChannel().getID(), message.getAuthor().getID(), parameters);
+	}
 
 }

@@ -22,23 +22,24 @@ import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.SoundCloudUtilities;
 import io.github.weebobot.dweebobot.external.YoutubeUtilities;
-import io.github.weebobot.dweebobot.util.*;
-import org.jibble.pircbot.IrcException;
+import io.github.weebobot.dweebobot.util.EmoteRunnable;
+import io.github.weebobot.dweebobot.util.TOptions;
+import io.github.weebobot.dweebobot.util.ULevel;
+import io.github.weebobot.dweebobot.util.WLogger;
+import sx.blah.discord.api.ClientBuilder;
+import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.util.DiscordException;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Main implements Runnable{
 	
 	private static ArrayList<Backend> listeners;
-	private static IRCBot bot;
+	private static DWeeboBot dweebobot;
+	private static IDiscordClient bot;
 	private static String[] args;
 	private static final String botChannel = "#dweebobot";
-	private static final Logger logger = Logger.getLogger(Main.class + "");
 	
 	/**
 	 * Starts a new thread for the bot to exists in so we can pass
@@ -51,18 +52,13 @@ public class Main implements Runnable{
 	/**
 	 * 
 	 * @param args
-	 *            [0] - Twitch OAuth
+	 *            [0] - Discord OAuth
 	 *            [1] - Database Password
 	 *            [2] - YouTube Developers API Key
      *            [3] - Soundcloud CLIENT_SECRET
 	 */
 	public static void main(String[] args) {
-		listeners = new ArrayList<>();
-		Main.args=args;
-		listeners.add(new Backend(6668));
-		listeners.add(new Backend(6669));
-		new Thread(listeners.get(0)).start();
-		new Thread(listeners.get(1)).start();
+		Main.args = args;
 		new Main();
 		try(Scanner scan=new Scanner(System.in)) {
 			while(true) {
@@ -86,48 +82,36 @@ public class Main implements Runnable{
 		}
 	}
 
+	public static DWeeboBot getDWeeboBot() {
+		return dweebobot;
+	}
+
 	/** 
 	 * Performs all of the setup for the bot on first run.
 	 */
 	@Override
 	public void run() {
+		listeners = new ArrayList<>();
+		listeners.add(new Backend(6668));
+		listeners.add(new Backend(6669));
+		new Thread(listeners.get(0)).start();
+		new Thread(listeners.get(1)).start();
 		Database.initDBConnection(args[1]);
 		YoutubeUtilities.init(args[2]);
 		SoundCloudUtilities.setClientSecret(args[3]);
 		new EmoteRunnable();
-		bot = new IRCBot();
-
-		bot.setVerbose(true);
+		dweebobot = new DWeeboBot();
 		try {
-			bot.connect(
-					"irc.twitch.tv", 6667, args[0]);
-		} catch (IOException | IrcException e) {
-			logger.log(Level.SEVERE, "An error occurred while connecting to Twitch IRC", e);
+			bot = new ClientBuilder().withToken(args[0]).login();
+		} catch (DiscordException e) {
 			WLogger.logError(e);
-		}
-		bot.sendRawLine("CAP REQ :twitch.tv/membership");
-		bot.setMessageDelay(1700);
-		joinChannel(getBotChannel(), false);
-		CommandParser.init();
-		
-		File f = new File("connectedChannels.txt");
-		if (f.exists()) {
-			for (String s : TFileReader.readFile(f)) {
-				joinChannel(s, true);
-			}
-			f.delete();
 		}
 	}
 
 	/**
 	 * Performs all of the setup for the bot in the channel specified.
 	 */
-	public static void joinChannel(String channel, boolean isReJoin) {
-
-		if(bot.isWatchingChannel(channel)) {
-			return;
-		}
-
+	public static void joinChannel(String channel) {
 		boolean firstTime = false;
 		if (Database.getChannelTables(channel.substring(1))) {
 			firstTime = true;
@@ -150,16 +134,16 @@ public class Main implements Runnable{
 			Database.addOption(channel.substring(1), ULevel.Follower.getName() + "Immunities", "000000");
 			Database.addOption(channel.substring(1), ULevel.Normal.getName() + "Immunities", "000000");
 		}
-		
-		bot.joinChannel(channel);
-		bot.setWelcomeEnabled(channel, true);
-		bot.setConfirmationEnabled(channel, true);
-		bot.setSlowMode(channel, false);
-		bot.setSubMode(channel, false);
-		bot.setReJoin(channel, isReJoin);
+
+//		dweebobot.joinChannel(channel);
+//		dweebobot.setWelcomeEnabled(channel, true);
+//		dweebobot.setConfirmationEnabled(channel, true);
+//		dweebobot.setSlowMode(channel, false);
+//		dweebobot.setSubMode(channel, false);
+//		dweebobot.setReJoin(channel, isReJoin);
 //		CommandsPage.createCommandsHTML(channel.substring(1));
 		if (firstTime) {
-			bot.onFirstJoin(channel);
+//			bot.onFirstJoin(channel);
 		}
 	}
 	
@@ -168,18 +152,18 @@ public class Main implements Runnable{
 	 * 
 	 * @param channel - channel to be left
 	 */
-	public static void partChannel(String channel) {
-		bot.partChannel(channel);
-		bot.removeWelcomeEnabled(channel);
-		bot.removeConfirmationReplies(channel);
-		bot.removeSlowMode(channel);
-		bot.removeSubMode(channel);
-	}
+//	public static void partChannel(String channel) {
+//		bot.partChannel(channel);
+//		bot.removeWelcomeEnabled(channel);
+//		bot.removeConfirmationReplies(channel);
+//		bot.removeSlowMode(channel);
+//		bot.removeSubMode(channel);
+//	}
 	
 	/**
-	 * @return - the instance of IRCBot
+	 * @return - the instance of DWeeboBot
 	 */
-	public static IRCBot getBot() {
+	public static IDiscordClient getBot() {
 		return bot;
 	}
 
@@ -202,9 +186,7 @@ public class Main implements Runnable{
 	}
 
 	public static void shutdownListeners() {
-		for(Backend b: listeners){
-			b.stop();
-		}
+		listeners.forEach(Backend::stop);
 	}
 
 
