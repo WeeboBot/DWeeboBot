@@ -19,7 +19,7 @@ package io.github.weebobot.dweebobot.util;
 
 public enum TOptions {
 
-	welcomeMessage("welcomeMessage"), numCaps("numCaps"), numSymbols(
+	welcomeMessage("welcomeMessage"), welcomeChannel("welcomeChannel"), numCaps("numCaps"), numSymbols(
 			"numSymbols"), numEmotes("numEmotes"), paragraphLength(
 			"paragraphLength"), link("link"), regular("regular");
 

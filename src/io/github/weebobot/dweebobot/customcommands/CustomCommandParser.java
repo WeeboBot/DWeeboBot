@@ -20,24 +20,37 @@ package io.github.weebobot.dweebobot.customcommands;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.util.WLogger;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
+import sx.blah.discord.handle.obj.IMessage;
 
 public class CustomCommandParser {
-	private static final Logger logger = Logger.getLogger(CustomCommandParser.class+"");
+	private static final Logger logger = Logger.getLogger(CustomCommandParser.class);
 	
 	/**
 	 * @param command - command without the leading !
-	 * @param sender - person who sent the command
 	 * @param channel - channel the command was sent in
 	 * @param parameters - parameters passed with the command
 	 * @return formatted if the command is valid, null otherwise
 	 */
-	public static String parse(String command, String sender, String channel, String[] parameters) {
-		ResultSet rs = Database.getCustomCommands(channel.substring(1));
+	public static String parse(String command, String channel, String[] parameters) {
+		return parse(command, Database.getCustomCommands(channel.substring(1)), parameters);
+	}
+
+	/**
+     * @param message - IMessage object to process
+	 * @param command - command without the leading !
+	 * @param parameters - parameters passed with the command
+	 * @return formatted if the command is valid, null otherwise
+	 */
+	public static String parse(IMessage message, String command, String[] parameters) {
+		return parse(command, Database.getCustomCommands(message.getChannel().getID()), parameters);
+	}
+
+	private static String parse(String command, ResultSet rs, String[] parameters) {
 		try {
 			while(rs.next()) {
 				if(rs.getString(1).substring(1).equalsIgnoreCase(command)) {
@@ -83,7 +96,7 @@ public class CustomCommandParser {
 				}
 			}
 		} catch (SQLException e) {
-			logger.log(Level.SEVERE, "There was an issue executing a custom command", e);
+			logger.log(Priority.ERROR, "There was an issue executing a custom command", e);
 			WLogger.logError(e);
 		}
 		return null;

@@ -17,24 +17,19 @@
 
 package io.github.weebobot.dweebobot;
 
-import io.github.weebobot.dweebobot.commands.CommandParser;
-import io.github.weebobot.dweebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
-import io.github.weebobot.dweebobot.util.*;
-import org.jibble.pircbot.PircBot;
-import org.jibble.pircbot.User;
+import io.github.weebobot.dweebobot.util.DelayedPermitTask;
+import io.github.weebobot.dweebobot.util.PollUtil;
+import io.github.weebobot.dweebobot.util.RaffleUtil;
+import io.github.weebobot.dweebobot.util.WLogger;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IRole;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RateLimitException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -49,8 +44,8 @@ public class DWeeboBot {
 
 	private static ArrayList<IGuild> welcomeDisabled;
 	private static HashMap<String, Boolean> confirmationReplies;
-	private static HashMap<String, io.github.weebobot.dweebobot.util.PollUtil> polls;
-	private static HashMap<String, io.github.weebobot.dweebobot.util.RaffleUtil> raffles;
+	private static HashMap<String, PollUtil> polls;
+	private static HashMap<String, RaffleUtil> raffles;
 	private static HashMap<String, ArrayList<DelayedPermitTask>> permits;
 	private static HashMap<String, ArrayList<String>> welcomes;
 	private static final Logger logger = Logger.getLogger(DWeeboBot.class + "");
@@ -79,56 +74,29 @@ public class DWeeboBot {
 	/**
 	 * Sends message when the bot join's a channel for the first time.
 	 */
-	public void onFirstJoin(String channel) {
-		sendMessage(
-				channel,
-				"Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. First off make sure to mod me so I don't get timed out, then type !setup");
-	}
-	
-	/**
-	 * If IRC sends something PIRCBot doesn't recognize this is called.
-	 */
-	public void onUnkown(String line){
-		logger.info(line);
-		WLogger.log("Unknown IRC Line: " + line);
+	public void onFirstJoin(IGuild guild) {
+		DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), guild.getChannels().get(0).getID(), "Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. To get started type !setup");
 	}
 
 	/**
-	 * @param channel
-	 *            - channel we might be in
-	 * @return true if we are in the channel specified
-	 */
-	public boolean isWatchingChannel(String channel) {
-		for (String s : getChannels()) {
-			if (s.equalsIgnoreCase(channel)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @param channel
-	 *            - the channel the message came from
 	 * @param message
 	 *            - the message that might contain keywords
 	 */
-	public void autoReplyCheck(String channel, String message, String sender) {
-
-		message = message.toLowerCase();
-		ResultSet rs = Database.getAutoReplies(channel.substring(1));
+	public void autoReplyCheck(IMessage message) {
+		String content = message.getContent().toLowerCase();
+		ResultSet rs = Database.getAutoReplies(message.getGuild().getID());
 		try {
 			while (rs.next()) {
 				String[] keyword = rs.getString(1).split(",");
 				boolean matches = true;
 				for (int i = 0; i < keyword.length; i++) {
-					if (!message.contains(keyword[i].toLowerCase())) {
+					if (!content.contains(keyword[i].toLowerCase())) {
 						matches = false;
 						break;
 					}
 				}
 				if (matches) {
-					sendMessage(channel, rs.getString("reply"));
+					DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, message.getGuild().getID(), message.getChannel().getID(), rs.getString("reply"));
 				}
 			}
 		} catch (SQLException e) {
@@ -164,14 +132,10 @@ public class DWeeboBot {
 					DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEEDIT, message.getGuild().getID(), message.getChannel().getID(), message.getID(), message.getContent().replace(rs.getString(1), "*****"));
 				}
 			}
-		} catch (DiscordException | SQLException e) {
-			logger.log(Level.SEVERE, "An error occurred checking if "
-					+ sender + "'s message has bad words", e);
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "An error occurred checking if the message in Guild: "
+					+ message.getGuild().getID() + " Channel: " + message.getChannel().getID() + " with the ID of: " + message.getID() + " has bad words", e);
 			WLogger.logError(e);
-		} catch (RateLimitException e) {
-			e.printStackTrace();
-		} catch (MissingPermissionsException e) {
-			e.printStackTrace();
 		}
 	}
 

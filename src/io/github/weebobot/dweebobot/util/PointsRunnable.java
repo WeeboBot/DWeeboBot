@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.external.TwitchUtilities;
 
 public class PointsRunnable implements Runnable {
 	static final Logger logger = Logger.getLogger(PointsRunnable.class+"");

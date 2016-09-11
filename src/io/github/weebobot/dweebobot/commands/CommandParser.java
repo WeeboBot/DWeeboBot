@@ -73,36 +73,7 @@ public class CommandParser {
 		command = command.toLowerCase();
 		Command c=commands.get(command);
 		if(c != null && hasAccess(c, Main.getBot().getUserByID(sender), Main.getBot().getChannelByID(channel))) {
-			ArrayList<String> passed = new ArrayList<>();
-			int i=0;
-			while(i < parameters.length) {
-				if(parameters[i].startsWith("\"")) {
-					String temp=parameters[i].replace("\"", "") + " ";
-					if(parameters[i].endsWith("\"")) {
-						passed.add(parameters[i].replace("\"", ""));
-						continue;
-					}
-					i++;
-					boolean endQuote = true;
-					while(!parameters[i].endsWith("\"")) {
-						temp+=parameters[i] + " ";
-						i++;
-						if(i >= parameters.length) {
-							endQuote = false;
-							break;
-						}
-					}
-					if(endQuote) {
-						temp+=parameters[i].replace("\"", "");
-					}
-					i++;
-					passed.add(temp);
-					continue;
-				}
-				passed.add(parameters[i]);
-				i++;
-			}
-			return c.execute(sender, channel, toStringArray(passed));
+			return c.execute(sender, channel, toStringArray(parseParameters(parameters)));
 		}
 		return null;
 	}
@@ -111,60 +82,49 @@ public class CommandParser {
 	 * @param message - IMessage object
 	 * @return {@link Command#execute(IMessage, String...)} or null if the command does not exist
 	 */
-	public static String parse(IMessage message) {
+	public static String parse(IMessage message, String command, String[] parameters) {
 	    IUser sender = message.getAuthor();
         IGuild guild = message.getGuild();
         IChannel channel = message.getChannel();
-		String content = message.getContent();
-		String[] parameters = content.substring(content.indexOf(' ') + 1).split(" ");
-		String command;
-		try {
-			command = content.substring(1, content.indexOf(' '));
-		} catch(StringIndexOutOfBoundsException e) {
-			try{
-				command = content.substring(1, content.length());
-			}catch(StringIndexOutOfBoundsException e1){
-				command = " ";
-			}
-		}
-		if(command.equalsIgnoreCase(parameters[0].substring(1))) {
-			parameters = new String[0];
-		}
 		command = command.toLowerCase();
 		Command c=commands.get(command);
 		if(c != null && hasAccess(c, sender, channel)) {
-			ArrayList<String> passed = new ArrayList<>();
-			int i=0;
-			while(i < parameters.length) {
-				if(parameters[i].startsWith("\"")) {
-					String temp=parameters[i].replace("\"", "") + " ";
-					if(parameters[i].endsWith("\"")) {
-						passed.add(parameters[i].replace("\"", ""));
-						continue;
-					}
-					i++;
-					boolean endQuote = true;
-					while(!parameters[i].endsWith("\"")) {
-						temp+=parameters[i] + " ";
-						i++;
-						if(i >= parameters.length) {
-							endQuote = false;
-							break;
-						}
-					}
-					if(endQuote) {
-						temp+=parameters[i].replace("\"", "");
-					}
-					i++;
-					passed.add(temp);
-					continue;
-				}
-				passed.add(parameters[i]);
-				i++;
-			}
-			return c.execute(message, toStringArray(passed));
+			return c.execute(message, toStringArray(parseParameters(parameters)));
 		}
 		return null;
+	}
+
+	public static ArrayList<String> parseParameters(String[] parameters) {
+		ArrayList<String> passed = new ArrayList<>();
+		int i=0;
+		while(i < parameters.length) {
+			if(parameters[i].startsWith("\"")) {
+				String temp=parameters[i].replace("\"", "") + " ";
+				if(parameters[i].endsWith("\"")) {
+					passed.add(parameters[i].replace("\"", ""));
+					continue;
+				}
+				i++;
+				boolean endQuote = true;
+				while(!parameters[i].endsWith("\"")) {
+					temp+=parameters[i] + " ";
+					i++;
+					if(i >= parameters.length) {
+						endQuote = false;
+						break;
+					}
+				}
+				if(endQuote) {
+					temp+=parameters[i].replace("\"", "");
+				}
+				i++;
+				passed.add(temp);
+				continue;
+			}
+			passed.add(parameters[i]);
+			i++;
+		}
+		return passed;
 	}
 
 	/**

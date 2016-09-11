@@ -18,7 +18,6 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.external.TwitchUtilities;
 import io.github.weebobot.dweebobot.util.CLevel;
 
 public class Game extends Command {

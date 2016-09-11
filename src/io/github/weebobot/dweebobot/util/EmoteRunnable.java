@@ -1,7 +1,5 @@
 package io.github.weebobot.dweebobot.util;
 
-import io.github.weebobot.dweebobot.external.TwitchUtilities;
-
 public class EmoteRunnable implements Runnable{
 
     public EmoteRunnable() {

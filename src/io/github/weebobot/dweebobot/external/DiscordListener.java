@@ -4,7 +4,6 @@ import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.PointsRunnable;
 import io.github.weebobot.dweebobot.util.TOptions;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.apache.log4j.Logger;
@@ -13,7 +12,6 @@ import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.UserJoinEvent;
-import sx.blah.discord.handle.impl.obj.User;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
@@ -21,8 +19,10 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.util.*;
-import java.util.logging.Level;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by James on 9/2/2016.
@@ -47,11 +47,14 @@ public class DiscordListener {
         IUser u = event.getUser();
         IGuild g = event.getGuild();
         try {
+            if(u.equals(Main.getBot().getOurUser())) {
+                Main.joinChannel(g);
+            }
             if (!Main.getDWeeboBot().getWelcomeDisabled(g)) {
-                String msg = Database.getOption(g.getID(), TOptions.welcomeMessage.getOptionID())
-                        .replace("%user%", u.getDisplayName(g));
-                if (!msg.equalsIgnoreCase("none")) {
-                    Main.getDWeeboBot().sendMessage(Database.getWelcomeChannel(g.getID()), msg);
+                String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
+                welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
+                if (!welcomeInfo[1].equalsIgnoreCase("none")) {
+                    ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), g.getChannelByID(welcomeInfo[0]), welcomeInfo[1]);
                 }
             }
         } catch (Exception e) {
@@ -70,43 +73,40 @@ public class DiscordListener {
         IGuild g = event.getMessage().getGuild();
         IUser u = event.getMessage().getAuthor();
         IMessage m = event.getMessage();
+        String c = m.getContent();
         try {
             if (!Main.isDefaultMod(u.getID(), g.getID())) {
                 Main.getDWeeboBot().checkSpam(m);
             }
-            if (sender.equalsIgnoreCase(Main.getBotChannel().substring(1))) {
+            if (u.equals(Main.getBot().getOurUser())) {
                 return;
             }
-            if (message.charAt(0) == '!') {
-                String[] params = message.substring(message.indexOf(' ') + 1)
+            if (c.charAt(0) == '!') {
+                String[] params = c.substring(c.indexOf(' ') + 1)
                         .split(" ");
                 String command;
                 try {
-                    command = message.substring(1, message.indexOf(' '));
+                    command = c.substring(1, c.indexOf(' '));
                 } catch (StringIndexOutOfBoundsException e) {
-                    command = message.substring(1, message.length());
+                    command = c.substring(1, c.length());
                 }
                 if (command.equalsIgnoreCase(params[0].substring(1))) {
                     params = new String[0];
                 }
-                String reply = CommandParser.parse(command, sender, channel,
-                        params);
+                String reply = CommandParser.parse(m, command, params);
                 if (reply != null) {
-                    sendMessage(channel, reply);
+                    ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel(), reply);
                 }
-                reply = CustomCommandParser.parse(command.toLowerCase(),
-                        sender, channel, params);
+                reply = CustomCommandParser.parse(m, command, params);
                 if (reply != null) {
-                    sendMessage(channel, reply);
+                    ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel(), reply);
                 }
             }
-            autoReplyCheck(channel, message, sender);
-            chatPostSeen.put(sender,
-                    channel.substring(1) + "|" + new Date().toString());
+            Main.getDWeeboBot().autoReplyCheck(m);
         } catch (Exception e) {
-            logger.log(Level.WARNING,
-                    "An error was thrown while executing onMessage() in "
-                            + channel, e);
+            logger.log(Priority.WARN,
+                    "An error was thrown while executing onMessage() in Guild: "
+                            + g.getID() + " Channel: " + m.getChannel().getID(), e);
             WLogger.logError(e);
         }
     }
@@ -116,31 +116,34 @@ public class DiscordListener {
         private static HashMap<ActionPriority, HashMap<ActionType, List<List<Object>>>> queue = new HashMap<>();
         private static final Logger logger = Logger.getLogger(DiscordListener.class);
 
+        @SuppressWarnings("InfiniteLoopStatement")
         @Override
         public void run() {
             while(true) {
                 try {
                     while (queue.containsKey(ActionPriority.IMMEDIATE)) {
-                        processEdits();
-                        processExits();
+                        processEdits(ActionPriority.IMMEDIATE);
+                        processSends(ActionPriority.IMMEDIATE);
+                        processExits(ActionPriority.IMMEDIATE);
                     }
                     while (queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
-                        processEdits();
-                        processExits();
+                        processEdits(ActionPriority.HIGH);
+                        processSends(ActionPriority.HIGH);
+                        processExits(ActionPriority.HIGH);
                     }
                     while (queue.containsKey(ActionPriority.MEDIUM) && !queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
-                        processEdits();
-                        processExits();
+                        processEdits(ActionPriority.MEDIUM);
+                        processSends(ActionPriority.MEDIUM);
+                        processExits(ActionPriority.MEDIUM);
                     }
                     while (queue.containsKey(ActionPriority.LOW) && !queue.containsKey(ActionPriority.MEDIUM) && !queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
-                        processEdits();
-                        processExits();
+                        processEdits(ActionPriority.LOW);
+                        processSends(ActionPriority.LOW);
+                        processExits(ActionPriority.LOW);
                     }
                 } catch (RateLimitException e) {
                     logger.log(Priority.WARN, "We are being rate limited! Slowing things down a bit...");
-                } catch (DiscordException e) {
-                    e.printStackTrace();
-                } catch (MissingPermissionsException e) {
+                } catch (DiscordException | MissingPermissionsException e) {
                     e.printStackTrace();
                 }
             }
@@ -152,14 +155,25 @@ public class DiscordListener {
          * List<Object>[2] - messageID
          * List<Object>[3] - newContent
          */
-        private void processEdits() throws RateLimitException, DiscordException, MissingPermissionsException {
-            for (List<Object> o : queue.get(ActionPriority.IMMEDIATE).get(ActionType.MESSAGEEDIT)){
+        private void processEdits(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
+            for (List<Object> o : queue.get(priority).get(ActionType.MESSAGEEDIT)){
                 Main.getBot().getGuildByID((String)o.get(0)).getChannelByID((String)o.get(1)).getMessageByID((String)o.get(2)).edit((String)o.get(3));
             }
         }
 
-        private void processExits() {
-            for (List<Object> o : queue.get(ActionPriority.IMMEDIATE).get(ActionType.MESSAGEEDIT)){
+        /**
+         * List<Object>[0] - guildID
+         * List<Object>[1] - channelID
+         * List<Object>[2] - message
+         */
+        private void processSends(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
+            for (List<Object> o : queue.get(priority).get(ActionType.MESSAGEEDIT)){
+                Main.getBot().getGuildByID((String)o.get(0)).getChannelByID((String)o.get(1)).sendMessage((String)o.get(3));
+            }
+        }
+
+        private void processExits(ActionPriority priority) {
+            if (queue.get(priority).get(ActionType.MESSAGEEDIT) != null && queue.get(priority).get(ActionType.MESSAGEEDIT).size() > 0){
                 Main.shutdownListeners();
             }
         }
@@ -169,9 +183,7 @@ public class DiscordListener {
                 HashMap<ActionType, List<List<Object>>> tempSubMap = new HashMap<>();
                 List<List<Object>> tempList = new ArrayList<>();
                 List<Object> tempSubList = new ArrayList<>();
-                for(Object o : parameters) {
-                    tempSubList.add(o);
-                }
+                Collections.addAll(tempSubList, parameters);
                 tempList.add(tempSubList);
                 tempSubMap.put(type, tempList);
                 queue.put(priority, tempSubMap);
@@ -181,9 +193,7 @@ public class DiscordListener {
             if(!tempSubMap.containsKey(type)) {
                 List<List<Object>> tempList = new ArrayList<>();
                 List<Object> tempSubList = new ArrayList<>();
-                for(Object o : parameters) {
-                    tempSubList.add(o);
-                }
+                Collections.addAll(tempSubList, parameters);
                 tempList.add(tempSubList);
                 tempSubMap.put(type, tempList);
                 queue.put(priority, tempSubMap);
@@ -191,9 +201,7 @@ public class DiscordListener {
             }
             List<List<Object>> tempList = queue.get(priority).get(type);
             List<Object> tempSubList = new ArrayList<>();
-            for(Object o : parameters) {
-                tempSubList.add(o);
-            }
+            Collections.addAll(tempSubList, parameters);
             tempList.add(tempSubList);
             tempSubMap.put(type, tempList);
             queue.put(priority, tempSubMap);
@@ -205,6 +213,6 @@ public class DiscordListener {
     }
 
     public enum ActionType {
-        MESSAGEEDIT, EXIT
+        MESSAGESEND, MESSAGEEDIT, EXIT
     }
 }

@@ -28,6 +28,7 @@ import io.github.weebobot.dweebobot.util.ULevel;
 import io.github.weebobot.dweebobot.util.WLogger;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 
 import java.util.ArrayList;
@@ -111,28 +112,23 @@ public class Main implements Runnable{
 	/**
 	 * Performs all of the setup for the bot in the channel specified.
 	 */
-	public static void joinChannel(String channel) {
+	public static void joinChannel(IGuild g) {
 		boolean firstTime = false;
-		if (Database.getChannelTables(channel.substring(1))) {
+		if (Database.getChannelTables(g.getID())) {
 			firstTime = true;
-			Database.addMod(botChannel.substring(1), channel.substring(1));
-			Database.addMod("mysteriousmage", channel.substring(1));
-			Database.addMod("donald10101", channel.substring(1));
-			if(!Database.isMod(channel.substring(1), channel.substring(1))) {
-				Database.addMod(channel.substring(1), channel.substring(1));
-			}
-			Database.addOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), "none");
-			Database.addOption(channel.substring(1), TOptions.numCaps.getOptionID(), "20");
-			Database.addOption(channel.substring(1), TOptions.numEmotes.getOptionID(), "20");
-			Database.addOption(channel.substring(1), TOptions.numSymbols.getOptionID(), "20");
-			Database.addOption(channel.substring(1), TOptions.link.getOptionID(), "0");
-			Database.addOption(channel.substring(1), TOptions.regular.getOptionID(), "288");
-			Database.addOption(channel.substring(1), TOptions.paragraphLength.getOptionID(), "400");
-			Database.addOption(channel.substring(1), ULevel.Moderator.getName() + "Immunities", "111111");
-			Database.addOption(channel.substring(1), ULevel.Subscriber.getName() + "Immunities", "001111");
-			Database.addOption(channel.substring(1), ULevel.Regular.getName() + "Immunities", "000011");
-			Database.addOption(channel.substring(1), ULevel.Follower.getName() + "Immunities", "000000");
-			Database.addOption(channel.substring(1), ULevel.Normal.getName() + "Immunities", "000000");
+			Database.addOption(g.getID(), TOptions.welcomeMessage.getOptionID(), "none");
+			Database.addOption(g.getID(), TOptions.welcomeChannel.getOptionID(), g.getChannels().get(0).getID());
+			Database.addOption(g.getID(), TOptions.numCaps.getOptionID(), "20");
+			Database.addOption(g.getID(), TOptions.numEmotes.getOptionID(), "20");
+			Database.addOption(g.getID(), TOptions.numSymbols.getOptionID(), "20");
+			Database.addOption(g.getID(), TOptions.link.getOptionID(), "0");
+			Database.addOption(g.getID(), TOptions.regular.getOptionID(), "288");
+			Database.addOption(g.getID(), TOptions.paragraphLength.getOptionID(), "400");
+			Database.addOption(g.getID(), ULevel.Moderator.getName() + "Immunities", "111111");
+			Database.addOption(g.getID(), ULevel.Subscriber.getName() + "Immunities", "001111");
+			Database.addOption(g.getID(), ULevel.Regular.getName() + "Immunities", "000011");
+			Database.addOption(g.getID(), ULevel.Follower.getName() + "Immunities", "000000");
+			Database.addOption(g.getID(), ULevel.Normal.getName() + "Immunities", "000000");
 		}
 
 //		dweebobot.joinChannel(channel);
@@ -143,7 +139,7 @@ public class Main implements Runnable{
 //		dweebobot.setReJoin(channel, isReJoin);
 //		CommandsPage.createCommandsHTML(channel.substring(1));
 		if (firstTime) {
-//			bot.onFirstJoin(channel);
+			dweebobot.onFirstJoin(g);
 		}
 	}
 	
