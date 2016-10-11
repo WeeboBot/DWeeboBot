@@ -1,12 +1,13 @@
 package io.github.weebobot.dweebobot.commands;
 
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class BotWebsite extends Command{
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Normal;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 
 	@Override
@@ -16,7 +17,7 @@ public class BotWebsite extends Command{
 
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		return "The website for WeeboBot can be found here http://dweebobot.com/";
+		return "The website for DWeeboBot can be found here http://weebo.jameswolff.me/";
 	}
 
 }

@@ -23,12 +23,12 @@ import java.util.ArrayList;
 
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.util.WLogger;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.handle.obj.IMessage;
 
 public class CustomCommandParser {
-	private static final Logger logger = Logger.getLogger(CustomCommandParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(CustomCommandParser.class);
 	
 	/**
 	 * @param command - command without the leading !
@@ -96,7 +96,7 @@ public class CustomCommandParser {
 				}
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "There was an issue executing a custom command", e);
+			logger.error("There was an issue executing a custom command", e);
 			WLogger.logError(e);
 		}
 		return null;

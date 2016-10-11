@@ -17,14 +17,16 @@
 
 package io.github.weebobot.dweebobot.commands;
 
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 
 public abstract class Command {
 
 	/**
 	 * @return the level that the user must be to perform the command
+     * @param guild
 	 */
-	public abstract int getCommandLevel();
+	public abstract int getCommandLevel(IGuild guild);
 
 	/**
 	 * @return the command without the leading ! or parameters
@@ -45,7 +47,7 @@ public abstract class Command {
 	 * @return a formatted message to send to the channel or null if no message is required
 	 */
 	public String execute(IMessage message, String... parameters) {
-		return execute(message.getChannel().getID(), message.getAuthor().getID(), parameters);
+        return execute(message.getChannel().getID(), message.getAuthor().getID(), parameters);
 	}
 
 	/**

@@ -17,6 +17,7 @@
 
 package io.github.weebobot.dweebobot.database;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.util.TOptions;
 import io.github.weebobot.dweebobot.util.TType;
 import io.github.weebobot.dweebobot.util.ULevel;
@@ -58,7 +59,7 @@ public class Database {
 		} catch (SQLException e) {
 			logger.error("Unable to connect to the database!! Shutting Down!!", e);
 			WLogger.logError(e);
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -879,7 +880,7 @@ public class Database {
     }
 
 	public static int getUserPermissionLevel(IUser sender, IGuild guild) {
-		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%dUsers WHERE userID=%d"));
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=%s", DATABASE, guild.getID(), sender.getID()));
 		if(rs == null) {
             return 0;
         }
@@ -889,5 +890,22 @@ public class Database {
             logger.warn("An error occurred getting the user (" + sender.getID() + ") permission level for that guild (" + guild.getID() + ")", e);
             return 0;
         }
+    }
+
+    public static int getPermissionLevel(String commandText, IGuild guild) {
+        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE command=%s", DATABASE, guild.getID(), commandText));
+        if(rs == null) {
+            return Main.MAX_USER_LEVEL-1;
+        }
+        try {
+            return rs.getInt("userLevel");
+        } catch (SQLException e) {
+            logger.warn("An error occurred getting the command (" + commandText + ") permission level for that guild (" + guild.getID() + ")", e);
+            return Main.MAX_USER_LEVEL-1;
+        }
+    }
+
+    public static void addWelcomedUser(String gID, String uID) {
+        executeUpdate(String.format("INSERT INTO %s.welcomedUsers values(%s, %s)", DATABASE, gID, uID));
     }
 }

@@ -1,17 +1,16 @@
 package io.github.weebobot.dweebobot.backend;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.util.WLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.Socket;
 
 public class SocketCommandListener extends SocketListener implements Runnable{
 	
-	private static Logger logger = Logger.getLogger(SocketCommandListener.class + "");
+	private static Logger logger = LoggerFactory.getLogger(SocketCommandListener.class);
 	
 	public SocketCommandListener(Socket conn) {
 		super(conn);
@@ -22,7 +21,7 @@ public class SocketCommandListener extends SocketListener implements Runnable{
 		try {
 			message = in.readLine();
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "There was an issue reading the line from the client", e);
+			logger.warn("There was an issue reading the line from the client", e);
 			WLogger.logError(e);
 		}
 		String[] params = message.substring(message.indexOf(' ') + 1).split(" ");
@@ -35,7 +34,7 @@ public class SocketCommandListener extends SocketListener implements Runnable{
 		if(command.equalsIgnoreCase(params[0].substring(1))) {
 			params = new String[0];
 		}
-		Main.getBot().sendMessage(Main.getBotChannel(), CommandParser.parse(command, Main.getBotChannel().substring(1), Main.getBotChannel(), params));
+		logger.info(CommandParser.parse(command, params));
 	}
 
 }

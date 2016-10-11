@@ -18,13 +18,14 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class EnableReplies extends Command {
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 	
 	@Override
@@ -34,7 +35,7 @@ public class EnableReplies extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		Main.getBot().setConfirmationEnabled(channel, true);
+		Main.getDWeeboBot().setConfirmationEnabled(channel, true);
 		return "%user% has disabled bot replies".replace("%user%", sender);
 	}
 	

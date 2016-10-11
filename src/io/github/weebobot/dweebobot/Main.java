@@ -19,23 +19,28 @@ package io.github.weebobot.dweebobot;
 
 import io.github.weebobot.dweebobot.backend.Backend;
 import io.github.weebobot.dweebobot.commands.CommandParser;
+import io.github.weebobot.dweebobot.commands.Shorten;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
 import io.github.weebobot.dweebobot.external.SoundCloudUtilities;
 import io.github.weebobot.dweebobot.external.YoutubeUtilities;
-import io.github.weebobot.dweebobot.util.*;
+import io.github.weebobot.dweebobot.util.TOptions;
+import io.github.weebobot.dweebobot.util.ULevel;
+import io.github.weebobot.dweebobot.util.WLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main implements Runnable{
 
     public static final int MAX_USER_LEVEL = 9999;
+    private static Logger logger = LoggerFactory.getLogger(Main.class);
 	private static ArrayList<Backend> listeners;
 	private static DWeeboBot dweebobot;
 	private static IDiscordClient bot;
@@ -56,6 +61,7 @@ public class Main implements Runnable{
 	 *            [1] - Database Password
 	 *            [2] - YouTube Developers API Key
      *            [3] - Soundcloud CLIENT_SECRET
+     *            [4] - Bit.ly API Key
 	 */
 	public static void main(String[] args) {
 		Main.args = args;
@@ -77,7 +83,7 @@ public class Main implements Runnable{
 				if(command.equalsIgnoreCase(params[0].substring(1))) {
 					params = new String[0];
 				}
-				CommandParser.parse(command, params);
+				logger.info(CommandParser.parse(command, params));
 			}
 		}
 	}
@@ -101,12 +107,14 @@ public class Main implements Runnable{
         }
 		YoutubeUtilities.init(args[2]);
 		SoundCloudUtilities.setClientSecret(args[3]);
-		new EmoteRunnable();
+        Shorten.setApiKey(args[4]);
 		dweebobot = new DWeeboBot();
 		try {
 			bot = new ClientBuilder().withToken(args[0]).login();
 		} catch (DiscordException e) {
-			WLogger.logError(e);
+			logger.error("There was an issues with discord", e);
+            WLogger.logError(e);
+            e.printStackTrace();
 		}
 	}
 

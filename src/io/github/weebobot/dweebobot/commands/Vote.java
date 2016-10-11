@@ -18,12 +18,13 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Vote extends Command {
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Normal;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 	
 	@Override
@@ -33,7 +34,7 @@ public class Vote extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		Main.getBot().getPoll(channel).vote(sender, parameters[0]);
+		Main.getDWeeboBot().getPoll(channel).vote(sender, parameters[0]);
 		return null;
 	}
 

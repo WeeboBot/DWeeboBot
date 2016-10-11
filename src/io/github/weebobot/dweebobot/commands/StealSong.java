@@ -1,12 +1,12 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.CLevel;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class StealSong extends Command {
     @Override
-    public CLevel getCommandLevel() {
-        return CLevel.Normal;
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
     }
 
     @Override

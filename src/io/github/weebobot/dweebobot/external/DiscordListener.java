@@ -4,6 +4,7 @@ import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.util.MessageLog;
 import io.github.weebobot.dweebobot.util.TOptions;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
@@ -19,10 +20,7 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by James on 9/2/2016.
@@ -56,6 +54,7 @@ public class DiscordListener {
                 welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
                 if (!welcomeInfo[1].equalsIgnoreCase("none")) {
                     ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), g.getChannelByID(welcomeInfo[0]), welcomeInfo[1]);
+                    Database.addWelcomedUser(g.getID(), u.getID());
                 }
             }
         } catch (Exception e) {
@@ -117,11 +116,12 @@ public class DiscordListener {
     public static class ActionQueue implements Runnable{
 
         private static HashMap<ActionPriority, HashMap<ActionType, List<List<Object>>>> queue = new HashMap<>();
+        private static ArrayList<DelayedAction> delayedActions = new ArrayList<>();
         private static final Logger logger = LoggerFactory.getLogger(DiscordListener.class);
         private static int queueSize;
 
         public static int getQueueSize() {
-            return queueSize;
+            return queueSize + DelayedAction.queueSize;
         }
 
         @SuppressWarnings("InfiniteLoopStatement")
@@ -131,21 +131,25 @@ public class DiscordListener {
                 try {
                     while (queue.containsKey(ActionPriority.IMMEDIATE)) {
                         processEdits(ActionPriority.IMMEDIATE);
+                        processDeletes(ActionPriority.IMMEDIATE);
                         processSends(ActionPriority.IMMEDIATE);
                         processExits(ActionPriority.IMMEDIATE);
                     }
                     while (queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
                         processEdits(ActionPriority.HIGH);
+                        processDeletes(ActionPriority.HIGH);
                         processSends(ActionPriority.HIGH);
                         processExits(ActionPriority.HIGH);
                     }
                     while (queue.containsKey(ActionPriority.MEDIUM) && !queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
                         processEdits(ActionPriority.MEDIUM);
+                        processDeletes(ActionPriority.MEDIUM);
                         processSends(ActionPriority.MEDIUM);
                         processExits(ActionPriority.MEDIUM);
                     }
                     while (queue.containsKey(ActionPriority.LOW) && !queue.containsKey(ActionPriority.MEDIUM) && !queue.containsKey(ActionPriority.HIGH) && !queue.containsKey(ActionPriority.IMMEDIATE)) {
                         processEdits(ActionPriority.LOW);
+                        processDeletes(ActionPriority.LOW);
                         processSends(ActionPriority.LOW);
                         processExits(ActionPriority.LOW);
                     }
@@ -173,11 +177,23 @@ public class DiscordListener {
         /**
          * List<Object>[0] - guildID
          * List<Object>[1] - channelID
+         * List<Object>[2] - messageID
+         */
+        private void processDeletes(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
+            for (List<Object> o : queue.get(priority).get(ActionType.MESSAGEDELETE)){
+                Main.getBot().getGuildByID((String)o.get(0)).getChannelByID((String)o.get(1)).getMessageByID((String)o.get(2)).delete();
+                queueSize--;
+            }
+        }
+
+        /**
+         * List<Object>[0] - guildID
+         * List<Object>[1] - channelID
          * List<Object>[2] - message
          */
         private void processSends(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
             for (List<Object> o : queue.get(priority).get(ActionType.MESSAGEEDIT)){
-                Main.getBot().getGuildByID((String)o.get(0)).getChannelByID((String)o.get(1)).sendMessage((String)o.get(3));
+                MessageLog.addMessage(Main.getBot().getGuildByID((String)o.get(0)).getChannelByID((String)o.get(1)).sendMessage((String)o.get(3)));
                 queueSize--;
             }
         }
@@ -218,6 +234,44 @@ public class DiscordListener {
             queue.put(priority, tempSubMap);
             queueSize++;
         }
+
+        public static void addDelayedAction(ActionPriority priority, ActionType type, String delay, Object... parameters) {
+            DelayedAction.queueSize++;
+            long delayAsLong;
+            if(delay.contains("h")) {
+                delayAsLong = Integer.valueOf(delay.replace("h", ""))*60L*60L*1000L;
+            } else if(delay.contains("m")) {
+                delayAsLong = Integer.valueOf(delay.replace("m", ""))*60L*1000L;
+            } else if(delay.contains("s")) {
+                delayAsLong = Integer.valueOf(delay.replace("s", ""))*1000L;
+            } else {
+                delayAsLong = (long) Integer.valueOf(delay.replace("s", ""));
+            }
+            delayedActions.add(new DelayedAction(priority, type, delayAsLong, parameters));
+        }
+
+        private static class DelayedAction extends TimerTask {
+
+            private ActionPriority priority;
+            private ActionType type;
+            private Object[] parameters;
+            private static final Timer timer = new Timer();
+            protected static int queueSize;
+
+            public DelayedAction(ActionPriority priority, ActionType type, long delay, Object... parameters) {
+                this.priority = priority;
+                this.type = type;
+                this.parameters = parameters;
+                timer.schedule(this, delay);
+            }
+
+            @Override
+            public void run() {
+                ActionQueue.addAction(priority, type, parameters);
+                delayedActions.remove(this);
+                queueSize--;
+            }
+        }
     }
 
     public enum ActionPriority {
@@ -225,6 +279,6 @@ public class DiscordListener {
     }
 
     public enum ActionType {
-        MESSAGESEND, MESSAGEEDIT, EXIT
+        MESSAGESEND, MESSAGEEDIT, MESSAGEDELETE, EXIT
     }
 }

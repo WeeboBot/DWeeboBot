@@ -17,19 +17,19 @@
 
 package io.github.weebobot.dweebobot.commands;
 
-import net.swisstech.bitly.BitlyClient;
+import io.github.weebobot.dweebobot.database.Database;
+import net.swisstech.bitly.builder.v3.ShortenRequest;
 import net.swisstech.bitly.model.Response;
 import net.swisstech.bitly.model.v3.ShortenResponse;
-
-import com.google.gson.JsonParser;
-
-import io.github.weebobot.dweebobot.util.CLevel;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Shorten extends Command {
 
+    private static String API_KEY;
+
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Normal;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 	
 	@Override
@@ -40,16 +40,18 @@ public class Shorten extends Command {
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
 		String url = parameters[0];
-		BitlyClient client = new BitlyClient(
-				"596d69348e5db5711a9f698ed606f4500fe0e766");
-		Response<ShortenResponse> repShort = client.shorten().setLongUrl(url)
+		Response<ShortenResponse> respShort = new ShortenRequest(API_KEY)
+				.setLongUrl(url)
 				.call();
 
-		if (repShort.status_txt.equalsIgnoreCase("ok")) {
-			return new JsonParser().parse(repShort.data.toString())
-					.getAsJsonObject().getAsJsonPrimitive("url").getAsString();
+		if (respShort.status_txt.equalsIgnoreCase("ok")) {
+			return respShort.data.url;
 		}
 		return "%url% is an invalid url! Make sure you include http(s)://.".replace("%url%", url);
 	}
+
+	public static void setApiKey(String key) {
+        API_KEY = key;
+    }
 
 }

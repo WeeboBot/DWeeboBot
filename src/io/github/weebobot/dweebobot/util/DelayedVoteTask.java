@@ -42,37 +42,11 @@ public class DelayedVoteTask extends TimerTask {
 	}
 
 	/**
-	 * @param time
-	 *            - delay before we close the Raffle
-	 * @param r
-	 *            - Raffle object
-	 */
-	public DelayedVoteTask(int time, RaffleUtil r) {
-		this.type = r;
-		timer.schedule(this, time);
-	}
-
-	/**
-	 * @param time
-	 *            - delay before we close the Time Out Vote
-	 * @param v
-	 *            - VoteTimeOut object
-	 */
-	public DelayedVoteTask(int time, VoteTimeOutUtill v) {
-		this.type = v;
-		timer.schedule(this, time);
-	}
-
-	/**
 	 * Decides what type of vote this is then counts the votes/chooses a winner
 	 */
 	public void run() {
 		if (type instanceof PollUtil) {
 			((PollUtil) type).count();
-		} else if (type instanceof RaffleUtil) {
-			((RaffleUtil) type).selectWinner();
-		} else if (type instanceof VoteTimeOutUtill) {
-			((VoteTimeOutUtill) type).count();
 		}
 	}
 

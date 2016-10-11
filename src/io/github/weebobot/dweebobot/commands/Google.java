@@ -1,12 +1,13 @@
 package io.github.weebobot.dweebobot.commands;
 
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Google extends Command {
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 
 	@Override

@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import io.github.weebobot.dweebobot.Main;
+import io.github.weebobot.dweebobot.external.DiscordListener;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class PollUtil {
 	/**
@@ -30,7 +33,8 @@ public class PollUtil {
 	private ArrayList<String> ringazinUsers;
 	private ArrayList<ArrayList<String>> voting;
 
-	private String channel;
+    private IGuild guild;
+	private IChannel channel;
 	private String question;
 	private String[] answers;
 	int answerCount;
@@ -41,8 +45,9 @@ public class PollUtil {
 	 * @param a - possible answers
 	 * @param l - the length of time the poll should last
 	 */
-	public PollUtil(String c, String q, String[] a, int l) {
-		channel = c;
+	public PollUtil(String g, String c, String q, String[] a, int l) {
+		guild = Main.getBot().getGuildByID(g);
+        channel = Main.getBot().getChannelByID(c);
 		question = q;
 		answers = a;
 		answerCount = answers.length;
@@ -56,23 +61,18 @@ public class PollUtil {
 	public PollUtil start() {
 		ringazinUsers = new ArrayList<>();
 		voting = new ArrayList<>();
-		Main.getBot().sendMessage(channel, question);
+		DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), question);
 		for (int i = 0; i < answers.length; i++) {
-			Main.getBot().sendMessage(channel, (i + 1) + ": " + answers[i]);
+			DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), (i + 1) + ": " + answers[i]);
 			voting.add(new ArrayList<String>());
 			voting.get(i).add(answers[i]);
 		}
-		Main.getBot()
-				.sendMessage(
-						channel,
-						"Please input your choice by typing !vote {vote number}.");
+        DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "Please input your choice by typing !vote {vote number}.");
 		for (int i = 0; i < answers.length; i++) {
 			voting.add(new ArrayList<String>());
 			voting.get(i).add(answers[i]);
 		}
-		Main.getBot().sendMessage(
-				channel,
-				"You have %length% seconds to vote.".replace("%length%", length
+        DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "You have %length% seconds to vote.".replace("%length%", length
 						+ ""));
 		new DelayedVoteTask(length * 1000 + ((answers.length + 3) * 2000), this);
 		return this;
@@ -89,11 +89,9 @@ public class PollUtil {
 			}
 		}
 
-		Main.getBot().sendMessage(
-				channel,
-				"The community chose %choice%".replace("%choice%",
+        DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "The community chose %choice%".replace("%choice%",
 						voting.get(chosen).get(0)));
-		Main.getBot().removePoll(channel);
+		Main.getDWeeboBot().removePoll(channel.getID());
 	}
 
 	/**
@@ -104,47 +102,39 @@ public class PollUtil {
 		boolean canVote = true;
 		for (int i = 0; i < voting.size(); i++) {
 			if (voting.get(i).contains(sender)) {
-				if (Main.getBot().getConfirmationReplies(channel)) {
-					Main.getBot().sendMessage(
-							channel,
-							"I am sorry %sender% you cannot vote more than once."
+				if (Main.getDWeeboBot().getConfirmationReplies(channel.getID())) {
+                    DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "I am sorry %sender% you cannot vote more than once."
 									.replace("%sender%", sender));
 				}
 				canVote = false;
 			}
 		}
 		if (ringazinUsers.contains(sender)) {
-			if (Main.getBot().getConfirmationReplies(channel)) {
-				Main.getBot().sendMessage(
-						channel,
-						"I am sorry %sender% you cannot vote more than once."
+			if (Main.getDWeeboBot().getConfirmationReplies(channel.getID())) {
+                DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "I am sorry %sender% you cannot vote more than once."
 								.replace("%sender%", sender));
 			}
 			canVote = false;
 		}
 		if (canVote) {
-			int vote = 0;
+			int vote;
 			if (v.equalsIgnoreCase("random")) {
 				vote = new Random().nextInt();
-			}
-			vote = Integer.valueOf(v);
+			} else {
+                vote = Integer.valueOf(v);
+            }
 			if (vote < answerCount + 1) {
 				voting.get(vote - 1).add(sender);
 			} else {
-				if (Main.getBot().getConfirmationReplies(channel)) {
-					Main.getBot()
-							.sendMessage(
-									channel,
-									"%sender% tried to break me, may hell forever reign upon him! (You cannot participate in this vote.)"
+				if (Main.getDWeeboBot().getConfirmationReplies(channel.getID())) {
+                    DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "%sender% tried to break me, may hell forever reign upon him! (You cannot participate in this vote.)"
 											.replace("%sender%", sender));
 				}
 				ringazinUsers.add(sender);
 				return;
 			}
-			if (Main.getBot().getConfirmationReplies(channel)) {
-				Main.getBot().sendMessage(
-						channel,
-						String.format("%s has voted for %s", sender, voting
+			if (Main.getDWeeboBot().getConfirmationReplies(channel.getID())) {
+                DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), String.format("%s has voted for %s", sender, voting
 								.get(vote - 1).get(0)));
 			}
 		}

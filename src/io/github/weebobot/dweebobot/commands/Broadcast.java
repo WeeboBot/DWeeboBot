@@ -18,13 +18,17 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.external.DiscordListener;
+import io.github.weebobot.dweebobot.util.MessageLog;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Broadcast extends Command {
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 	
 	@Override
@@ -34,16 +38,22 @@ public class Broadcast extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		if(channel.equalsIgnoreCase(Main.getBotChannel())) {
-			String message=parameters[0];
-			for (String s : Main.getBot().getChannels()) {
-				if (!s.equalsIgnoreCase(Main.getBotChannel())) {
-					Main.getBot().sendMessage(s, message);
-				}
-			}
-			return "I have sent %message% to all channels.".replace("%message%", message);
-		}
-		return "You can only preform this command from the main bot channel!";
+		return null;
 	}
+
+	@Override
+    public String execute(int userLevel, String... parameters) {
+        if(userLevel >= Main.MAX_USER_LEVEL) {
+            String message=parameters[0];
+            for (IGuild g : Main.getBot().getGuilds()) {
+                for (IChannel c : g.getChannels()) {
+                    DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGESEND, g.getID(), c.getID(), message);
+                    DiscordListener.ActionQueue.addDelayedAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEDELETE, "4s", g.getID(), c.getID(), MessageLog.getMessageFromContent(g, c, message).getID());
+                }
+            }
+            return "I have sent %message% to all channels.".replace("%message%", message);
+        }
+        return "You can only preform this command from the command line!";
+    }
 
 }

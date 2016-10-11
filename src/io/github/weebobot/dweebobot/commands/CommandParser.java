@@ -24,7 +24,6 @@ import io.github.weebobot.dweebobot.util.WLogger;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
@@ -134,7 +133,7 @@ public class CommandParser {
 		if(DiscordListener.isOwner(sender, guild)) {
 			return true;
 		}
-		return c.getCommandLevel() <= Database.getUserPermissionLevel(sender, guild);
+		return c.getCommandLevel(guild) <= Database.getUserPermissionLevel(sender, guild);
 	}
 	
 	private static String[] toStringArray(ArrayList<String> passed) {

@@ -18,14 +18,15 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
-import io.github.weebobot.dweebobot.util.CLevel;
+import io.github.weebobot.dweebobot.database.Database;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class EnableWelcome extends Command {
 
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 	
 	@Override
@@ -35,7 +36,7 @@ public class EnableWelcome extends Command {
 	
 	@Override
 	public String execute(String channel, String sender, String... parameters) {
-		Main.getBot().setWelcomeEnabled(channel, true);
+		Main.getDWeeboBot().setWelcomeEnabled(Main.getBot().getChannelByID(channel).getGuild());
 		return "Welcome messages have been enabled.";
 	}
 

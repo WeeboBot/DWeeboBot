@@ -1,13 +1,14 @@
 package io.github.weebobot.dweebobot.commands;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.CLevel;
 import io.github.weebobot.dweebobot.util.TType;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class AddMessage extends Command {
     @Override
-    public CLevel getCommandLevel() {
-        return CLevel.Owner;
+    public int getCommandLevel(IGuild guild) {
+        return Main.MAX_USER_LEVEL-1;
     }
 
     @Override

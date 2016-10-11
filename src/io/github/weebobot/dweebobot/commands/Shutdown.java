@@ -17,17 +17,13 @@
 
 package io.github.weebobot.dweebobot.commands;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import io.github.weebobot.dweebobot.Main;
-import io.github.weebobot.dweebobot.util.CLevel;
-import io.github.weebobot.dweebobot.util.TFileWriter;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Shutdown extends Command {
 
 	@Override
-	public int getCommandLevel() {
+	public int getCommandLevel(IGuild guild) {
 		return 9999;
 	}
 	

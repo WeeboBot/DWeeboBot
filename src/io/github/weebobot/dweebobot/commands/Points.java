@@ -1,13 +1,14 @@
 package io.github.weebobot.dweebobot.commands;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.CLevel;
+import sx.blah.discord.handle.obj.IGuild;
 
 public class Points extends Command {
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Normal;
+	public int getCommandLevel(IGuild guild) {
+		return Database.getPermissionLevel(getCommandText(), guild);
 	}
 
 	@Override
@@ -25,7 +26,7 @@ public class Points extends Command {
 				return String.format("%s has %s point(s)!", sender, pts);
 			}
 		}
-		if(!Database.isMod(sender, channel.substring(1))) {
+		if(Database.getUserPermissionLevel(Main.getBot().getUserByID(sender), Main.getBot().getChannelByID(channel).getGuild()) < Database.getPermissionLevel(getCommandText() + "Update", Main.getBot().getChannelByID(channel).getGuild())) {
 			return null;
 		}
 		if (parameters.length < 3) {

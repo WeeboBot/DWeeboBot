@@ -19,9 +19,7 @@ package io.github.weebobot.dweebobot;
 
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
-import io.github.weebobot.dweebobot.util.DelayedPermitTask;
 import io.github.weebobot.dweebobot.util.PollUtil;
-import io.github.weebobot.dweebobot.util.RaffleUtil;
 import io.github.weebobot.dweebobot.util.WLogger;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
@@ -45,9 +43,6 @@ public class DWeeboBot {
 	private static ArrayList<IGuild> welcomeDisabled;
 	private static HashMap<String, Boolean> confirmationReplies;
 	private static HashMap<String, PollUtil> polls;
-	private static HashMap<String, RaffleUtil> raffles;
-	private static HashMap<String, ArrayList<DelayedPermitTask>> permits;
-	private static HashMap<String, ArrayList<String>> welcomes;
 	private static final Logger logger = Logger.getLogger(DWeeboBot.class + "");
 
 	/**
@@ -64,9 +59,6 @@ public class DWeeboBot {
 		welcomeDisabled = new ArrayList<>();
 		confirmationReplies = new HashMap<>();
 		polls = new HashMap<>();
-		raffles = new HashMap<>();
-		permits = new HashMap<>();
-		welcomes = new HashMap<>();
 	}
 
 	/**
@@ -138,25 +130,12 @@ public class DWeeboBot {
 	}
 
 	/**
-	 * @param channel
-	 *            - channel the link was sent in
-	 * @param sender
-	 *            - person who might be permitted to post a link
-	 * @return true if sender is permitted in channel
+	 *
+	 * @param guild - guild that we are setting the value for
 	 */
-	public boolean isPermitted(String channel, String sender) {
-		ArrayList<DelayedPermitTask> ps = permits.get(sender);
-		if (ps == null) {
-			return false;
-		}
-		for (DelayedPermitTask p : ps) {
-			if (p.getChannel().equalsIgnoreCase(channel)) {
-				return true;
-			}
-		}
-		return false;
+	public void setWelcomeEnabled(IGuild guild) {
+		welcomeDisabled.remove(guild);
 	}
-
 	/**
 	 * @param guild
 	 *            - guild that we are setting the value for
@@ -229,33 +208,6 @@ public class DWeeboBot {
 
 	/**
 	 * @param channel
-	 *            - the channel to add the raffle to
-	 * @param raffle
-	 *            - the Raffle Object
-	 */
-	public void addRaffle(String channel, RaffleUtil raffle) {
-		raffles.put(channel, raffle);
-	}
-
-	/**
-	 * @param channel
-	 *            - the channel to remove the raffle from
-	 */
-	public void removeRaffle(String channel) {
-		raffles.remove(channel);
-	}
-
-	/**
-	 * @param channel
-	 *            - the channel to get the Raffle for
-	 * @return the Raffle Object
-	 */
-	public RaffleUtil getRaffle(String channel) {
-		return raffles.get(channel);
-	}
-
-	/**
-	 * @param channel
 	 *            - the channel to remove from the welcome enabled list
 	 */
 	public void removeWelcomeDisabled(String channel) {
@@ -268,63 +220,5 @@ public class DWeeboBot {
 	 */
 	public void removeConfirmationReplies(String channel) {
 		confirmationReplies.remove(channel);
-	}
-
-	/**
-	 * @param permit
-	 *            - Permit Object
-	 * @param user
-	 *            - user to permit
-	 */
-	public void addPermit(DelayedPermitTask permit, String user) {
-		ArrayList<DelayedPermitTask> p = permits.get(user);
-		if (p == null) {
-			p = new ArrayList<>();
-		}
-		p.add(permit);
-		permits.put(user, p);
-	}
-
-	/**
-	 * @param permit
-	 *            - Permit Object to remove
-	 * @param user
-	 *            - user to remove the permit for
-	 */
-	public void removePermit(DelayedPermitTask permit, String user) {
-		ArrayList<DelayedPermitTask> p = permits.get(user);
-		if (p == null) {
-			return;
-		}
-		p.remove(permit);
-		if (p.size() > 0) {
-			permits.put(user, p);
-		} else {
-			permits.remove(user);
-		}
-	}
-
-	/**
-	 * @param channel
-	 *            - the channel the permit might be in
-	 * @param sender
-	 *            - the person who might be permitted
-	 */
-	private void removePermit(String channel, String sender) {
-		ArrayList<DelayedPermitTask> ps = permits.get(sender);
-		if (ps == null) {
-			return;
-		}
-		for (DelayedPermitTask p : ps) {
-			if (p.getChannel().equalsIgnoreCase(channel)) {
-				ps.remove(p);
-				break;
-			}
-		}
-		if (ps.size() > 0) {
-			permits.put(sender, ps);
-		} else {
-			permits.remove(sender);
-		}
 	}
 }
