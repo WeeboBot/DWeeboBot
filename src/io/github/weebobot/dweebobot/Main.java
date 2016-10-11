@@ -20,27 +20,26 @@ package io.github.weebobot.dweebobot;
 import io.github.weebobot.dweebobot.backend.Backend;
 import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.external.DiscordListener;
 import io.github.weebobot.dweebobot.external.SoundCloudUtilities;
 import io.github.weebobot.dweebobot.external.YoutubeUtilities;
-import io.github.weebobot.dweebobot.util.EmoteRunnable;
-import io.github.weebobot.dweebobot.util.TOptions;
-import io.github.weebobot.dweebobot.util.ULevel;
-import io.github.weebobot.dweebobot.util.WLogger;
+import io.github.weebobot.dweebobot.util.*;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main implements Runnable{
-	
+
+    public static final int MAX_USER_LEVEL = 9999;
 	private static ArrayList<Backend> listeners;
 	private static DWeeboBot dweebobot;
 	private static IDiscordClient bot;
 	private static String[] args;
-	private static final String botChannel = "#dweebobot";
 	
 	/**
 	 * Starts a new thread for the bot to exists in so we can pass
@@ -78,7 +77,7 @@ public class Main implements Runnable{
 				if(command.equalsIgnoreCase(params[0].substring(1))) {
 					params = new String[0];
 				}
-				CommandParser.parse(command, getBotChannel().substring(1), getBotChannel(), params);
+				CommandParser.parse(command, params);
 			}
 		}
 	}
@@ -97,7 +96,9 @@ public class Main implements Runnable{
 		listeners.add(new Backend(6669));
 		new Thread(listeners.get(0)).start();
 		new Thread(listeners.get(1)).start();
-		Database.initDBConnection(args[1]);
+		if(!Database.initDBConnection(args[1])) {
+            shutdown();
+        }
 		YoutubeUtilities.init(args[2]);
 		SoundCloudUtilities.setClientSecret(args[3]);
 		new EmoteRunnable();
@@ -131,30 +132,11 @@ public class Main implements Runnable{
 			Database.addOption(g.getID(), ULevel.Normal.getName() + "Immunities", "000000");
 		}
 
-//		dweebobot.joinChannel(channel);
-//		dweebobot.setWelcomeEnabled(channel, true);
-//		dweebobot.setConfirmationEnabled(channel, true);
-//		dweebobot.setSlowMode(channel, false);
-//		dweebobot.setSubMode(channel, false);
-//		dweebobot.setReJoin(channel, isReJoin);
-//		CommandsPage.createCommandsHTML(channel.substring(1));
+
 		if (firstTime) {
 			dweebobot.onFirstJoin(g);
 		}
 	}
-	
-	/**
-	 * Makes the bot leave the channel specified
-	 * 
-	 * @param channel - channel to be left
-	 */
-//	public static void partChannel(String channel) {
-//		bot.partChannel(channel);
-//		bot.removeWelcomeEnabled(channel);
-//		bot.removeConfirmationReplies(channel);
-//		bot.removeSlowMode(channel);
-//		bot.removeSubMode(channel);
-//	}
 	
 	/**
 	 * @return - the instance of DWeeboBot
@@ -163,27 +145,14 @@ public class Main implements Runnable{
 		return bot;
 	}
 
-	/**
-	 * @return - the main channel we are running in
-	 */
-	public static String getBotChannel() {
-		return botChannel;
-	}
-
-	/**
-	 * @param moderator - name of the person to check
-	 * @param channelNoHash - name of the channel without the
-	 * leading #
-	 * @return true if the person passed is a moderator added when
-	 * the table is set up to begin with
-	 */
-	public static boolean isDefaultMod(String moderator, String channelNoHash) {
-		return moderator.equalsIgnoreCase(channelNoHash) || moderator.equalsIgnoreCase("donald10101") || moderator.equalsIgnoreCase("mysteriousmage") || moderator.equalsIgnoreCase(botChannel.substring(1));
-	}
-
 	public static void shutdownListeners() {
 		listeners.forEach(Backend::stop);
 	}
 
 
+    public static void shutdown() {
+        shutdownListeners();
+        while(DiscordListener.ActionQueue.getQueueSize() > 0);
+        System.exit(0);
+    }
 }

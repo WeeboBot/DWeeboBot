@@ -17,7 +17,6 @@
 
 package io.github.weebobot.dweebobot.commands;
 
-import io.github.weebobot.dweebobot.util.CLevel;
 import sx.blah.discord.handle.obj.IMessage;
 
 public abstract class Command {
@@ -25,7 +24,7 @@ public abstract class Command {
 	/**
 	 * @return the level that the user must be to perform the command
 	 */
-	public abstract CLevel getCommandLevel();
+	public abstract int getCommandLevel();
 
 	/**
 	 * @return the command without the leading ! or parameters
@@ -48,5 +47,15 @@ public abstract class Command {
 	public String execute(IMessage message, String... parameters) {
 		return execute(message.getChannel().getID(), message.getAuthor().getID(), parameters);
 	}
+
+	/**
+	 * Handles commands sent from command line
+	 * @param userLevel - Should always be Main.MAX_USER_LEVEL
+	 * @param parameters - parameters passed to the command
+	 * @return a formatted message to send to the command line
+	 */
+	public String execute(int userLevel, String... parameters) {
+        return null;
+    }
 
 }

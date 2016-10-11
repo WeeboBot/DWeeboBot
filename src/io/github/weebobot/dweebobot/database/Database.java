@@ -21,8 +21,10 @@ import io.github.weebobot.dweebobot.util.TOptions;
 import io.github.weebobot.dweebobot.util.TType;
 import io.github.weebobot.dweebobot.util.ULevel;
 import io.github.weebobot.dweebobot.util.WLogger;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IUser;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class Database {
 
 	private static final String DATABASE = "dweebo";
 
-	private static final Logger logger = Logger.getLogger(Database.class);
+	private static final Logger logger = LoggerFactory.getLogger(Database.class);
 
 	/**
 	 * Creates a connection to the database.
@@ -47,19 +49,14 @@ public class Database {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException e) {
-			logger.log(
-                    Priority.FATAL,
-					"Unable to find Driver in classpath!"
-							,e);
+			logger.error("Unable to find Driver in classpath!",e);
 			WLogger.logError(e);
+            return false;
 		}
 		try {
 			conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
 		} catch (SQLException e) {
-			logger.log(
-					Priority.FATAL,
-					"Unable to connect to the database!!"
-							,e);
+			logger.error("Unable to connect to the database!! Shutting Down!!", e);
 			WLogger.logError(e);
 			return false;
 		}
@@ -89,7 +86,7 @@ public class Database {
 				stmt1.closeOnCompletion();
 				stmt1.executeUpdate(String.format("CREATE TABLE %s.%sOptions(optionID varchar(50), value varchar(4000), PRIMARY KEY (optionID))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
-				logger.log(Priority.ERROR, String.format("Unable to create table %sOptions!", channelNoHash), ex );
+				logger.error(String.format("Unable to create table %sOptions!", channelNoHash), ex );
 				WLogger.logError(e);
 			}
 			try {
@@ -97,15 +94,15 @@ public class Database {
 				stmt2.closeOnCompletion();
 				stmt2.executeUpdate(String.format("CREATE TABLE %s.%sSpam(emote BOOLEAN, word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
 			} catch (SQLException ex) {
-				logger.log(Priority.ERROR, String.format("Unable to create table %sSpam!", channelNoHash), ex);
+				logger.error(String.format("Unable to create table %sSpam!", channelNoHash), ex);
 				WLogger.logError(e);
 			}
             try{
                 stmt3=conn.createStatement();
                 stmt3.closeOnCompletion();
-                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel varchar(25), points INTEGER, visibility BOOLEAN, regular BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
+                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sUsers(userID varchar(25), userLevel INTEGER, points INTEGER, visibility BOOLEAN, regular BOOLEAN, PRIMARY KEY (userID))", DATABASE, channelNoHash));
             }catch(SQLException ex){
-                logger.log(Priority.ERROR, "Unable to create table Users!", ex);
+                logger.error("Unable to create table Users!", ex);
     			WLogger.logError(e);
             }
             try{
@@ -113,7 +110,7 @@ public class Database {
                 stmt4.closeOnCompletion();
                 stmt4.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), PRIMARY KEY (command))", DATABASE, channelNoHash));
             }catch(SQLException ex){
-                logger.log(Priority.ERROR, "Unable to create table Commands!", ex);
+                logger.error("Unable to create table Commands!", ex);
     			WLogger.logError(e);
             }
 			return true;
@@ -132,14 +129,14 @@ public class Database {
 			stmt = conn.createStatement();
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Priority.WARN, String.format("Unable to create connection for SQLCommand: %s", sqlCommand), e);
+			logger.warn(String.format("Unable to create connection for SQLCommand: %s", sqlCommand), e);
 			WLogger.logError(e);
 			return false;
 		}
 		try {
 			stmt.executeUpdate(sqlCommand);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("Unable to execute statment: %s", sqlCommand), e);
+			logger.error(String.format("Unable to execute statment: %s", sqlCommand), e);
 			WLogger.logError(e);
 			return false;
 		}
@@ -158,7 +155,7 @@ public class Database {
 			stmt=conn.createStatement();
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Priority.WARN, String.format("Unable to create connection for SQLQuery: %s", sqlQuery), e);
+			logger.warn(String.format("Unable to create connection for SQLQuery: %s", sqlQuery), e);
 			WLogger.logError(e);
 		}
 		try {
@@ -166,7 +163,7 @@ public class Database {
                 rs = stmt.executeQuery(sqlQuery);
             }
         } catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("Unable to execute query: %s", sqlQuery), e);
+			logger.error(String.format("Unable to execute query: %s", sqlQuery), e);
 			WLogger.logError(e);
 		}
 		return rs;
@@ -182,14 +179,14 @@ public class Database {
 		try {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Priority.WARN, "Unable to create connection for SQLCommand", e);
+			logger.warn("Unable to create connection for SQLCommand", e);
 			WLogger.logError(e);
 			return false;
 		}
 		try {
 			stmt.executeUpdate();
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to execute statment", e);
+			logger.error("Unable to execute statment", e);
 			WLogger.logError(e);
 			return false;
 		}
@@ -206,13 +203,13 @@ public class Database {
 		try {
 			stmt.closeOnCompletion();
 		} catch (SQLException e) {
-			logger.log(Priority.WARN, "Unable to create connection for SQLQuery", e);
+			logger.warn("Unable to create connection for SQLQuery", e);
 			WLogger.logError(e);
 		}
 		try {
 			rs = stmt.executeQuery();
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to execute query", e);
+			logger.error("Unable to execute query", e);
 			WLogger.logError(e);
 		}
 		return rs;
@@ -231,7 +228,7 @@ public class Database {
 			}
 			return null;
 		} catch (SQLException | NumberFormatException e) {
-			logger.log(Priority.ERROR, String.format("Unable to get welcome message for %s", channelNoHash), e);
+			logger.error(String.format("Unable to get welcome message for %s", channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return null;
@@ -262,7 +259,7 @@ public class Database {
 			stmt.setString(2, value+"");
 			stmt.setString(3, option.toLowerCase());
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to set option", e);
+			logger.error("Unable to set option", e);
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
@@ -281,7 +278,7 @@ public class Database {
 			stmt.setString(1, option.toLowerCase());
 			stmt.setString(2, value+"");
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to add option", e);
+			logger.error("Unable to add option", e);
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
@@ -300,7 +297,7 @@ public class Database {
 			stmt.setString(2, "");
 			stmt.setString(3, reply);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to set option", e);
+			logger.error("Unable to set option", e);
 			WLogger.logError(e);
 		}
 		executeUpdate(stmt);
@@ -328,7 +325,7 @@ public class Database {
 			stmt.setString(2, parameters);
 			stmt.setString(3, reply);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to add command", e);
+			logger.error("Unable to add command", e);
 			WLogger.logError(e);
 		}
 		executeUpdate(stmt);
@@ -371,7 +368,7 @@ public class Database {
 			stmt.setBoolean(1, emote);
 			stmt.setString(2, word);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to set option", e);
+			logger.error("Unable to set option", e);
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
@@ -388,7 +385,7 @@ public class Database {
 			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sSpam WHERE word=?", DATABASE, channelNoHash));
 			stmt.setString(1, word);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to set option", e);
+			logger.error("Unable to set option", e);
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
@@ -410,7 +407,7 @@ public class Database {
 				Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, userLevel, points, visible, regular, nick));
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "An Error occured updating "+nick+"'s points!\n", e);
+			logger.error("An Error occured updating "+nick+"'s points!\n", e);
 			WLogger.logError(e);
 		}
 	}
@@ -427,7 +424,7 @@ public class Database {
 				return rs.getInt(3)+"";
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "An error occurred getting a user's points.", e);
+			logger.error("An error occurred getting a user's points.", e);
 			WLogger.logError(e);
 		}
 		return null;
@@ -458,7 +455,7 @@ public class Database {
             output.append(": ");
             output.append(rs.getInt(3));
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Error occurred creating Top list!", e);
+			logger.error("Error occurred creating Top list!", e);
 			WLogger.logError(e);
 		}
 		return output.toString();
@@ -496,7 +493,7 @@ public class Database {
 			stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sCommands WHERE command=?", DATABASE, channelNoHash));
 			stmt.setString(1, command);
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to set option", e);
+			logger.error("Unable to set option", e);
 			WLogger.logError(e);
 		}
 		return executeUpdate(stmt);
@@ -545,7 +542,7 @@ public class Database {
 			emotes.addAll(globalEmotes == null ? new ArrayList<>() : globalEmotes);
 			return emotes;
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to get the emote list for: " + channelNoHash, e);
+			logger.error("Unable to get the emote list for: " + channelNoHash, e);
 			WLogger.logError(e);
 		}
 		return null;
@@ -563,7 +560,7 @@ public class Database {
 			}
 			return emotes;
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, "Unable to get the global emote list", e);
+			logger.error("Unable to get the global emote list", e);
 			WLogger.logError(e);
 		}
 		return null;
@@ -593,7 +590,7 @@ public class Database {
 				System.out.println(String.format("Created song list table for %s", user));
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue checking for %s's song tables", user), e);
+			logger.error(String.format("There was an issue checking for %s's song tables", user), e);
 			WLogger.logError(e);
 		}
 		return queue && list;
@@ -648,7 +645,7 @@ public class Database {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue checking if song %d is in %s's song queue", videoID, channelNoHash), e);
+			logger.error(String.format("There was an issue checking if song %d is in %s's song queue", videoID, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -666,7 +663,7 @@ public class Database {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
+			logger.error(String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -715,7 +712,7 @@ public class Database {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue checking if the song %s is in %s's playlist", videoID, channelNoHash), e);
+			logger.error(String.format("There was an issue checking if the song %s is in %s's playlist", videoID, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -733,7 +730,7 @@ public class Database {
 				return true;
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
+			logger.error(String.format("There was an issue checking if song %s is in %s's song queue", videoLink, channelNoHash), e);
 			WLogger.logError(e);
 		}
 		return false;
@@ -771,7 +768,7 @@ public class Database {
 				return videoInformation;
 			}
 		} catch (SQLException e) {
-			logger.log(Priority.ERROR, String.format("There was an issue getting the info for the song %s", videoLink), e);
+			logger.error(String.format("There was an issue getting the info for the song %s", videoLink), e);
 			WLogger.logError(e);
 		}
 		return null;
@@ -879,5 +876,18 @@ public class Database {
             WLogger.logError(e);
         }
         return messages;
+    }
+
+	public static int getUserPermissionLevel(IUser sender, IGuild guild) {
+		ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%dUsers WHERE userID=%d"));
+		if(rs == null) {
+            return 0;
+        }
+        try {
+            return rs.getInt("userLevel");
+        } catch (SQLException e) {
+            logger.warn("An error occurred getting the user (" + sender.getID() + ") permission level for that guild (" + guild.getID() + ")", e);
+            return 0;
+        }
     }
 }

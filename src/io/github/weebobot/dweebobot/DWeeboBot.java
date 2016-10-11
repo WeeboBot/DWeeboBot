@@ -69,8 +69,6 @@ public class DWeeboBot {
 		welcomes = new HashMap<>();
 	}
 
-
-
 	/**
 	 * Sends message when the bot join's a channel for the first time.
 	 */

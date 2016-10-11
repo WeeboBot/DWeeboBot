@@ -27,22 +27,24 @@ import io.github.weebobot.dweebobot.util.TFileWriter;
 public class Shutdown extends Command {
 
 	@Override
-	public CLevel getCommandLevel() {
-		return CLevel.Mod;
+	public int getCommandLevel() {
+		return 9999;
 	}
 	
 	@Override
 	public String getCommandText() {
 		return "shutdown";
 	}
-	
+
 	@Override
-	public String execute(String channel, String sender, String...parameters) {
-		if(channel.equalsIgnoreCase(Main.getBotChannel())) {
-			Main.shutdownListeners();
-			TFileWriter.overWriteFile(new File("connectedChannels.txt"), channels);
-			while(Main.getBot() > 0);
-			System.exit(0);
+	public String execute(String channel, String sender, String... parameters) {
+		return null;
+	}
+
+	@Override
+	public String execute(int userLevel, String...parameters) {
+		if(userLevel == Main.MAX_USER_LEVEL) {
+			Main.shutdown();
 		}
 		return null;
 	}

@@ -19,6 +19,7 @@ package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.external.DiscordListener;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -63,19 +64,16 @@ public class CommandParser {
 	}
 	
 	/**
+     * ONLY TO BE CALLED BY COMMANDS SENT FROM THE COMMAND LINE
+     *
 	 * @param command - command that was sent without the leading !
-	 * @param sender - person who sent the command
-	 * @param channel - Channel the command was sent in
 	 * @param parameters - parameters sent along with the command
 	 * @return {@link Command#execute(String, String, String[])} or null if the command does not exist
 	 */
-	public static String parse(String command, String sender, String channel, String[] parameters) {
+	public static String parse(String command, String[] parameters) {
 		command = command.toLowerCase();
 		Command c=commands.get(command);
-		if(c != null && hasAccess(c, Main.getBot().getUserByID(sender), Main.getBot().getChannelByID(channel))) {
-			return c.execute(sender, channel, toStringArray(parseParameters(parameters)));
-		}
-		return null;
+        return c.execute(Main.MAX_USER_LEVEL, toStringArray(parseParameters(parameters)));
 	}
 
 	/**
@@ -85,10 +83,9 @@ public class CommandParser {
 	public static String parse(IMessage message, String command, String[] parameters) {
 	    IUser sender = message.getAuthor();
         IGuild guild = message.getGuild();
-        IChannel channel = message.getChannel();
 		command = command.toLowerCase();
 		Command c=commands.get(command);
-		if(c != null && hasAccess(c, sender, channel)) {
+		if(c != null && hasAccess(c, sender, guild)) {
 			return c.execute(message, toStringArray(parseParameters(parameters)));
 		}
 		return null;
@@ -130,28 +127,14 @@ public class CommandParser {
 	/**
 	 * @param c - Command object that matches what was passed
 	 * @param sender - user who sent the command
-	 * @param channel - channel the command was sent in
+	 * @param guild - guild the command was sent in
 	 * @return true if the user has valid access
 	 */
-	private static boolean hasAccess(Command c, IUser sender, IChannel channel) {
-		if(Main.isDefaultMod(sender.getID(), channel.getID())) {
+	private static boolean hasAccess(Command c, IUser sender, IGuild guild) {
+		if(DiscordListener.isOwner(sender, guild)) {
 			return true;
 		}
-		switch(c.getCommandLevel()) {
-            case Owner:
-                if(Database.isOwner(sender.getID(), channel.getID())) {
-                    return true;
-                }
-                break;
-            case Mod:
-                if(Database.isMod(sender.getID(), channel.getID()) || Database.isOwner(sender.getID(), channel.getID())) {
-                    return true;
-                }
-                break;
-            default:
-                return true;
-		}
-		return false;
+		return c.getCommandLevel() <= Database.getUserPermissionLevel(sender, guild);
 	}
 	
 	private static String[] toStringArray(ArrayList<String> passed) {
