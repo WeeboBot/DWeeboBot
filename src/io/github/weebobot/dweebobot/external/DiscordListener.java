@@ -20,6 +20,8 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -73,6 +75,7 @@ public class DiscordListener {
         IUser u = event.getMessage().getAuthor();
         IMessage m = event.getMessage();
         String c = m.getContent();
+        logger.debug(String.format("Recieved message in guild: %s channel: %s, with content: %s, at %d", g.getName(), m.getChannel().getName(), c, new SimpleDateFormat("MMM dd,yyyy HH:mm:ss").format(new Date(System.currentTimeMillis()))));
         try {
             if (!isOwner(u, g)) {
                 Main.getDWeeboBot().checkSpam(m);

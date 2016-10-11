@@ -17,7 +17,6 @@
 
 package io.github.weebobot.dweebobot;
 
-import io.github.weebobot.dweebobot.backend.Backend;
 import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.commands.Shorten;
 import io.github.weebobot.dweebobot.database.Database;
@@ -34,14 +33,12 @@ import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.DiscordException;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main implements Runnable{
 
     public static final int MAX_USER_LEVEL = 9999;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
-	private static ArrayList<Backend> listeners;
 	private static DWeeboBot dweebobot;
 	private static IDiscordClient bot;
 	private static String[] args;
@@ -97,11 +94,6 @@ public class Main implements Runnable{
 	 */
 	@Override
 	public void run() {
-		listeners = new ArrayList<>();
-		listeners.add(new Backend(6668));
-		listeners.add(new Backend(6669));
-		new Thread(listeners.get(0)).start();
-		new Thread(listeners.get(1)).start();
 		if(!Database.initDBConnection(args[1])) {
             shutdown();
         }
@@ -153,13 +145,8 @@ public class Main implements Runnable{
 		return bot;
 	}
 
-	public static void shutdownListeners() {
-		listeners.forEach(Backend::stop);
-	}
-
 
     public static void shutdown() {
-        shutdownListeners();
         while(DiscordListener.ActionQueue.getQueueSize() > 0);
         System.exit(0);
     }

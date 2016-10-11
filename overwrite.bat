@@ -1,1 +1,1 @@
-copy /Y .\target\WeeboBot-jar-with-dependencies.jar .\dist\WeeboBot.jar
+copy /Y .\target\DWeeboBot-jar-with-dependencies.jar .\target\DWeeboBot.jar

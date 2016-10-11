@@ -90,14 +90,6 @@ public class Database {
 				logger.error(String.format("Unable to create table %sOptions!", channelNoHash), ex );
 				WLogger.logError(e);
 			}
-			try {
-				stmt2 = conn.createStatement();
-				stmt2.closeOnCompletion();
-				stmt2.executeUpdate(String.format("CREATE TABLE %s.%sSpam(emote BOOLEAN, word varchar(25), PRIMARY KEY (word))", DATABASE, channelNoHash));
-			} catch (SQLException ex) {
-				logger.error(String.format("Unable to create table %sSpam!", channelNoHash), ex);
-				WLogger.logError(e);
-			}
             try{
                 stmt3=conn.createStatement();
                 stmt3.closeOnCompletion();
