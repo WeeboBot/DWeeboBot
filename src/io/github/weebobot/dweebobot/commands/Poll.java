@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -23,29 +23,29 @@ import io.github.weebobot.dweebobot.util.PollUtil;
 import sx.blah.discord.handle.obj.IGuild;
 
 public class Poll extends Command {
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "poll";
-	}
-	
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		String[] answers = new String[parameters.length - 2];
-		if (answers.length < 2) {
-			return	"You must provide at least two answers!";
-		} else if (Main.getDWeeboBot().hasPoll(channel)) {
-			return "There is already a poll happenning in your channel, wait for it to complete first!";
-		}
-		for (int i = 2; i < parameters.length; i++) {
-			answers[i - 2] = parameters[i];
-		}
-		Main.getDWeeboBot().addPoll(channel, new PollUtil(Main.getBot().getChannelByID(channel).getGuild().getID(), channel, parameters[1], answers, Integer.valueOf(parameters[0])).start());
-		return null;
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
+
+    @Override
+    public String getCommandText() {
+        return "poll";
+    }
+
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        String[] answers = new String[parameters.length - 2];
+        if (answers.length < 2) {
+            return    "You must provide at least two answers!";
+        } else if (Main.getDWeeboBot().hasPoll(channel)) {
+            return "There is already a poll happenning in your channel, wait for it to complete first!";
+        }
+        for (int i = 2; i < parameters.length; i++) {
+            answers[i - 2] = parameters[i];
+        }
+        Main.getDWeeboBot().addPoll(channel, new PollUtil(Main.getBot().getChannelByID(channel).getGuild().getID(), channel, parameters[1], answers, Integer.valueOf(parameters[0])).start());
+        return null;
+    }
 
 }

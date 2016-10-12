@@ -22,22 +22,22 @@ public class SoundCloudUtilities {
      * @param id - the ID that we are storing in the database
      * @return true if the link is valid
      */
-	public static boolean isValidID(String id) {
-		try {
+    public static boolean isValidID(String id) {
+        try {
             String url = "http://soundcloud.com" + id;
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-			connection.setRequestMethod("GET");
-			int responseCode = connection.getResponseCode();
-			if (responseCode >= 400) {
-				return false;
-			}
-		} catch (IOException e) {
+            connection.setRequestMethod("GET");
+            int responseCode = connection.getResponseCode();
+            if (responseCode >= 400) {
+                return false;
+            }
+        } catch (IOException e) {
             WLogger.logError(e);
-		}
+        }
         return true;
-	}
+    }
 
-	public static String[] getSongInfoFromId(String id) {
+    public static String[] getSongInfoFromId(String id) {
         try {
             URL url = new URL(String.format("http://api.soundcloud.com/resolve?url=http://soundcloud.com%s&client_id=%s", id, CLIENT_ID));
             URLConnection con = url.openConnection();
@@ -61,7 +61,7 @@ public class SoundCloudUtilities {
             e.printStackTrace();
         }
         return null;
-	}
+    }
 
     public static void setClientSecret(String secret) {
         CLIENT_SECRET = secret;

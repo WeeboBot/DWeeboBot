@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -18,24 +18,24 @@
 package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.TOptions;
+import io.github.weebobot.dweebobot.util.GOptions;
 import sx.blah.discord.handle.obj.IGuild;
 
 public class ChangeWelcome extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "changewelcome";
-	}
-	
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		if(parameters.length == 0) {
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
+
+    @Override
+    public String getCommandText() {
+        return "changewelcome";
+    }
+
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        if(parameters.length == 0) {
             return "Usage: !changewelcome \"Your new welcome message\"";
         }
         StringBuilder sb = new StringBuilder();
@@ -43,11 +43,11 @@ public class ChangeWelcome extends Command {
             sb.append(s);
         }
         String message = sb.toString();
-		Database.setOption(channel.substring(1), TOptions.welcomeMessage.getOptionID(), message);
-		if(!message.equalsIgnoreCase("none")) {
-			return "The welcome message has been changed to: %message%".replace("%message%", message);
-		}
-		return "Welcome messages have been DISABLED! You can re-enable them by using !changewelcome at a later time";
-	}
+        Database.setOption(channel.substring(1), GOptions.welcomeMessage.getOptionID(), message);
+        if(!message.equalsIgnoreCase("none")) {
+            return "The welcome message has been changed to: %message%".replace("%message%", message);
+        }
+        return "Welcome messages have been DISABLED! You can re-enable them by using !changewelcome at a later time";
+    }
 
 }

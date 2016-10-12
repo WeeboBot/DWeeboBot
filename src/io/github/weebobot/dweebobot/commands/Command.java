@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -22,41 +22,41 @@ import sx.blah.discord.handle.obj.IMessage;
 
 public abstract class Command {
 
-	/**
-	 * @return the level that the user must be to perform the command
+    /**
+     * @return the level that the user must be to perform the command
      * @param guild
-	 */
-	public abstract int getCommandLevel(IGuild guild);
+     */
+    public abstract int getCommandLevel(IGuild guild);
 
-	/**
-	 * @return the command without the leading ! or parameters
-	 */
-	public abstract String getCommandText();
+    /**
+     * @return the command without the leading ! or parameters
+     */
+    public abstract String getCommandText();
 
-	/**
-	 * @param channel - channel the command was sent in
-	 * @param sender - user who sent the command
-	 * @param parameters - parameters sent with the command
-	 * @return a formatted message to send to the channel or null if no message is required
-	 */
-	public abstract String execute(String channel, String sender, String... parameters);
+    /**
+     * @param channel - channel the command was sent in
+     * @param sender - user who sent the command
+     * @param parameters - parameters sent with the command
+     * @return a formatted message to send to the channel or null if no message is required
+     */
+    public abstract String execute(String channel, String sender, String... parameters);
 
-	/**
-	 * @param message - IMessage object
-	 * @param parameters - parameters sent with the command
-	 * @return a formatted message to send to the channel or null if no message is required
-	 */
-	public String execute(IMessage message, String... parameters) {
+    /**
+     * @param message - IMessage object
+     * @param parameters - parameters sent with the command
+     * @return a formatted message to send to the channel or null if no message is required
+     */
+    public String execute(IMessage message, String... parameters) {
         return execute(message.getChannel().getID(), message.getAuthor().getID(), parameters);
-	}
+    }
 
-	/**
-	 * Handles commands sent from command line
-	 * @param userLevel - Should always be Main.MAX_USER_LEVEL
-	 * @param parameters - parameters passed to the command
-	 * @return a formatted message to send to the command line
-	 */
-	public String execute(int userLevel, String... parameters) {
+    /**
+     * Handles commands sent from command line
+     * @param userLevel - Should always be Main.MAX_USER_LEVEL
+     * @param parameters - parameters passed to the command
+     * @return a formatted message to send to the command line
+     */
+    public String execute(int userLevel, String... parameters) {
         return null;
     }
 

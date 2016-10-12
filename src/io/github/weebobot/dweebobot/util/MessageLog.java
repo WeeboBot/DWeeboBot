@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Created by James Wolff on 10/11/2016.
  */
 public class MessageLog {
-    private static ArrayList<IMessage> messageLog;
+    private static ArrayList<IMessage> messageLog = new ArrayList<>();
 
     public static void addMessage(IMessage message) {
         messageLog.add(message);

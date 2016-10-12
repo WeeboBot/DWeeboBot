@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -24,20 +24,20 @@ import sx.blah.discord.handle.obj.IGuild;
 public class EnableWelcome extends Command {
 
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "enablewelcome";
-	}
-	
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		Main.getDWeeboBot().setWelcomeEnabled(Main.getBot().getChannelByID(channel).getGuild());
-		return "Welcome messages have been enabled.";
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
+
+    @Override
+    public String getCommandText() {
+        return "enablewelcome";
+    }
+
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        Main.getDWeeboBot().setWelcomeEnabled(Main.getBot().getChannelByID(channel).getGuild());
+        return "Welcome messages have been enabled.";
+    }
 
 }

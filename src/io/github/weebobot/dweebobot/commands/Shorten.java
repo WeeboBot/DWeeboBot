@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -27,30 +27,30 @@ public class Shorten extends Command {
 
     private static String API_KEY;
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "shorten";
-	}
-	
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		String url = parameters[0];
-		Response<ShortenResponse> respShort = new ShortenRequest(API_KEY)
-				.setLongUrl(url)
-				.call();
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
 
-		if (respShort.status_txt.equalsIgnoreCase("ok")) {
-			return respShort.data.url;
-		}
-		return "%url% is an invalid url! Make sure you include http(s)://.".replace("%url%", url);
-	}
+    @Override
+    public String getCommandText() {
+        return "shorten";
+    }
 
-	public static void setApiKey(String key) {
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        String url = parameters[0];
+        Response<ShortenResponse> respShort = new ShortenRequest(API_KEY)
+                .setLongUrl(url)
+                .call();
+
+        if (respShort.status_txt.equalsIgnoreCase("ok")) {
+            return respShort.data.url;
+        }
+        return "%url% is an invalid url! Make sure you include http(s)://.".replace("%url%", url);
+    }
+
+    public static void setApiKey(String key) {
         API_KEY = key;
     }
 

@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -22,23 +22,23 @@ import sx.blah.discord.handle.obj.IGuild;
 
 public class DelCommand extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
 
-	@Override
-	public String getCommandText() {
-		return "delcom";
-	}
+    @Override
+    public String getCommandText() {
+        return "delcom";
+    }
 
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		if(!parameters[0].startsWith("!")) {
-			parameters[0] = "!" + parameters[0];
-		}
-		Database.delCommand(channel.substring(1), parameters[0]);
-		return "Removed command from the database.";
-	}
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        if(!parameters[0].startsWith("!")) {
+            parameters[0] = "!" + parameters[0];
+        }
+        Database.delCommand(channel.substring(1), parameters[0]);
+        return "Removed command from the database.";
+    }
 
 }

@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -26,28 +26,28 @@ import java.util.TimerTask;
  */
 public class DelayedVoteTask extends TimerTask {
 
-	private Object type;
+    private Object type;
 
-	private static final Timer timer = new Timer();
+    private static final Timer timer = new Timer();
 
-	/**
-	 * @param time
-	 *            - delay before we close the poll
-	 * @param p
-	 *            - Poll object
-	 */
-	public DelayedVoteTask(long time, PollUtil p) {
-		this.type = p;
-		timer.schedule(this, time);
-	}
+    /**
+     * @param time
+     *            - delay before we close the poll
+     * @param p
+     *            - Poll object
+     */
+    public DelayedVoteTask(long time, PollUtil p) {
+        this.type = p;
+        timer.schedule(this, time);
+    }
 
-	/**
-	 * Decides what type of vote this is then counts the votes/chooses a winner
-	 */
-	public void run() {
-		if (type instanceof PollUtil) {
-			((PollUtil) type).count();
-		}
-	}
+    /**
+     * Decides what type of vote this is then counts the votes/chooses a winner
+     */
+    public void run() {
+        if (type instanceof PollUtil) {
+            ((PollUtil) type).count();
+        }
+    }
 
 }

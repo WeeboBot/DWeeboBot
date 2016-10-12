@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -18,44 +18,44 @@
 package io.github.weebobot.dweebobot.util;
 
 public enum ULevel {
-	Normal("Normal"),Follower("Follower"),Subscriber("Subscriber"),Regular("Regular"),Moderator("Moderator"),Owner("Owner");
-	
-	private String name;
-	
-	ULevel(String n){
-		name=n;
-	}
-	/**
-	 * @param level - User Level as String
-	 * @return User Level Object
-	 */
-	public static ULevel getTypeFromString(String level) {
-		level=level.toLowerCase();
-		if(level.endsWith("s")) {
-			level=level.substring(0, level.length()-1);
-		}
-		switch(level.toLowerCase()) {
-		case "normal":
-		case "everyone":
-		case "all":
-			return Normal;
-		case "follower":
-			return Follower;
-		case "regular":
-		case "reg":
-			return Regular;
-		case "subscriber":
-		case "sub":
-			return Subscriber;
-		case "moderator":
-		case "mod":
-			return Moderator;
-		default :
-			return Normal;
-		}
-	}
-	
-	public String getName(){
-		return name;
-	}
+    Normal("Normal"),Follower("Follower"),Subscriber("Subscriber"),Regular("Regular"),Moderator("Moderator"),Owner("Owner");
+
+    private String name;
+
+    ULevel(String n){
+        name=n;
+    }
+    /**
+     * @param level - User Level as String
+     * @return User Level Object
+     */
+    public static ULevel getTypeFromString(String level) {
+        level=level.toLowerCase();
+        if(level.endsWith("s")) {
+            level=level.substring(0, level.length()-1);
+        }
+        switch(level.toLowerCase()) {
+        case "normal":
+        case "everyone":
+        case "all":
+            return Normal;
+        case "follower":
+            return Follower;
+        case "regular":
+        case "reg":
+            return Regular;
+        case "subscriber":
+        case "sub":
+            return Subscriber;
+        case "moderator":
+        case "mod":
+            return Moderator;
+        default :
+            return Normal;
+        }
+    }
+
+    public String getName(){
+        return name;
+    }
 }

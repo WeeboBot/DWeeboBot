@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -23,22 +23,22 @@ import sx.blah.discord.handle.obj.IGuild;
 
 public class Help extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return null;
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
 
-	@Override
-	public String execute(String channel, String sender, String...parameters) {
-		if(CommandsPage.pageExists(channel.substring(1))) {
-			return "You can find all of my commands at http://dweebobot.no-ip.info/commands and all of the commands for %s at http://weebobott.no-ip.info/commands/%s.html.".replace("%channel%", channel.substring(1));
-		}
-		return "You can find all of my commands at http://dweebobot.no-ip.info/commands.";
-	}
+    @Override
+    public String getCommandText() {
+        return null;
+    }
+
+    @Override
+    public String execute(String channel, String sender, String...parameters) {
+        if(CommandsPage.pageExists(channel.substring(1))) {
+            return "You can find all of my commands at http://dweebobot.no-ip.info/commands and all of the commands for %s at http://weebobott.no-ip.info/commands/%s.html.".replace("%channel%", channel.substring(1));
+        }
+        return "You can find all of my commands at http://dweebobot.no-ip.info/commands.";
+    }
 
 }

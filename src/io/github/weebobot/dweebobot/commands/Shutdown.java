@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -22,27 +22,27 @@ import sx.blah.discord.handle.obj.IGuild;
 
 public class Shutdown extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return 9999;
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "shutdown";
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return 9999;
+    }
 
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		return null;
-	}
+    @Override
+    public String getCommandText() {
+        return "shutdown";
+    }
 
-	@Override
-	public String execute(int userLevel, String...parameters) {
-		if(userLevel == Main.MAX_USER_LEVEL) {
-			Main.shutdown();
-		}
-		return null;
-	}
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        return null;
+    }
+
+    @Override
+    public String execute(int userLevel, String...parameters) {
+        if(userLevel == Main.MAX_USER_LEVEL) {
+            Main.shutdown();
+        }
+        return null;
+    }
 
 }

@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,25 @@
 
 package io.github.weebobot.dweebobot.util;
 
-public enum TOptions {
+public enum GOptions {
 
-	welcomeMessage("welcomeMessage"), welcomeChannel("welcomeChannel"), numCaps("numCaps"), numSymbols(
-			"numSymbols"), numEmotes("numEmotes"), paragraphLength(
-			"paragraphLength"), link("link"), regular("regular");
+    welcomeMessage("welcomeMessage"), welcomeChannel("welcomeChannel"), numCaps("numCaps"), numSymbols(
+            "numSymbols"), numEmotes("numEmotes"), paragraphLength(
+            "paragraphLength"), link("link"), regular("regular");
 
-	private final String optionID;
+    private final String optionID;
 
-	/**
-	 * @return the optionID in text form
-	 */
-	public String getOptionID() {
-		return optionID;
-	}
+    /**
+     * @return the optionID in text form
+     */
+    public String getOptionID() {
+        return optionID;
+    }
 
-	/**
-	 * @param id - option ID in text form
-	 */
-	TOptions(String id) {
-		optionID = id;
-	}
+    /**
+     * @param id - option ID in text form
+     */
+    GOptions(String id) {
+        optionID = id;
+    }
 }

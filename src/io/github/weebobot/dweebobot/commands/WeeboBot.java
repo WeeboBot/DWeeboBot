@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -21,19 +21,19 @@ import io.github.weebobot.dweebobot.database.Database;
 import sx.blah.discord.handle.obj.IGuild;
 
 public class WeeboBot extends Command {
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
-	
-	@Override
-	public String getCommandText() {
-		return "dweebobot";
-	}
-	
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		return "I was made by donald10101, and MysteriousMage. Source at: http://github.com/WeeboBot/WeeboBot";
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
+
+    @Override
+    public String getCommandText() {
+        return "dweebobot";
+    }
+
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        return "I was made by donald10101, and MysteriousMage. Source at: http://github.com/WeeboBot/WeeboBot";
+    }
 
 }

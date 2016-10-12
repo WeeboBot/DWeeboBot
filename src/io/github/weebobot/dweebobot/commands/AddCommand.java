@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -22,26 +22,26 @@ import sx.blah.discord.handle.obj.IGuild;
 
 public class AddCommand extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
 
-	@Override
-	public String getCommandText() {
-		return "addcom";
-	}
+    @Override
+    public String getCommandText() {
+        return "addcom";
+    }
 
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		StringBuilder params = new StringBuilder();
-		for(int i = 2;i < parameters.length;i++) {
-			params.append(parameters[i] + " ");
-		}
-		if(!parameters[0].startsWith("!")) {
-			parameters[0] = "!" + parameters[0];
-		}
-		Database.addCommand(channel.substring(1), parameters[0], params.toString(), parameters[1]);
-		return "Added command to the database.";
-	}
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        StringBuilder params = new StringBuilder();
+        for(int i = 2;i < parameters.length;i++) {
+            params.append(parameters[i] + " ");
+        }
+        if(!parameters[0].startsWith("!")) {
+            parameters[0] = "!" + parameters[0];
+        }
+        Database.addCommand(channel.substring(1), parameters[0], params.toString(), parameters[1]);
+        return "Added command to the database.";
+    }
 }

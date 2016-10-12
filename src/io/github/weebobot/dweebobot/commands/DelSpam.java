@@ -1,4 +1,4 @@
-/*	  It's a Twitch bot, because we can.
+/*      It's a Twitch bot, because we can.
  *    Copyright (C) 2015  Timothy Chandler, James Wolff
  *
  *    This program is free software: you can redistribute it and/or modify
@@ -22,21 +22,21 @@ import sx.blah.discord.handle.obj.IGuild;
 
 public class DelSpam extends Command {
 
-	@Override
-	public int getCommandLevel(IGuild guild) {
-		return Database.getPermissionLevel(getCommandText(), guild);
-	}
+    @Override
+    public int getCommandLevel(IGuild guild) {
+        return Database.getPermissionLevel(getCommandText(), guild);
+    }
 
-	@Override
-	public String getCommandText() {
-		return "delspam";
-	}
+    @Override
+    public String getCommandText() {
+        return "delspam";
+    }
 
-	@Override
-	public String execute(String channel, String sender, String... parameters) {
-		String word = parameters[0];
-		Database.delSpam(channel.substring(1), word);
-		return "Removed %word% from the spam database!".replace("%word%", word);
-	}
+    @Override
+    public String execute(String channel, String sender, String... parameters) {
+        String word = parameters[0];
+        Database.delSpam(channel.substring(1), word);
+        return "Removed %word% from the spam database!".replace("%word%", word);
+    }
 
 }
