@@ -79,9 +79,6 @@ public class DiscordListener {
     public static boolean welcomeUser(IGuild g, IUser u) {
         if (!Main.getDWeeboBot().getWelcomeDisabled(g)) {
             String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
-            for(String s : welcomeInfo) {
-                logger.info(s);
-            }
             welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
             if (!welcomeInfo[1].equalsIgnoreCase("none")) {
                 ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]);
@@ -236,7 +233,10 @@ public class DiscordListener {
         private void processDeletes(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
             if (queue.get(priority).get(ActionType.MESSAGEDELETE) != null) {
                 for (CopyOnWriteArrayList<Object> o : queue.get(priority).get(ActionType.MESSAGEDELETE)) {
-                    Main.getBot().getGuildByID((String) o.get(0)).getChannelByID((String) o.get(1)).getMessageByID((String) o.get(2)).delete();
+                    logger.info((String) o.get(0));
+                    logger.info((String) o.get(1));
+                    logger.info((String) o.get(2));
+                    MessageLog.removeMessage(Main.getBot().getGuildByID((String) o.get(0)).getChannelByID((String) o.get(1)).getMessageByID((String) o.get(2))).delete();
                     queue.get(priority).get(ActionType.MESSAGEDELETE).remove(o);
                     queueSize--;
                 }

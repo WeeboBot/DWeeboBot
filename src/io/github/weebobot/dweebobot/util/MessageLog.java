@@ -31,4 +31,9 @@ public class MessageLog {
         }
         return null;
     }
+
+    public static IMessage removeMessage(IMessage message) {
+        messageLog.remove(message);
+        return message;
+    }
 }
