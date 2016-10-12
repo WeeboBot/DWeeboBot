@@ -6,6 +6,7 @@ import io.github.weebobot.dweebobot.customcommands.CustomCommandParser;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.util.MessageLog;
 import io.github.weebobot.dweebobot.util.GOptions;
+import io.github.weebobot.dweebobot.util.MiscUtils;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,10 +82,11 @@ public class DiscordListener {
             String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
             welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
             if (!welcomeInfo[1].equalsIgnoreCase("none")) {
-                ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]);
-                int delay = Integer.valueOf(welcomeInfo[2]);
+                ActionQueue.addAction(new ActionQueue.Action(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]));
+                long delay = Integer.valueOf(welcomeInfo[2]);
                 if(delay > 0 ) {
-                    ActionQueue.addDelayedAction(ActionPriority.HIGH, ActionType.MESSAGEDELETE, delay + "s", g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]).getID());
+                    delay = MiscUtils.delayToLong(delay + "s");
+                    new MessageLog.LogReader(new ActionQueue.DelayedAction(new ActionQueue.Action(ActionPriority.HIGH, ActionType.MESSAGEDELETE, g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]).getID()), delay, false), g.getID(), welcomeInfo[0], welcomeInfo[1]);
                 }
                 return true;
             }
@@ -135,11 +137,11 @@ public class DiscordListener {
                 }
                 String reply = CommandParser.parse(m, command, params);
                 if (reply != null) {
-                    ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply);
+                    ActionQueue.addAction(new ActionQueue.Action(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply));
                 } else {
                     reply = CustomCommandParser.parse(m, command, params);
                     if (reply != null) {
-                        ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply);
+                        ActionQueue.addAction(new ActionQueue.Action(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply));
                     }
                 }
             }
@@ -267,73 +269,100 @@ public class DiscordListener {
             }
         }
 
-        public static void addAction(ActionPriority priority, ActionType type, Object... parameters) {
-            if(!queue.containsKey(priority)) {
+        public static void addAction(Action action) {
+            if(!queue.containsKey(action.getPriority())) {
                 ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>> tempSubMap = new ConcurrentHashMap<>();
                 CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = new CopyOnWriteArrayList<>();
                 CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
-                Collections.addAll(tempSubList, parameters);
+                Collections.addAll(tempSubList, action.getParameters());
                 tempList.add(tempSubList);
-                tempSubMap.put(type, tempList);
-                queue.put(priority, tempSubMap);
+                tempSubMap.put(action.getType(), tempList);
+                queue.put(action.getPriority(), tempSubMap);
                 queueSize++;
                 return;
             }
-            ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>> tempSubMap = queue.get(priority);
-            if(!tempSubMap.containsKey(type)) {
+            ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>> tempSubMap = queue.get(action.getPriority());
+            if(!tempSubMap.containsKey(action.getType())) {
                 CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = new CopyOnWriteArrayList<>();
                 CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
-                Collections.addAll(tempSubList, parameters);
+                Collections.addAll(tempSubList, action.getParameters());
                 tempList.add(tempSubList);
-                tempSubMap.put(type, tempList);
-                queue.put(priority, tempSubMap);
+                tempSubMap.put(action.getType(), tempList);
+                queue.put(action.getPriority(), tempSubMap);
                 queueSize++;
                 return;
             }
-            CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = queue.get(priority).get(type);
+            CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = queue.get(action.getPriority()).get(action.getType());
             CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
-            Collections.addAll(tempSubList, parameters);
+            Collections.addAll(tempSubList, action.getParameters());
             tempList.add(tempSubList);
-            tempSubMap.put(type, tempList);
-            queue.put(priority, tempSubMap);
+            tempSubMap.put(action.getType(), tempList);
+            queue.put(action.getPriority(), tempSubMap);
             queueSize++;
         }
 
-        public static void addDelayedAction(ActionPriority priority, ActionType type, String delay, Object... parameters) {
+        public static void addDelayedAction(Action action, String delay) {
             DelayedAction.queueSize++;
-            long delayAsLong;
-            if(delay.contains("h")) {
-                delayAsLong = Integer.valueOf(delay.replace("h", ""))*60L*60L*1000L;
-            } else if(delay.contains("m")) {
-                delayAsLong = Integer.valueOf(delay.replace("m", ""))*60L*1000L;
-            } else if(delay.contains("s")) {
-                delayAsLong = Integer.valueOf(delay.replace("s", ""))*1000L;
-            } else {
-                delayAsLong = (long) Integer.valueOf(delay.replace("s", ""));
-            }
-            delayedActions.add(new DelayedAction(priority, type, delayAsLong, parameters));
+            delayedActions.add(new DelayedAction(action, MiscUtils.delayToLong(delay), true));
         }
 
-        private static class DelayedAction extends TimerTask {
+        public static void addDelayedAction(DelayedAction delayedAction) {
+            DelayedAction.queueSize++;
+            delayedActions.add(delayedAction);
+        }
 
+        public static class Action {
             private ActionPriority priority;
             private ActionType type;
             private Object[] parameters;
-            private static final Timer timer = new Timer();
-            static int queueSize;
 
-            DelayedAction(ActionPriority priority, ActionType type, long delay, Object... parameters) {
+            public Action(ActionPriority priority, ActionType type, Object... parameters) {
                 this.priority = priority;
                 this.type = type;
                 this.parameters = parameters;
+            }
+
+            public ActionPriority getPriority() {
+                return priority;
+            }
+
+            public ActionType getType() {
+                return type;
+            }
+
+            public Object[] getParameters() {
+                return parameters;
+            }
+        }
+
+        public static class DelayedAction extends TimerTask {
+
+            private Action action;
+            private long delay;
+            private static final Timer timer = new Timer();
+            static int queueSize;
+
+            DelayedAction(Action action, long delay, boolean autoStart) {
+                this.action = action;
+                this.delay = delay;
+                if(autoStart) {
+                    startTimer();
+                }
+            }
+
+            public void startTimer() {
                 timer.schedule(this, delay);
             }
 
             @Override
             public void run() {
-                ActionQueue.addAction(priority, type, parameters);
+                ActionQueue.addAction(action);
                 delayedActions.remove(this);
                 queueSize--;
+            }
+
+            public Action getAction() {
+                return action;
             }
         }
     }

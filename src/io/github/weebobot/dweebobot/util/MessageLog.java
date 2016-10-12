@@ -1,11 +1,13 @@
 package io.github.weebobot.dweebobot.util;
 
 import io.github.weebobot.dweebobot.Main;
+import io.github.weebobot.dweebobot.external.DiscordListener;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 
 import java.util.ArrayList;
+import java.util.TimerTask;
 
 /**
  * Created by James Wolff on 10/11/2016.
@@ -35,5 +37,27 @@ public class MessageLog {
     public static IMessage removeMessage(IMessage message) {
         messageLog.remove(message);
         return message;
+    }
+
+    public static class LogReader extends Thread {
+        private DiscordListener.ActionQueue.DelayedAction delayedAction;
+        private Object[] parameters;
+
+        public LogReader(DiscordListener.ActionQueue.DelayedAction delayedAction, Object... parameters) {
+            this.delayedAction = delayedAction;
+            this.parameters = parameters;
+            this.start();
+        }
+
+        @Override
+        public void run() {
+            if(delayedAction != null) {
+                if(delayedAction.getAction().getType().equals(DiscordListener.ActionType.MESSAGEDELETE)) {
+                    while(MessageLog.getMessageFromContent((String) parameters[0], (String) parameters[1], (String) parameters[2]) == null);
+                    DiscordListener.ActionQueue.addDelayedAction(delayedAction);
+                    delayedAction.startTimer();
+                }
+            }
+        }
     }
 }
