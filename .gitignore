@@ -29,3 +29,5 @@ ftp.log
 bot.err
 .classpath
 Driver.java
+run.sh
+
