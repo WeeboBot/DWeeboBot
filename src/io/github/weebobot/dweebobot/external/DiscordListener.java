@@ -87,7 +87,7 @@ public class DiscordListener {
                 ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]);
                 int delay = Integer.valueOf(welcomeInfo[2]);
                 if(delay > 0 ) {
-                    ActionQueue.addDelayedAction(ActionPriority.HIGH, ActionType.MESSAGEDELETE, delay + "s", g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]));
+                    ActionQueue.addDelayedAction(ActionPriority.HIGH, ActionType.MESSAGEDELETE, delay + "s", g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]).getID());
                 }
                 return true;
             }
