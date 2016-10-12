@@ -33,7 +33,7 @@ public class WeeboBot extends Command {
 
     @Override
     public String execute(String channel, String sender, String... parameters) {
-        return "I was made by donald10101, and MysteriousMage. Source at: http://github.com/WeeboBot/WeeboBot";
+        return "I was made by James Wolff, and MysteriousMage. Source at: http://github.com/WeeboBot/DWeeboBot";
     }
 
 }

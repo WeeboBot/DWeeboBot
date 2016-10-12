@@ -17,6 +17,7 @@
 
 package io.github.weebobot.dweebobot.commands;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.util.GOptions;
 import sx.blah.discord.handle.obj.IGuild;
@@ -43,11 +44,11 @@ public class ChangeWelcome extends Command {
             sb.append(s);
         }
         String message = sb.toString();
-        Database.setOption(channel.substring(1), GOptions.welcomeMessage.getOptionID(), message);
+        Database.setOption(Main.getBot().getChannelByID(channel).getGuild().getID(), GOptions.welcomeMessage.getOptionID(), message);
         if(!message.equalsIgnoreCase("none")) {
             return "The welcome message has been changed to: %message%".replace("%message%", message);
         }
-        return "Welcome messages have been DISABLED! You can re-enable them by using !changewelcome at a later time";
+        return "Welcome messages have been DISABLED! You can re-enable them by using !changewelcome at a later time!";
     }
 
 }

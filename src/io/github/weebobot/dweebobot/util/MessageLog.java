@@ -17,11 +17,11 @@ public class MessageLog {
         messageLog.add(message);
     }
 
-    public static IMessage getMessageFromContent(IGuild g, IChannel c, String content) {
+    public static IMessage getMessageFromContent(String gID, String cID, String content) {
         for (IMessage m : messageLog) {
             if(m.getAuthor().equals(Main.getBot().getOurUser())) {
-                if (m.getGuild().equals(g)) {
-                    if (m.getChannel().equals(c)) {
+                if (m.getGuild().getID().equals(gID)) {
+                    if (m.getChannel().getID().equals(cID)) {
                         if (m.getContent().equals(content)) {
                             return m;
                         }

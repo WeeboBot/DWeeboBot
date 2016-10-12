@@ -19,9 +19,7 @@ package io.github.weebobot.dweebobot.util;
 
 public enum GOptions {
 
-    welcomeMessage("welcomeMessage"), welcomeChannel("welcomeChannel"), numCaps("numCaps"), numSymbols(
-            "numSymbols"), numEmotes("numEmotes"), paragraphLength(
-            "paragraphLength"), link("link"), regular("regular");
+    welcomeMessage("welcomeMessage"), welcomeChannel("welcomeChannel"), deleteWelcome("deleteWelcome");
 
     private final String optionID;
 

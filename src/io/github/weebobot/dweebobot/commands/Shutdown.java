@@ -38,7 +38,7 @@ public class Shutdown extends Command {
     }
 
     @Override
-    public String execute(int userLevel, String...parameters) {
+    public String execute(int userLevel, String... parameters) {
         if(userLevel == Main.MAX_USER_LEVEL) {
             Main.shutdown();
         }

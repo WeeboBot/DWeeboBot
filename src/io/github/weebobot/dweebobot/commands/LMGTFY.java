@@ -40,7 +40,7 @@ public class LMGTFY extends Command {
             for(String s:parameters) {
                 sb.append("+" + s);
             }
-            return "http://lmgtfy.com?q=" + sb.toString();
+            return "http://lmgtfy.com/?q=" + sb.toString();
         } else {
             return "You need to add something to search.";
         }

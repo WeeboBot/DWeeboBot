@@ -17,6 +17,7 @@
 
 package io.github.weebobot.dweebobot.commands;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
 import sx.blah.discord.handle.obj.IGuild;
 
@@ -37,7 +38,7 @@ public class DelCommand extends Command {
         if(!parameters[0].startsWith("!")) {
             parameters[0] = "!" + parameters[0];
         }
-        Database.delCommand(channel.substring(1), parameters[0]);
+        Database.delCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]);
         return "Removed command from the database.";
     }
 

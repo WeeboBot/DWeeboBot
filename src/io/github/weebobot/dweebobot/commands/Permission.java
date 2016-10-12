@@ -1,7 +1,7 @@
 package io.github.weebobot.dweebobot.commands;
 
+import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
-import io.github.weebobot.dweebobot.util.ULevel;
 import sx.blah.discord.handle.obj.IGuild;
 
 public class Permission extends Command {
@@ -18,46 +18,38 @@ public class Permission extends Command {
 
     @Override
     public String execute(String channel, String sender, String... parameters) {
-        if(parameters.length < 3) {
-            return "To change permissions for a user level type !permission <userlevel> <links|caps|symbols|emotes|paragraph|blacklist> <allow|disallow>";
+        if(parameters.length < 2) {
+            return "To change permissions for a user type !permission <user> <amount|++|-->";
         }
-        ULevel level = ULevel.getTypeFromString(parameters[0]);
-        if(level != null) {
-            String oldPerms = Database.getOption(channel.substring(1), level.getName().toLowerCase() + "Immunities");
-            String newPerm;
-            if(parameters[2].equalsIgnoreCase("allow")) {
-                newPerm="1";
-            } else if(parameters[2].equalsIgnoreCase("disallow")) {
-                newPerm="0";
-            } else {
-                return "To change permissions for a user level type !permission <userlevel> <links|caps|symbols|emotes|paragraph|blacklist> <allow|disallow>";
-            }
-            if(parameters[1].equalsIgnoreCase("blacklist")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", newPerm + oldPerms.substring(1));
-                return String.format("%s's are now %sed to use blacklisted words!", level.getName(), parameters[2]);
-            }
-            if(parameters[1].equalsIgnoreCase("paragraph")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", oldPerms.substring(0, 1) + newPerm + oldPerms.substring(2));
-                return String.format("%s's are now %sed to use paragraphs!", level.getName(), parameters[2]);
-            }
-            if(parameters[1].equalsIgnoreCase("caps")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", oldPerms.substring(0, 2) + newPerm + oldPerms.substring(3));
-                return String.format("%s's are now %sed to use excessive caps!", level.getName(), parameters[2]);
-            }
-            if(parameters[1].equalsIgnoreCase("emotes")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", oldPerms.substring(0, 3) + newPerm + oldPerms.substring(4));
-                return String.format("%s's are now %sed to use excessive emotes!", level.getName(), parameters[2]);
-            }
-            if(parameters[1].equalsIgnoreCase("links")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", oldPerms.substring(0, 4) + newPerm + oldPerms.substring(5));
-                return String.format("%s's are now %sed to use links!", level.getName(), parameters[2]);
-            }
-            if(parameters[1].equalsIgnoreCase("symbols")) {
-                Database.setOption(channel.substring(1), level.getName().toLowerCase() + "immunities", oldPerms.substring(0, 5) + newPerm);
-                return String.format("%s's are now %sed to use excessive symbols!", level.getName(), parameters[2]);
-            }
+        int level = Database.getUserPermissionLevel(sender, Main.getBot().getChannelByID(channel).getGuild().getID());
+        if (level == 9998) {
+            return "You cannot change the permission level of the server owner!";
         }
-        return "To change permissions for a user level type !permission <userlevel> <links|caps|symbols|emotes|paragraph|blacklist> <allow|disallow>";
+        if(level != -1) {
+            switch (parameters[1].toLowerCase()) {
+                case "++":
+                    level++;
+                    break;
+                case "--":
+                    level--;
+                    break;
+                default:
+                    try {
+                        level = Integer.valueOf(parameters[1]);
+                        if(level >= Main.MAX_USER_LEVEL-1) {
+                            level = Main.MAX_USER_LEVEL-2;
+                        }
+                    } catch (NumberFormatException e) {
+                        return "To change permissions for a user type !permission <user> <amount|++|-->";
+                    }
+            }
+            if(level < Main.MAX_USER_LEVEL-1) {
+                Database.setUserPermissionLevel(sender, Main.getBot().getChannelByID(channel).getGuild().getID(), level);
+                return String.format("%s's permission level set to %d", Main.getBot().getUserByID(sender), level);
+            }
+            return String.format("%s already has the maximum permission level!", Main.getBot().getUserByID(sender));
+        }
+        return "To change permissions for a user type !permission <user> <amount|++|-->";
     }
 
 }

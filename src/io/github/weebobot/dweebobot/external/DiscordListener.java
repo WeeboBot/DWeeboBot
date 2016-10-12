@@ -10,9 +10,11 @@ import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.api.events.EventSubscriber;
+import sx.blah.discord.handle.impl.events.GuildTransferOwnershipEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.UserJoinEvent;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
@@ -22,18 +24,32 @@ import sx.blah.discord.util.RateLimitException;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by James on 9/2/2016.
  */
 public class DiscordListener {
 
-    private final Logger logger = LoggerFactory.getLogger(DiscordListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(DiscordListener.class);
 
     public static void init() {
         new Thread(new ActionQueue()).start();
     }
 
+    /**
+     * Updates permission values when ownership of a guild is transferred to a new user.
+     */
+    @EventSubscriber
+    public void onOwnershipTransfer(GuildTransferOwnershipEvent event) {
+        Database.setUserPermissionLevel(event.getOldOwner().getID(), event.getGuild().getID(), 0);
+        Database.setUserPermissionLevel(event.getNewOwner().getID(), event.getGuild().getID(), 9998);
+    }
+
+    /**
+     * Called when the bot is finished initializing
+     */
     @EventSubscriber
     public void onReady(ReadyEvent event) {
         logger.info("Logged in as: " + Main.getBot().getOurUser().getName());
@@ -51,18 +67,33 @@ public class DiscordListener {
         IUser u = event.getUser();
         IGuild g = event.getGuild();
         try {
-            if (!Main.getDWeeboBot().getWelcomeDisabled(g)) {
-                String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
-                welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
-                if (!welcomeInfo[1].equalsIgnoreCase("none")) {
-                    ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), g.getChannelByID(welcomeInfo[0]), welcomeInfo[1]);
-                    Database.addWelcomedUser(g.getID(), u.getID());
-                }
-            }
+            welcomeUser(g, u);
+            Database.addUser(u.getID(), g.getID());
+            Database.addWelcomedUser(g.getID(), u.getID());
         } catch (Exception e) {
             logger.error("An error occurred while executing onJoin()", e);
             WLogger.logError(e);
         }
+    }
+
+    public static boolean welcomeUser(IGuild g, IUser u) {
+        if (!Main.getDWeeboBot().getWelcomeDisabled(g)) {
+            String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
+            for(String s : welcomeInfo) {
+                logger.info(s);
+            }
+            welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
+            if (!welcomeInfo[1].equalsIgnoreCase("none")) {
+                ActionQueue.addAction(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]);
+                int delay = Integer.valueOf(welcomeInfo[2]);
+                if(delay > 0 ) {
+                    ActionQueue.addDelayedAction(ActionPriority.HIGH, ActionType.MESSAGEDELETE, delay + "s", g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]));
+                }
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     /**
@@ -75,38 +106,43 @@ public class DiscordListener {
         IUser u = event.getMessage().getAuthor();
         IMessage m = event.getMessage();
         String c = m.getContent();
-        if (Database.getChannelTables(g.getID())) {
-            logger.info("Creating databse channels for new guild!");
-            Database.addOption(g.getID(), GOptions.welcomeMessage.getOptionID(), "none");
-            Database.addOption(g.getID(), GOptions.welcomeChannel.getOptionID(), g.getChannels().get(0).getID());
-            Main.getDWeeboBot().onFirstJoin(g, m.getChannel());
+        String command;
+        try {
+            command = c.substring(1, c.indexOf(' '));
+        } catch (StringIndexOutOfBoundsException e) {
+            command = c.substring(1, c.length());
         }
-        logger.info(String.format("Recieved message in guild: %s channel: %s, with content: %s, at %s", g.getName(), m.getChannel().getName(), c, new SimpleDateFormat("MMM dd,yyyy HH:mm:ss").format(new Date(System.currentTimeMillis()))));
+        if (Database.getChannelTables(g.getID())) {
+            logger.info("Creating database channels for new guild!");
+            Database.addOption(g.getID(), GOptions.welcomeMessage.getOptionID(), "none");
+            Database.addOption(g.getID(), GOptions.deleteWelcome.getOptionID(), "0");
+            Database.addOption(g.getID(), GOptions.welcomeChannel.getOptionID(), g.getChannels().get(0).getID());
+            for (IChannel channel : g.getChannels()) {
+                logger.info(channel.getName());
+                logger.info(channel.getID());
+            }
+            Database.setUserPermissionLevel(g.getOwnerID(), g.getID(), Main.MAX_USER_LEVEL-1);
+            if(!command.equalsIgnoreCase("setup")) {
+                Main.getDWeeboBot().onFirstJoin(g, m.getChannel());
+            }
+        }
+        logger.info(String.format("Received message in guild: %s channel: %s, with content: %s, at %s", g.getName(), m.getChannel().getName(), c, new SimpleDateFormat("MMM dd,yyyy HH:mm:ss").format(new Date(System.currentTimeMillis()))));
         try {
             if (u.equals(Main.getBot().getOurUser()) || u.isBot()) {
-                logger.info("Is a bot or our user");
                 return;
             }
             if (c.charAt(0) == '!') {
-                String[] params = c.substring(c.indexOf(' ') + 1)
-                        .split(" ");
-                String command;
-                try {
-                    command = c.substring(1, c.indexOf(' '));
-                } catch (StringIndexOutOfBoundsException e) {
-                    command = c.substring(1, c.length());
-                }
+                String[] params = c.substring(c.indexOf(' ') + 1).split(" ");
                 if (command.equalsIgnoreCase(params[0].substring(1))) {
                     params = new String[0];
                 }
-                logger.info("Is command: " + command);
                 String reply = CommandParser.parse(m, command, params);
                 if (reply != null) {
-                    ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel(), reply);
+                    ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply);
                 } else {
                     reply = CustomCommandParser.parse(m, command, params);
                     if (reply != null) {
-                        ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel(), reply);
+                        ActionQueue.addAction(ActionPriority.MEDIUM, ActionType.MESSAGESEND, g.getID(), m.getChannel().getID(), reply);
                     }
                 }
             }
@@ -123,8 +159,8 @@ public class DiscordListener {
 
     public static class ActionQueue implements Runnable{
 
-        private static HashMap<ActionPriority, HashMap<ActionType, List<List<Object>>>> queue = new HashMap<>();
-        private static ArrayList<DelayedAction> delayedActions = new ArrayList<>();
+        private static ConcurrentHashMap<ActionPriority, ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>>> queue = new ConcurrentHashMap<>();
+        private static CopyOnWriteArrayList<DelayedAction> delayedActions = new CopyOnWriteArrayList<>();
         private static final Logger logger = LoggerFactory.getLogger(DiscordListener.class);
         private static int queueSize;
 
@@ -163,6 +199,11 @@ public class DiscordListener {
                     }
                 } catch (RateLimitException e) {
                     logger.warn("We are being rate limited! Slowing things down a bit...");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e1) {
+                        logger.warn("There was an issue sleeping to avoid rate limits.", e);
+                    }
                 } catch (MissingPermissionsException e) {
                     logger.warn("We don't have permission to preform an action!");
                 } catch (DiscordException e) {
@@ -179,12 +220,11 @@ public class DiscordListener {
          */
         private void processEdits(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
             if (queue.get(priority).get(ActionType.MESSAGEEDIT) != null) {
-                List<List<Object>> tempList = queue.get(priority).get(ActionType.MESSAGEEDIT);
-                for (List<Object> o : tempList) {
+                for (CopyOnWriteArrayList<Object> o : queue.get(priority).get(ActionType.MESSAGEEDIT)) {
                     MessageLog.addMessage(Main.getBot().getGuildByID((String) o.get(0)).getChannelByID((String) o.get(1)).getMessageByID((String) o.get(2)).edit((String) o.get(3)));
+                    queue.get(priority).get(ActionType.MESSAGEEDIT).remove(o);
                     queueSize--;
                 }
-                queue.get(priority).get(ActionType.MESSAGEEDIT).removeAll(tempList);
             }
         }
 
@@ -195,12 +235,11 @@ public class DiscordListener {
          */
         private void processDeletes(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
             if (queue.get(priority).get(ActionType.MESSAGEDELETE) != null) {
-                List<List<Object>> tempList = queue.get(priority).get(ActionType.MESSAGEDELETE);
-                for (List<Object> o : tempList) {
+                for (CopyOnWriteArrayList<Object> o : queue.get(priority).get(ActionType.MESSAGEDELETE)) {
                     Main.getBot().getGuildByID((String) o.get(0)).getChannelByID((String) o.get(1)).getMessageByID((String) o.get(2)).delete();
+                    queue.get(priority).get(ActionType.MESSAGEDELETE).remove(o);
                     queueSize--;
                 }
-                queue.get(priority).get(ActionType.MESSAGEDELETE).removeAll(tempList);
             }
         }
 
@@ -210,13 +249,13 @@ public class DiscordListener {
          * List<Object>[2] - message
          */
         private void processSends(ActionPriority priority) throws RateLimitException, DiscordException, MissingPermissionsException {
+
             if (queue.get(priority).get(ActionType.MESSAGESEND) != null) {
-                List<List<Object>> tempList = queue.get(priority).get(ActionType.MESSAGESEND);
-                for (List<Object> o : tempList) {
+                for (CopyOnWriteArrayList<Object> o : queue.get(priority).get(ActionType.MESSAGESEND)) {
                     MessageLog.addMessage(Main.getBot().getGuildByID((String) o.get(0)).getChannelByID((String) o.get(1)).sendMessage((String) o.get(2)));
+                    queue.get(priority).get(ActionType.MESSAGESEND).remove(o);
                     queueSize--;
                 }
-                queue.get(priority).get(ActionType.MESSAGESEND).removeAll(tempList);
             }
         }
 
@@ -230,27 +269,29 @@ public class DiscordListener {
 
         public static void addAction(ActionPriority priority, ActionType type, Object... parameters) {
             if(!queue.containsKey(priority)) {
-                HashMap<ActionType, List<List<Object>>> tempSubMap = new HashMap<>();
-                List<List<Object>> tempList = new ArrayList<>();
-                List<Object> tempSubList = new ArrayList<>();
+                ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>> tempSubMap = new ConcurrentHashMap<>();
+                CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = new CopyOnWriteArrayList<>();
+                CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
                 Collections.addAll(tempSubList, parameters);
                 tempList.add(tempSubList);
                 tempSubMap.put(type, tempList);
                 queue.put(priority, tempSubMap);
+                queueSize++;
                 return;
             }
-            HashMap<ActionType, List<List<Object>>> tempSubMap = queue.get(priority);
+            ConcurrentHashMap<ActionType, CopyOnWriteArrayList<CopyOnWriteArrayList<Object>>> tempSubMap = queue.get(priority);
             if(!tempSubMap.containsKey(type)) {
-                List<List<Object>> tempList = new ArrayList<>();
-                List<Object> tempSubList = new ArrayList<>();
+                CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = new CopyOnWriteArrayList<>();
+                CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
                 Collections.addAll(tempSubList, parameters);
                 tempList.add(tempSubList);
                 tempSubMap.put(type, tempList);
                 queue.put(priority, tempSubMap);
+                queueSize++;
                 return;
             }
-            List<List<Object>> tempList = queue.get(priority).get(type);
-            List<Object> tempSubList = new ArrayList<>();
+            CopyOnWriteArrayList<CopyOnWriteArrayList<Object>> tempList = queue.get(priority).get(type);
+            CopyOnWriteArrayList<Object> tempSubList = new CopyOnWriteArrayList<>();
             Collections.addAll(tempSubList, parameters);
             tempList.add(tempSubList);
             tempSubMap.put(type, tempList);
@@ -279,9 +320,9 @@ public class DiscordListener {
             private ActionType type;
             private Object[] parameters;
             private static final Timer timer = new Timer();
-            protected static int queueSize;
+            static int queueSize;
 
-            public DelayedAction(ActionPriority priority, ActionType type, long delay, Object... parameters) {
+            DelayedAction(ActionPriority priority, ActionType type, long delay, Object... parameters) {
                 this.priority = priority;
                 this.type = type;
                 this.parameters = parameters;

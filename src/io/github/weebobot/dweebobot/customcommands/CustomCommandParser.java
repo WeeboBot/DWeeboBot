@@ -52,46 +52,48 @@ public class CustomCommandParser {
 
     private static String parse(String command, ResultSet rs, String[] parameters) {
         try {
-            while(rs.next()) {
-                if(rs.getString(1).substring(1).equalsIgnoreCase(command)) {
-                    String reply = rs.getString(3);
-                    ArrayList<String> passed = new ArrayList<>();
-                    String[] params = rs.getString(2).split(" ");
-                    if(params[0].equalsIgnoreCase("")){
-                        return reply;
-                    }
-                    int i=0;
-                    while(i < parameters.length) {
-                        if(parameters[i].startsWith("\"")) {
-                            String temp=parameters[i].replace("\"", "") + " ";
-                            if(parameters[i].endsWith("\"")) {
-                                passed.add(parameters[i].replace("\"", ""));
+            if(rs != null) {
+                while (rs.next()) {
+                    if (rs.getString(1).substring(1).equalsIgnoreCase(command)) {
+                        String reply = rs.getString(3);
+                        ArrayList<String> passed = new ArrayList<>();
+                        String[] params = rs.getString(2).split(" ");
+                        if (params[0].equalsIgnoreCase("")) {
+                            return reply;
+                        }
+                        int i = 0;
+                        while (i < parameters.length) {
+                            if (parameters[i].startsWith("\"")) {
+                                String temp = parameters[i].replace("\"", "") + " ";
+                                if (parameters[i].endsWith("\"")) {
+                                    passed.add(parameters[i].replace("\"", ""));
+                                    continue;
+                                }
+                                i++;
+                                boolean endQuote = true;
+                                while (!parameters[i].endsWith("\"")) {
+                                    temp += parameters[i] + " ";
+                                    i++;
+                                    if (i >= parameters.length) {
+                                        endQuote = false;
+                                    }
+                                }
+                                if (endQuote) {
+                                    temp += parameters[i].replace("\"", "");
+                                }
+                                i++;
+                                passed.add(temp);
                                 continue;
                             }
+                            passed.add(parameters[i]);
                             i++;
-                            boolean endQuote = true;
-                            while(!parameters[i].endsWith("\"")) {
-                                temp+=parameters[i] + " ";
-                                i++;
-                                if(i >= parameters.length) {
-                                    endQuote = false;
-                                }
-                            }
-                            if(endQuote) {
-                                temp+=parameters[i].replace("\"", "");
-                            }
-                            i++;
-                            passed.add(temp);
-                            continue;
                         }
-                        passed.add(parameters[i]);
-                        i++;
-                    }
-                    if(passed.size() == params.length) {
-                        for(i = 0;i < passed.size();i++) {
-                            reply = reply.replace(params[i], passed.get(i));
+                        if (passed.size() == params.length) {
+                            for (i = 0; i < passed.size(); i++) {
+                                reply = reply.replace(params[i], passed.get(i));
+                            }
+                            return reply;
                         }
-                        return reply;
                     }
                 }
             }

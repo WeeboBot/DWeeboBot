@@ -30,15 +30,13 @@ public class Help extends Command {
 
     @Override
     public String getCommandText() {
-        return null;
+        return "help";
     }
 
     @Override
     public String execute(String channel, String sender, String...parameters) {
-        if(CommandsPage.pageExists(channel.substring(1))) {
-            return "You can find all of my commands at http://dweebobot.no-ip.info/commands and all of the commands for %s at http://weebobott.no-ip.info/commands/%s.html.".replace("%channel%", channel.substring(1));
-        }
-        return "You can find all of my commands at http://dweebobot.no-ip.info/commands.";
+        return "Use !help command to find out more about each command";
+        //TODO: Implement help on a per command basis, will be PMed to the user
     }
 
 }

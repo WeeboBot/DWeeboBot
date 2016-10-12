@@ -48,7 +48,7 @@ public class Broadcast extends Command {
             for (IGuild g : Main.getBot().getGuilds()) {
                 for (IChannel c : g.getChannels()) {
                     DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGESEND, g.getID(), c.getID(), message);
-                    DiscordListener.ActionQueue.addDelayedAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEDELETE, "4s", g.getID(), c.getID(), MessageLog.getMessageFromContent(g, c, message).getID());
+                    DiscordListener.ActionQueue.addDelayedAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEDELETE, "4s", g.getID(), c.getID(), MessageLog.getMessageFromContent(g.getID(), c.getID(), message).getID());
                 }
             }
             return "I have sent %message% to all channels.".replace("%message%", message);

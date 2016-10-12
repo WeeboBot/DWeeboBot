@@ -34,6 +34,9 @@ import java.util.Scanner;
 
 public class Main implements Runnable{
 
+    /**
+     * The user level required to preform commands that are command-line specific, Guild owners are this-1 and regular users cannot be greater than this-2
+     */
     public static final int MAX_USER_LEVEL = 9999;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
     private static DWeeboBot dweebobot;

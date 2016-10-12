@@ -71,7 +71,7 @@ public class CommandParser {
      */
     public static String parse(String command, String[] parameters) {
         command = command.toLowerCase();
-        Command c=commands.get(command);
+        Command c = commands.get(command);
         return c.execute(Main.MAX_USER_LEVEL, toStringArray(parseParameters(parameters)));
     }
 
@@ -133,7 +133,7 @@ public class CommandParser {
         if(DiscordListener.isOwner(sender, guild)) {
             return true;
         }
-        return c.getCommandLevel(guild) <= Database.getUserPermissionLevel(sender, guild);
+        return c.getCommandLevel(guild) <= Database.getUserPermissionLevel(sender.getID(), guild.getID());
     }
 
     private static String[] toStringArray(ArrayList<String> passed) {

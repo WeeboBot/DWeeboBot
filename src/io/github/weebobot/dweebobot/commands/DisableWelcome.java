@@ -35,7 +35,7 @@ public class DisableWelcome extends Command {
 
     @Override
     public String execute(String channel, String sender, String... parameters) {
-        Main.getDWeeboBot().setWelcomeEnabled(Main.getBot().getChannelByID(channel).getGuild());
+        Main.getDWeeboBot().setWelcomeDisabled(Main.getBot().getChannelByID(channel).getGuild());
         return "Welcome messages have been disabled.";
     }
 

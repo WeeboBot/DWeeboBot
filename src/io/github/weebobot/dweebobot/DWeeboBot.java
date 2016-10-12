@@ -17,34 +17,24 @@
 
 package io.github.weebobot.dweebobot;
 
-import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
-import io.github.weebobot.dweebobot.util.PollUtil;
-import io.github.weebobot.dweebobot.util.WLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IRole;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author JewsOfHazard, Donald10101, And Angablade.
+ * @author James Wolff
  */
 
 public class DWeeboBot {
 
     private static ArrayList<IGuild> welcomeDisabled;
-    private static HashMap<String, Boolean> confirmationReplies;
-    private static HashMap<String, PollUtil> polls;
-    private static final Logger logger = Logger.getLogger(DWeeboBot.class + "");
+    private static final Logger logger = LoggerFactory.getLogger(DWeeboBot.class);
 
     /**
      * Creates a new instance of DWeeboBot for the specified channel
@@ -54,16 +44,14 @@ public class DWeeboBot {
     }
 
     /**
-     * initializes all of our HashMaps
+     * Initializes all of our variables
      */
     private void initVariables() {
         welcomeDisabled = new ArrayList<>();
-        confirmationReplies = new HashMap<>();
-        polls = new HashMap<>();
     }
 
     /**
-     * Sends message when the bot join's a channel for the first time.
+     * Sends message when the bot join's a guild for the first time.
      */
     public void onFirstJoin(IGuild guild, IChannel channel) {
         DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. To get started type !setup");
@@ -89,76 +77,5 @@ public class DWeeboBot {
      */
     public boolean getWelcomeDisabled(IGuild guild) {
         return welcomeDisabled.contains(guild);
-    }
-
-    /**
-     * @param channel
-     *            - channel that we are setting the value for
-     * @param value
-     *            - true if confirmations should be on, false otherwise
-     */
-    public void setConfirmationEnabled(String channel, boolean value) {
-        confirmationReplies.put(channel, value);
-    }
-
-    /**
-     * @param channel
-     *            - the channel the poll is in
-     * @param poll
-     *            - the Poll Object
-     */
-    public void addPoll(String channel, io.github.weebobot.dweebobot.util.PollUtil poll) {
-        polls.put(channel, poll);
-    }
-
-    /**
-     * @param channel
-     *            - the channel the poll is in
-     */
-    public void removePoll(String channel) {
-        polls.remove(channel);
-    }
-
-    /**
-     * @param channel
-     *            - the channel the Poll might be in
-     * @return true if the channel has a Poll, false otherwise
-     */
-    public boolean hasPoll(String channel) {
-        return polls.containsKey(channel);
-    }
-
-    /**
-     * @param channel
-     *            - the channel the Poll is in
-     * @return the Poll Object
-     */
-    public PollUtil getPoll(String channel) {
-        return polls.get(channel);
-    }
-
-    /**
-     * @param channel
-     *            - the channel to get confirmation reply for
-     * @return true if the replies are enabled, false otherwise
-     */
-    public boolean getConfirmationReplies(String channel) {
-        return confirmationReplies.get(channel);
-    }
-
-    /**
-     * @param channel
-     *            - the channel to remove from the welcome enabled list
-     */
-    public void removeWelcomeDisabled(String channel) {
-        welcomeDisabled.remove(channel);
-    }
-
-    /**
-     * @param channel
-     *            - the channel to remove from the confirmation replies list
-     */
-    public void removeConfirmationReplies(String channel) {
-        confirmationReplies.remove(channel);
     }
 }

@@ -20,7 +20,6 @@ package io.github.weebobot.dweebobot.database;
 import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.util.GOptions;
 import io.github.weebobot.dweebobot.util.TType;
-import io.github.weebobot.dweebobot.util.ULevel;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +99,7 @@ public class Database {
             try{
                 stmt3=conn.createStatement();
                 stmt3.closeOnCompletion();
-                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), permissionLevel INTEGER, default BOOLEAN, PRIMARY KEY (command))", DATABASE, guildID));
+                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), permissionLevel INTEGER, isDefault BOOLEAN, PRIMARY KEY (command))", DATABASE, guildID));
             }catch(SQLException ex){
                 logger.error("Unable to create table Commands!", ex);
                 WLogger.logError(e);
@@ -128,7 +127,7 @@ public class Database {
         try {
             stmt.executeUpdate(sqlCommand);
         } catch (SQLException e) {
-            logger.error(String.format("Unable to execute statment: %s", sqlCommand), e);
+            logger.error(String.format("Unable to execute statment: %s", sqlCommand));
             WLogger.logError(e);
             return false;
         }
@@ -212,15 +211,15 @@ public class Database {
      * @param option - Timeout Option
      * @return value if the option
      */
-    public static String getOption(String channelNoHash, String option) {
-        ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sOptions WHERE optionID=\'%s\'", DATABASE, channelNoHash, option));
+    public static String getOption(String gID, String option) {
+        ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sOptions WHERE optionID=\'%s\'", DATABASE, gID, option));
         try {
             if(rs.next()) {
                 return rs.getString(2);
             }
             return null;
         } catch (SQLException | NumberFormatException e) {
-            logger.error(String.format("Unable to get welcome message for %s", channelNoHash), e);
+            logger.error(String.format("Unable to get option %s for %s", option, gID), e);
             WLogger.logError(e);
         }
         return null;
@@ -231,9 +230,10 @@ public class Database {
      * @return String[] of guild info
      */
     public static String[] getWelcomeInfo(String gID) {
-        String[] welcomeInfo = new String[2];
+        String[] welcomeInfo = new String[3];
         welcomeInfo[0] = getOption(gID, GOptions.welcomeChannel.getOptionID());
         welcomeInfo[1] = getOption(gID, GOptions.welcomeMessage.getOptionID());
+        welcomeInfo[2] = getOption(gID, GOptions.deleteWelcome.getOptionID());
         return welcomeInfo;
     }
 
@@ -277,33 +277,6 @@ public class Database {
     }
 
     /**
-     * @param channelNoHash - channel to add the auto reply to
-     * @param keywords - keywords to trigger the auto reply
-     * @param reply - auto reply to be sent on trigger
-     */
-    public static void addAutoReply(String channelNoHash, String keywords, String reply) {
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sCommands VALUES(? , ?, ?)", DATABASE, channelNoHash));
-            stmt.setString(1, keywords);
-            stmt.setString(2, "");
-            stmt.setString(3, reply);
-        } catch (SQLException e) {
-            logger.error("Unable to set option", e);
-            WLogger.logError(e);
-        }
-        executeUpdate(stmt);
-    }
-
-    /**
-     * @param channelNoHash - channel to get the auto replies for, without the leading #
-     * @return a result set of the auto replies
-     */
-    public static ResultSet getAutoReplies(String channelNoHash) {
-        return executeQuery(String.format("SELECT * FROM %s.%sCommands WHERE command NOT LIKE \'!%%'", DATABASE, channelNoHash));
-    }
-
-    /**
      * @param channelNoHash - channel to add the command for, without the leading #
      * @param command - command to be added
      * @param parameters - parameters that should be passed
@@ -324,154 +297,11 @@ public class Database {
     }
 
     /**
-     * @param channelNoHash - channel to get spam for
-     * @return result set of spam words
-     */
-    public static ResultSet getSpam(String channelNoHash) {
-        return executeQuery(String.format("SELECT * FROM %s.%sSpam", DATABASE, channelNoHash));
-    }
-
-    /**
-     * @param channelNoHash - channel to delete the auto reply from, without the leading #
-     * @param keywords - keywords of the auto reply
-     * @return true if the auto reply is removed
-     */
-    public static boolean delAutoReply(String channelNoHash, String keywords) {
-        return delCommand(channelNoHash, keywords);
-    }
-
-    /**
      * @param channelNoHash - channel to get the custom commands for, without the leading #
      * @return result set of custom commands
      */
     public static ResultSet getCustomCommands(String channelNoHash) {
         return executeQuery(String.format("SELECT * FROM %s.%sCommands", DATABASE, channelNoHash));
-    }
-
-    /**
-     * @param channelNoHash - channel to add spam to, without the leading #
-     * @param word - word to add to the table
-     * @return true if the word is added
-     */
-    public static boolean addSpam(String channelNoHash, boolean emote, String word) {
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sSpam VALUES(?,?)", DATABASE, channelNoHash));
-            stmt.setBoolean(1, emote);
-            stmt.setString(2, word);
-        } catch (SQLException e) {
-            logger.error("Unable to set option", e);
-            WLogger.logError(e);
-        }
-        return executeUpdate(stmt);
-    }
-
-    /**
-     * @param channelNoHash - channel to delete the spam from, without the leading #
-     * @param word - word to delete
-     * @return true if the word is deleted
-     */
-    public static boolean delSpam(String channelNoHash, String word) {
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement(String.format("DELETE FROM %s.%sSpam WHERE word=?", DATABASE, channelNoHash));
-            stmt.setString(1, word);
-        } catch (SQLException e) {
-            logger.error("Unable to set option", e);
-            WLogger.logError(e);
-        }
-        return executeUpdate(stmt);
-    }
-
-    /**
-     * @param nick - person to add points to
-     * @param channelNoHash - channel the user is in, without the leading #
-     * @param amount - the number of points to add
-     */
-    public static void addPoints(String nick, String channelNoHash, int amount) {
-        ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, nick));
-        try {
-            if(rs.next()){
-                String userLevel = rs.getString(2);
-                int points = rs.getInt(3) + amount;
-                boolean visible = rs.getBoolean(4);
-                boolean regular = rs.getBoolean(5);
-                Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, nick, userLevel, points, visible, regular, nick));
-            }
-        } catch (SQLException e) {
-            logger.error("An Error occured updating "+nick+"'s points!\n", e);
-            WLogger.logError(e);
-        }
-    }
-
-    /**
-     * @param sender - person to get points for
-     * @param channelNoHash - channel the user is in, without the leading #
-     * @return number of points the user has
-     */
-    public static String getPoints(String sender, String channelNoHash) {
-        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, sender));
-        try {
-            if(rs.next()) {
-                return rs.getInt(3)+"";
-            }
-        } catch (SQLException e) {
-            logger.error("An error occurred getting a user's points.", e);
-            WLogger.logError(e);
-        }
-        return null;
-    }
-
-    /**
-     * @param amount - number of players to get
-     * @param channelNoHash - channel the people are in
-     * @return formatted string of top x players
-     */
-    public static String topPlayers(int amount, String channelNoHash) {
-        StringBuilder output = new StringBuilder();
-        output.append("The top ");
-        output.append(amount);
-        output.append(" points holder(s) are: ");
-        ResultSet rs=executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE visibility = true ORDER BY points DESC", DATABASE, channelNoHash));
-        try {
-            while(rs.next()&&amount>1){
-                if(rs.getBoolean(3)) {
-                    output.append(rs.getString(1));
-                    output.append(": ");
-                    output.append(rs.getInt(3));
-                    output.append(", ");
-                    amount--;
-                }
-            }
-            output.append(rs.getString(1));
-            output.append(": ");
-            output.append(rs.getInt(3));
-        } catch (SQLException e) {
-            logger.error("Error occurred creating Top list!", e);
-            WLogger.logError(e);
-        }
-        return output.toString();
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @param username - user to set exemption for
-     * @param visible - whether the user should be exempt or not
-     * @return - true if the operation is successful, false otherwise
-     */
-    public static boolean topExemption(String channelNoHash, String username, boolean visible){
-        ResultSet rs = Database.executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=\'%s\'", DATABASE, channelNoHash, username));
-        try {
-            if(rs.next()){
-                String userLevel = rs.getString(2);
-                int points = rs.getInt(3);
-                boolean regular = rs.getBoolean(5);
-                return Database.executeUpdate(String.format("UPDATE %s.%sUsers SET userID=\'%s\', userLevel=\'%s\', points=%d, visibility=%b, regular=%b WHERE userID=\'%s\'", DATABASE, channelNoHash, username, userLevel, points, visible, regular, username));
-            }
-        } catch (SQLException e) {
-            WLogger.logError(e);
-        }
-        return false;
     }
 
     /**
@@ -489,73 +319,6 @@ public class Database {
             WLogger.logError(e);
         }
         return executeUpdate(stmt);
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @return - ResultSet of Users with the level "Moderator"
-     */
-    public static ResultSet getMods(String channelNoHash) {
-        return executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userLevel=\'%s\'", DATABASE, channelNoHash, ULevel.Moderator.getName()));
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @param level - User level to get immunities for
-     * @return - Boolean array of immunities
-     */
-    public static boolean[] getImmunities(String channelNoHash, String level){
-        String immunity = getOption(channelNoHash, level.toLowerCase()+"Immunities");
-        if(immunity == null) {
-            return new boolean[]{false,false,false,false,false,false};
-        }
-        boolean[] immunities = new boolean[6];
-        immunities[0] = immunity.charAt(0) == '1';
-        immunities[1] = immunity.charAt(1) == '1';
-        immunities[2] = immunity.charAt(2) == '1';
-        immunities[3] = immunity.charAt(3) == '1';
-        immunities[4] = immunity.charAt(4) == '1';
-        immunities[5] = immunity.charAt(5) == '1';
-        return immunities;
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @return - Emote list for the channel as well as the global emote list
-     */
-    public static ArrayList<String> getEmoteListAsArray(String channelNoHash) {
-        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sSpam WHERE emote=true", DATABASE, channelNoHash));
-        ArrayList<String> emotes = new ArrayList<>();
-        try {
-            while(rs.next()) {
-                emotes.add(rs.getString(2));
-            }
-            ArrayList<String> globalEmotes = getGlobalEmoteListAsArray();
-            emotes.addAll(globalEmotes == null ? new ArrayList<>() : globalEmotes);
-            return emotes;
-        } catch (SQLException e) {
-            logger.error("Unable to get the emote list for: " + channelNoHash, e);
-            WLogger.logError(e);
-        }
-        return null;
-    }
-
-    /**
-     * @return - Array of Global Emotes
-     */
-    private static ArrayList<String> getGlobalEmoteListAsArray() {
-        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.globalEmotes", DATABASE));
-        ArrayList<String> emotes = new ArrayList<>();
-        try {
-            while(rs.next()) {
-                emotes.add(rs.getString(1));
-            }
-            return emotes;
-        } catch (SQLException e) {
-            logger.error("Unable to get the global emote list", e);
-            WLogger.logError(e);
-        }
-        return null;
     }
 
     /**
@@ -799,56 +562,6 @@ public class Database {
 //    }
 
     /**
-     * @param emote - emote to check the database for
-     * @return - true if the emote is in the database, false otherwise
-     */
-    public static boolean emoteExists(String emote) {
-        PreparedStatement stmt;
-        try {
-            stmt = conn.prepareStatement(String.format("SELECT * FROM %s.globalEmotes WHERE emote=?", DATABASE));
-            stmt.setString(1, emote);
-
-            return executeQuery(stmt).next();
-        } catch (SQLException e) {
-            WLogger.logError(e);
-        }
-        return false;
-    }
-
-    /**
-     * @param emote - emote to add to the database
-     */
-    public static void addEmote(String emote) {
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement(String.format("INSERT INTO %s.globalEmotes VALUES (?)", DATABASE));
-            stmt.setString(1, emote);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        executeUpdate(stmt);
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @param usage - What the message is used for
-     * @param message - The message to be added
-     */
-    public static void addMessage(String channelNoHash, String usage, String message) {
-        executeUpdate(String.format("INSERT INTO %s.customMessages VALUES(\'%s\', \'%s\', \'%s\')", DATABASE, channelNoHash, usage, message));
-    }
-
-    /**
-     * @param channelNoHash - Channel without the leading #
-     * @param usage - What the message is used for
-     * @param message - message to be deleted from the database
-     * @return true if it the message deleted, false otherwise
-     */
-    public static boolean delMessage(String channelNoHash, String usage, String message) {
-        return executeUpdate(String.format("DELETE FROM %s.customMessages WHERE channel=\'%s\' AND regime=\'%s\' AND message=\'%s\'", DATABASE, channelNoHash, usage, message));
-    }
-
-    /**
      * @param channelNoHash - Channel without the leqading #
      * @param tType - the Timeout Type to get messages for
      * @return - An array of messages
@@ -870,15 +583,15 @@ public class Database {
         return messages;
     }
 
-    public static int getUserPermissionLevel(IUser sender, IGuild guild) {
-        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=%s", DATABASE, guild.getID(), sender.getID()));
+    public static int getUserPermissionLevel(String uID, String gID) {
+        ResultSet rs = executeQuery(String.format("SELECT * FROM %s.%sUsers WHERE userID=%s", DATABASE, gID, uID));
         try {
             if(rs.next()) {
                 return rs.getInt("permissionLevel");
             }
             return 0;
         } catch (SQLException e) {
-            logger.warn("An error occurred getting the user (" + sender.getID() + ") permission level for that guild (" + guild.getID() + ")", e);
+            logger.warn("An error occurred getting the user (" + uID + ") permission level for that guild (" + gID + ")", e);
             return 0;
         }
     }
@@ -898,5 +611,17 @@ public class Database {
 
     public static void addWelcomedUser(String gID, String uID) {
         executeUpdate(String.format("INSERT INTO %s.welcomedUsers values(%s, %s)", DATABASE, gID, uID));
+    }
+
+    public static void setUserPermissionLevel(String uID, String gID, int level) {
+        executeUpdate(String.format("UPDATE %s.%sUsers SET userID=%s,permissionLevel=%s WHERE userID=%s", DATABASE, gID, uID, level, uID));
+    }
+
+    public static void addUser(String uID, String gID, int level) {
+        executeUpdate(String.format("INSERT INTO %s.%sUsers values(%s, %d)", DATABASE, gID, uID, level));
+    }
+
+    public static void addUser(String uID, String gID) {
+        addUser(uID, gID, 0);
     }
 }
