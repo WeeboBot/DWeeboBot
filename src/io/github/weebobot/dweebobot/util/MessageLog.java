@@ -62,6 +62,7 @@ public class MessageLog {
             if(delayedAction != null) {
                 if(delayedAction.getAction().getType().equals(DiscordListener.ActionType.MESSAGEDELETE)) {
                     while(MessageLog.getMessageFromContent((String) parameters[0], (String) parameters[1], (String) parameters[2]) == null);
+                    delayedAction.getAction().setParameters(new Object[] {parameters[0], parameters[1], MessageLog.getMessageIDFromContent((String) parameters[0], (String) parameters[1], (String) parameters[2])});
                     DiscordListener.ActionQueue.addDelayedAction(delayedAction);
                     delayedAction.startTimer();
                 }

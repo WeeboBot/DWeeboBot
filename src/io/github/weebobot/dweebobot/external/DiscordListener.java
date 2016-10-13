@@ -333,6 +333,10 @@ public class DiscordListener {
             public Object[] getParameters() {
                 return parameters;
             }
+
+            public void setParameters(Object[] parameters) {
+                this.parameters = parameters;
+            }
         }
 
         public static class DelayedAction extends TimerTask {
