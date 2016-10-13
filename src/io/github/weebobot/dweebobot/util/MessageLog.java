@@ -39,6 +39,14 @@ public class MessageLog {
         return message;
     }
 
+    public static String getMessageIDFromContent(String gID, String cID, String content) {
+        IMessage message = getMessageFromContent(gID, cID, content);
+        if(message == null) {
+            return null;
+        }
+        return message.getID();
+    }
+
     public static class LogReader extends Thread {
         private DiscordListener.ActionQueue.DelayedAction delayedAction;
         private Object[] parameters;

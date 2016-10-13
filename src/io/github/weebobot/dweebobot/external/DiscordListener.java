@@ -86,7 +86,7 @@ public class DiscordListener {
                 long delay = Integer.valueOf(welcomeInfo[2]);
                 if(delay > 0 ) {
                     delay = MiscUtils.delayToLong(delay + "s");
-                    new MessageLog.LogReader(new ActionQueue.DelayedAction(new ActionQueue.Action(ActionPriority.HIGH, ActionType.MESSAGEDELETE, g.getID(), welcomeInfo[0], MessageLog.getMessageFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1]).getID()), delay, false), g.getID(), welcomeInfo[0], welcomeInfo[1]);
+                    new MessageLog.LogReader(new ActionQueue.DelayedAction(new ActionQueue.Action(ActionPriority.HIGH, ActionType.MESSAGEDELETE, g.getID(), welcomeInfo[0], MessageLog.getMessageIDFromContent(g.getID(), welcomeInfo[0], welcomeInfo[1])), delay, false), g.getID(), welcomeInfo[0], welcomeInfo[1]);
                 }
                 return true;
             }
