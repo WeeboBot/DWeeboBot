@@ -21,6 +21,7 @@ import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
 import io.github.weebobot.dweebobot.util.MessageLog;
+import io.github.weebobot.dweebobot.util.MiscUtils;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 
@@ -47,8 +48,8 @@ public class Broadcast extends Command {
             String message=parameters[0];
             for (IGuild g : Main.getBot().getGuilds()) {
                 for (IChannel c : g.getChannels()) {
-                    DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGESEND, g.getID(), c.getID(), message);
-                    DiscordListener.ActionQueue.addDelayedAction(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEDELETE, "4s", g.getID(), c.getID(), MessageLog.getMessageFromContent(g.getID(), c.getID(), message).getID());
+                    DiscordListener.ActionQueue.addAction(new DiscordListener.ActionQueue.Action(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGESEND, g.getID(), c.getID(), message));
+                    new MessageLog.LogReader(new DiscordListener.ActionQueue.DelayedAction(new DiscordListener.ActionQueue.Action(DiscordListener.ActionPriority.IMMEDIATE, DiscordListener.ActionType.MESSAGEDELETE, g.getID(), c.getID(), MessageLog.getMessageFromContent(g.getID(), c.getID(), message).getID()), MiscUtils.delayToLong("4s"), false), g.getID(), c.getID(), message);
                 }
             }
             return "I have sent %message% to all channels.".replace("%message%", message);

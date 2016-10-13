@@ -54,7 +54,7 @@ public class DWeeboBot {
      * Sends message when the bot join's a guild for the first time.
      */
     public void onFirstJoin(IGuild guild, IChannel channel) {
-        DiscordListener.ActionQueue.addAction(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. To get started type !setup");
+        DiscordListener.ActionQueue.addAction(new DiscordListener.ActionQueue.Action(DiscordListener.ActionPriority.MEDIUM, DiscordListener.ActionType.MESSAGESEND, guild.getID(), channel.getID(), "Hello, this appears to be the first time you have invited me to join your channel. We just have a few preliminary matters to attend to. To get started type !setup"));
     }
 
     /**

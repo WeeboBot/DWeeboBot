@@ -342,7 +342,7 @@ public class DiscordListener {
             private static final Timer timer = new Timer();
             static int queueSize;
 
-            DelayedAction(Action action, long delay, boolean autoStart) {
+            public DelayedAction(Action action, long delay, boolean autoStart) {
                 this.action = action;
                 this.delay = delay;
                 if(autoStart) {
