@@ -1,5 +1,7 @@
 package io.github.weebobot.dweebobot.util;
 
+import sx.blah.discord.handle.obj.IUser;
+
 /**
  * Created by James Wolff on 10/12/2016.
  */
@@ -16,5 +18,9 @@ public class MiscUtils {
             delayAsLong = (long) Integer.valueOf(delay.replace("s", ""));
         }
         return delayAsLong;
+    }
+
+    public static String getMention(IUser u) {
+        return "@" + u.getName() + "#" + u.getDiscriminator();
     }
 }

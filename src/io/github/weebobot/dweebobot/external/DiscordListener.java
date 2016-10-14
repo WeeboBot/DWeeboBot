@@ -80,7 +80,7 @@ public class DiscordListener {
     public static boolean welcomeUser(IGuild g, IUser u) {
         if (!Main.getDWeeboBot().getWelcomeDisabled(g)) {
             String[] welcomeInfo = Database.getWelcomeInfo(g.getID());
-            welcomeInfo[1] = welcomeInfo[1].replace("%user%", u.getDisplayName(g));
+            welcomeInfo[1] = welcomeInfo[1].replace("%user%", MiscUtils.getMention(u));
             if (!welcomeInfo[1].equalsIgnoreCase("none")) {
                 ActionQueue.addAction(new ActionQueue.Action(ActionPriority.HIGH, ActionType.MESSAGESEND, g.getID(), welcomeInfo[0], welcomeInfo[1]));
                 long delay = Integer.valueOf(welcomeInfo[2]);
