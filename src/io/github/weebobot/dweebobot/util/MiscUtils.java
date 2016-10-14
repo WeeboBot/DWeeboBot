@@ -19,8 +19,4 @@ public class MiscUtils {
         }
         return delayAsLong;
     }
-
-    public static String getMention(IUser u) {
-        return "@" + u.getName() + "#" + u.getDiscriminator();
-    }
 }
