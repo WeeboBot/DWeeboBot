@@ -24,7 +24,6 @@ import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IUser;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -207,7 +206,7 @@ public class Database {
     }
 
     /**
-     * @param channelNoHash - channel to get the option for without the leading #
+     * @param gID - channel to get the option for without the leading #
      * @param option - Timeout Option
      * @return value if the option
      */

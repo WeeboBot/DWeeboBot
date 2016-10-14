@@ -22,7 +22,7 @@ public class TestWelcome extends Command {
     @Override
     public String execute(String channel, String sender, String... parameters) {
         if(DiscordListener.welcomeUser(Main.getBot().getChannelByID(channel).getGuild(), Main.getBot().getUserByID(sender))) {
-            return String.format("Welcome test sent in channel #%s", Main.getBot().getChannelByID(Database.getWelcomeInfo(Main.getBot().getChannelByID(channel).getGuild().getID())[0]));
+            return String.format("Welcome test sent in channel %s", Main.getBot().getChannelByID(Database.getWelcomeInfo(Main.getBot().getChannelByID(channel).getGuild().getID())[0]).mention());
         }
         return "Welcome messages in your guild are either temporarily disable or you have not set up a welcome message type `!help welcomemessage` for more info!";
     }
