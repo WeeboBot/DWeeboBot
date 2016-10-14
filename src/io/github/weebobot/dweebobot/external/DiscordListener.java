@@ -15,10 +15,7 @@ import sx.blah.discord.handle.impl.events.GuildTransferOwnershipEvent;
 import sx.blah.discord.handle.impl.events.MessageReceivedEvent;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
 import sx.blah.discord.handle.impl.events.UserJoinEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.MissingPermissionsException;
 import sx.blah.discord.util.RateLimitException;
@@ -154,6 +151,15 @@ public class DiscordListener {
 
     public static boolean isOwner(IUser user, IGuild guild) {
         return Objects.equals(user.getID(), guild.getOwnerID());
+    }
+
+    public static boolean isAdmin(IUser sender, IGuild guild) {
+        for (IRole r : sender.getRolesForGuild(guild)) {
+            if(r.getPermissions().contains(Permissions.ADMINISTRATOR)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class ActionQueue implements Runnable{

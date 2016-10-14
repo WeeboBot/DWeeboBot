@@ -130,7 +130,7 @@ public class CommandParser {
      * @return true if the user has valid access
      */
     private static boolean hasAccess(Command c, IUser sender, IGuild guild) {
-        if(DiscordListener.isOwner(sender, guild)) {
+        if(DiscordListener.isOwner(sender, guild) || DiscordListener.isAdmin(sender, guild)) {
             return true;
         }
         return c.getCommandLevel(guild) <= Database.getUserPermissionLevel(sender.getID(), guild.getID());
