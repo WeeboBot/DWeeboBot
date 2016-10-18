@@ -51,6 +51,21 @@ public class DiscordListener {
     @EventSubscriber
     public void onReady(ReadyEvent event) {
         logger.info("Logged in as: " + Main.getBot().getOurUser().getName());
+        for (IGuild g : Main.getBot().getGuilds()) {
+            for (IUser u : g.getUsers()) {
+                boolean admin = false;
+                for (IRole r : u.getRolesForGuild(g)) {
+                    if (r.getPermissions().contains(Permissions.ADMINISTRATOR)) {
+                        Database.addUser(u.getID(), g.getID(), Main.MAX_USER_LEVEL-1);
+                        admin = true;
+                        break;
+                    }
+                }
+                if(!admin) {
+                    Database.addUser(u.getID(), g.getID());
+                }
+            }
+        }
         logger.info("Ready!");
     }
 
