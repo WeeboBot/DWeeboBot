@@ -36,6 +36,8 @@ public class Database {
 
     private static final String DATABASE = "dweebo";
 
+    private static String DBPASSWORD;
+
     private static final Logger logger = LoggerFactory.getLogger(Database.class);
 
     /**
@@ -44,6 +46,11 @@ public class Database {
      * @return - true if connection is successful
      */
     public static boolean initDBConnection(String pass) {
+        DBPASSWORD = pass;
+        return initDBConnection();
+    }
+
+    private static boolean initDBConnection() {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (InstantiationException | IllegalAccessException
@@ -53,11 +60,11 @@ public class Database {
             return false;
         }
         try {
-            conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, pass));
+            conn = DriverManager.getConnection(String.format("%suser=bot&password=%s", URL, DBPASSWORD));
         } catch (SQLException e) {
             logger.error("Unable to connect to the database!! Shutting Down!!", e);
             WLogger.logError(e);
-            return true;
+            return false;
         }
         return true;
     }
@@ -114,6 +121,7 @@ public class Database {
      * @return - true if it successfully executes the update
      */
     private static boolean executeUpdate(String sqlCommand) {
+        while(!initDBConnection());
         Statement stmt;
         try {
             stmt = conn.createStatement();
@@ -139,6 +147,7 @@ public class Database {
      * @return - the results of the query
      */
     private static ResultSet executeQuery(String sqlQuery) {
+        while(!initDBConnection());
         Statement stmt = null;
         ResultSet rs = null;
         try {
@@ -166,6 +175,7 @@ public class Database {
      * @return - true if it successfully executes the update
      */
     private static boolean executeUpdate(PreparedStatement stmt) {
+        while(!initDBConnection());
         try {
             stmt.closeOnCompletion();
         } catch (SQLException e) {
@@ -189,6 +199,7 @@ public class Database {
      * @return - results of the query
      */
     private static ResultSet executeQuery(PreparedStatement stmt) {
+        while(!initDBConnection());
         ResultSet rs = null;
         try {
             stmt.closeOnCompletion();
