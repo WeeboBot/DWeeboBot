@@ -46,8 +46,12 @@ public class AddCommand extends Command {
         if(!parameters[0].startsWith("!")) {
             parameters[0] = "!" + parameters[0];
         }
-        if(Database.getCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]) != null) {
-            return "The command %c% already exists".replace("%c%", parameters[0]);
+        try {
+            if(Database.getCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]).next()) {
+                return "The command %c% already exists".replace("%c%", parameters[0]);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         try {
             int level = Integer.valueOf(parameters[2]);
