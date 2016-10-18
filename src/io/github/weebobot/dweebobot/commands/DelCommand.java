@@ -39,7 +39,7 @@ public class DelCommand extends Command {
             parameters[0] = "!" + parameters[0];
         }
         Database.delCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]);
-        return "Removed command from the database.";
+        return "Removed %command% from the database.".replace("%command%", parameters[0]);
     }
 
 }
