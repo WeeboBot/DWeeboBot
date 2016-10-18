@@ -19,7 +19,11 @@ package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.util.WLogger;
 import sx.blah.discord.handle.obj.IGuild;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class AddCommand extends Command {
 
@@ -41,6 +45,9 @@ public class AddCommand extends Command {
         }
         if(!parameters[0].startsWith("!")) {
             parameters[0] = "!" + parameters[0];
+        }
+        if(Database.getCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]) != null) {
+            return "The command %c% already exists".replace("%c%", parameters[0]);
         }
         try {
             int level = Integer.valueOf(parameters[2]);

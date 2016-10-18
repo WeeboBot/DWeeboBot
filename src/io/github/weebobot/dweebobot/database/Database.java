@@ -80,6 +80,7 @@ public class Database {
         Statement stmt1;
         Statement stmt2;
         Statement stmt3;
+        Statement stmt4;
         try {
             stmt = conn.createStatement();
             stmt.closeOnCompletion();
@@ -105,7 +106,10 @@ public class Database {
             try{
                 stmt3=conn.createStatement();
                 stmt3.closeOnCompletion();
-                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sCommands(command varchar(25), parameters varchar(255), reply varchar(4000), permissionLevel INTEGER, isDefault BOOLEAN, PRIMARY KEY (command))", DATABASE, guildID));
+                stmt3.executeUpdate(String.format("CREATE TABLE %s.%sCommands LIKE %s.defaultCommands", DATABASE, guildID, DATABASE));
+                stmt4=conn.createStatement();
+                stmt4.closeOnCompletion();
+                stmt4.executeUpdate(String.format(("INSERT %s.%sCommands SELECT * FROM %s.defaultCommands"), DATABASE, guildID, DATABASE));
             }catch(SQLException ex){
                 logger.error("Unable to create table Commands!", ex);
                 WLogger.logError(e);
@@ -296,11 +300,12 @@ public class Database {
     public static void addCommand(String gID, String command, String parameters, String reply, int level) {
         PreparedStatement stmt = null;
         try {
-            stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sCommands VALUES(? , ?, ?, ?)", DATABASE, gID));
+            stmt = conn.prepareStatement(String.format("INSERT INTO %s.%sCommands VALUES(? , ?, ?, ?, ?)", DATABASE, gID));
             stmt.setString(1, command);
             stmt.setString(2, parameters);
             stmt.setString(3, reply);
             stmt.setInt(4, level);
+            stmt.setBoolean(5, false);
         } catch (SQLException e) {
             logger.error("Unable to add command", e);
             WLogger.logError(e);
@@ -319,7 +324,7 @@ public class Database {
     /**
      * @param gID - Channel without the leading #
      * @param command - Command to be deleted
-     * @return - ture if the operation is successful, false otherwise
+     * @return - true if the operation is successful, false otherwise
      */
     public static boolean delCommand(String gID, String command) {
         PreparedStatement stmt = null;
@@ -333,15 +338,16 @@ public class Database {
         return executeUpdate(stmt);
     }
 
-    public static boolean updateCommand(String gID, String command, String parameters, String reply, int level) {
+    public static boolean updateCommand(String gID, String command, String parameters, String reply, int level, boolean isDefault) {
         PreparedStatement stmt = null;
         try {
-            stmt = conn.prepareStatement(String.format("UPDATE %s.%sCommands SET command=?,parameters=?,reply=?,permissionLevel=? WHERE command = ?", DATABASE, gID));
+            stmt = conn.prepareStatement(String.format("UPDATE %s.%sCommands SET command=?,parameters=?,reply=?,permissionLevel=?,isDefault=? WHERE command = ?", DATABASE, gID));
             stmt.setString(1, command);
             stmt.setString(2, parameters);
             stmt.setString(3, reply);
             stmt.setInt(4, level);
-            stmt.setString(5, command);
+            stmt.setBoolean(5, isDefault);
+            stmt.setString(6, command);
         } catch (SQLException e) {
             logger.error("Unable to update command %c%".replace("%c%", command));
             WLogger.logError(e);
@@ -353,7 +359,7 @@ public class Database {
         ResultSet rs = getCommand(gID, command);
         try {
             if(rs.next()) {
-                return updateCommand(gID, command, rs.getString("parameters"), rs.getString("reply"), level);
+                return updateCommand(gID, command, rs.getString("parameters"), rs.getString("reply"), level, rs.getBoolean("isDefault"));
             }
         } catch (SQLException e) {
             logger.error("Unable to update permissions for %c%".replace("%c%", command));

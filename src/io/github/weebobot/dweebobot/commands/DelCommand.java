@@ -19,7 +19,11 @@ package io.github.weebobot.dweebobot.commands;
 
 import io.github.weebobot.dweebobot.Main;
 import io.github.weebobot.dweebobot.database.Database;
+import io.github.weebobot.dweebobot.util.WLogger;
 import sx.blah.discord.handle.obj.IGuild;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DelCommand extends Command {
 
@@ -37,6 +41,14 @@ public class DelCommand extends Command {
     public String execute(String channel, String sender, String... parameters) {
         if(!parameters[0].startsWith("!")) {
             parameters[0] = "!" + parameters[0];
+        }
+        ResultSet c = Database.getCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]);
+        try {
+            if(c != null && c.getBoolean("isDefault")) {
+                return "You can not delete default commands";
+            }
+        } catch (SQLException e) {
+            WLogger.logError(e);
         }
         Database.delCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0]);
         return "Removed %command% from the database.".replace("%command%", parameters[0]);
