@@ -56,7 +56,7 @@ public class AddCommand extends Command {
         try {
             int level = Integer.valueOf(parameters[2]);
             Database.addCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0], params.toString(), parameters[1], level);
-        } catch (NumberFormatException e) {
+        } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
             Database.addCommand(Main.getBot().getChannelByID(channel).getGuild().getID(), parameters[0], params.toString(), parameters[1], 0);
         }
         return "Added %command% to the database.".replace("%command%", parameters[0]);
