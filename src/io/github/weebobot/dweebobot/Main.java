@@ -21,8 +21,6 @@ import io.github.weebobot.dweebobot.commands.CommandParser;
 import io.github.weebobot.dweebobot.commands.Shorten;
 import io.github.weebobot.dweebobot.database.Database;
 import io.github.weebobot.dweebobot.external.DiscordListener;
-import io.github.weebobot.dweebobot.external.SoundCloudUtilities;
-import io.github.weebobot.dweebobot.external.YoutubeUtilities;
 import io.github.weebobot.dweebobot.util.WLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,8 +96,6 @@ public class Main implements Runnable{
             shutdown();
         }
         CommandParser.init();
-        YoutubeUtilities.init(args[2]);
-        SoundCloudUtilities.setClientSecret(args[3]);
         Shorten.setApiKey(args[4]);
         dweebobot = new DWeeboBot();
         DiscordListener.init();
